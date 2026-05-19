@@ -14,11 +14,11 @@
                                     <form method="POST" action="/EvacFinder/index.php">
                                         <div class="form-group">
                                             <label><strong>Username</strong></label>
-                                            <input type="text" name="loginUser" class="form-control" placeholder="Enter your username">
+                                            <input value="user" type="text" name="loginUser" class="form-control" placeholder="Enter your username">
                                         </div>
                                         <div class="form-group">
                                             <label><strong>Password</strong></label>
-                                            <input type="password" name="loginPass" class="form-control" placeholder="Enter your password">
+                                            <input value="user" type="password" name="loginPass" class="form-control" placeholder="Enter your password">
                                         </div>
                                         <div class="form-row d-flex justify-content-between mt-4 mb-2">
                                             <div class="form-group">
@@ -33,6 +33,10 @@
                                         </div>
                                         <div class="text-center">
                                             <button type="submit" class="btn btn-primary btn-block">Sign me in</button>
+                                            <?php
+                                                $login = new ControllerUserRights();
+                                                $login -> ctrUserLogin();
+                                            ?>
                                         </div>
                                     </form>
                                     <div class="new-account mt-3">

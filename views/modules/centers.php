@@ -1,18 +1,19 @@
-<div class="container-xxl flex-grow-1 container-p-y">
+<div class="container-fluid flex-grow-1 container-p-y">
     <form class="evacuation-form" method="POST" autocomplete="nope">
         <div class="row justify-content-center">
-            <div class="col-15">
+            <div class="col-12">
                 <div class="card">
 
                     <div class="card-header sticky-element bg-label-secondary d-flex justify-content-sm-between align-items-sm-center flex-column flex-sm-row">
                         <h5 class="card-title mb-sm-0 me-2">EVACUATION CENTERS</h5>
                         <input type="hidden" name="encodedby" id="encodedby" value="<?php echo $_SESSION['userid']; ?>">
                         <input type="hidden" name="trans_type" id="trans_type" value="New">
+                        <input type="hidden" name="center_id" id="center_id" value="">
                     </div>
 
                     <div class="card-body pt-12">
                         <div class="row">
-                            <div class="col-lg-12 mx-auto">
+                            <div class="col-lg-12">
 
                                 <!-- Row 1: Center Name, Category -->
                                 <div class="row g-6">
@@ -92,7 +93,7 @@
                                 <!-- Row 5: Contact Person, Alternate Contact -->
                                 <div class="row g-6">
                                     <div class="col-md-5">
-                                        <label class="form-label" for="contact_person">Contact Person</label>
+                                        <label class="form-label" for="contact_person">In charge/Contact Person</label>
                                         <input type="text" id="contact_person" name="contact_person" class="form-control" />
                                     </div>
                                     <div class="col-md-4">

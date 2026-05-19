@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Mar 29, 2026 at 04:35 PM
+-- Generation Time: May 06, 2026 at 12:42 PM
 -- Server version: 8.4.3
 -- PHP Version: 8.3.30
 
@@ -20,6 +20,35 @@ SET time_zone = "+00:00";
 --
 -- Database: `evacfinder`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `centers`
+--
+
+CREATE TABLE `centers` (
+  `id` int NOT NULL,
+  `center_id` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `center_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `category` varchar(50) NOT NULL,
+  `status` varchar(20) NOT NULL,
+  `barangay` varchar(50) NOT NULL,
+  `city` varchar(50) NOT NULL,
+  `province` varchar(50) NOT NULL,
+  `address` varchar(200) NOT NULL,
+  `capacity` int NOT NULL,
+  `max_persons` int NOT NULL,
+  `current_occupants` int NOT NULL,
+  `contact_number` varchar(11) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `contact_person` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `alternate_contact` varchar(11) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `date_established` date DEFAULT NULL,
+  `facilities` varchar(300) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `hazard_type` varchar(300) NOT NULL,
+  `remarks` varchar(300) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `encodedby` int NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
 
@@ -46,6 +75,13 @@ INSERT INTO `userrights` (`id`, `userid`, `username`, `password`) VALUES
 --
 
 --
+-- Indexes for table `centers`
+--
+ALTER TABLE `centers`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `center_id` (`center_id`);
+
+--
 -- Indexes for table `userrights`
 --
 ALTER TABLE `userrights`
@@ -54,6 +90,12 @@ ALTER TABLE `userrights`
 --
 -- AUTO_INCREMENT for dumped tables
 --
+
+--
+-- AUTO_INCREMENT for table `centers`
+--
+ALTER TABLE `centers`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `userrights`

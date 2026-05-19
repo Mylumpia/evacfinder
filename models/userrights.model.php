@@ -10,4 +10,11 @@ class ModelUserRights {
         $stmt->execute();
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
+
+    static public function mdlGetUserLogin($username, $password){
+		$encryptpass = $password;
+		$stmt = (new Connection)->connect()->prepare("SELECT userid, username, password FROM userrights WHERE (username = '$username') AND (password = '$encryptpass')");
+		$stmt -> execute();
+		return $stmt -> fetch();
+	}
 }

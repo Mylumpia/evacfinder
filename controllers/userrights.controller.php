@@ -13,12 +13,11 @@ class ControllerUserRights {
                 $answer["password"] == $encryptpass) {
 
                 $_SESSION["loggedIn"] = "ok";
-                $_SESSION["id"]       = $answer["id"];
                 $_SESSION["userid"]   = $answer["userid"];
 
                 echo '<script>
-                    window.location = "/EvacFinder/index.php";
-                </script>';
+					window.location = "home";
+				</script>';
 
             } else {
                 echo '<br><div style="text-align:center;" class="alert alert-danger">
