@@ -23735,4 +23735,10 @@ html[dir="rtl"] [direction="rtl"][data-sidebar-style="compact"]:not([data-layout
     [data-theme-version="dark"] .footer .copyright p {
       color: #fff; }
 
+/* Custom Styles */
+#main-wrapper.no-sidebar .content-body {
+    margin-left: 0 !important;
+    width: 100% !important;
+}
+
 /*# sourceMappingURL=style.css.map */

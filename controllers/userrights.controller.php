@@ -1,29 +1,36 @@
 <?php
 class ControllerUserRights {
     static public function ctrUserLogin() {
-        if (isset($_POST["loginUser"])) {
-            $encryptpass = $_POST["loginPass"];
+        // Start session if not already started
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+        
+        if (isset($_POST["loginUser"]) && isset($_POST["loginPass"])) {
+            $username = $_POST["loginUser"];
+            $password = $_POST["loginPass"];
+            
             $table = 'userrights';
             $item = 'username';
-            $value = $_POST["loginUser"];
-            $answer = (new ModelUserRights)->mdlGetUserCredentials($table, $item, $value);
+            $value = $username;
+            $answer = ModelUserRights::mdlGetUserCredentials($table, $item, $value);
 
             if (!empty($answer) && 
-                $answer["username"] == $_POST["loginUser"] && 
-                $answer["password"] == $encryptpass) {
+                $answer["username"] == $username && 
+                $answer["password"] == $password) {
 
                 $_SESSION["loggedIn"] = "ok";
                 $_SESSION["userid"]   = $answer["userid"];
+                $_SESSION["username"] = $answer["username"];
 
-                echo '<script>
-					window.location = "home";
-				</script>';
+                // Redirect to home page after successful login
+                header("Location: ?route=home");
+                exit();
 
             } else {
-                echo '<br><div style="text-align:center;" class="alert alert-danger">
-                    Incorrect username or password.
-                </div>';
+                return "Incorrect username or password.";
             }
         }
+        return null;
     }
 }

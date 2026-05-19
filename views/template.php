@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <?php
   session_start();
+  $isLoggedIn = isset($_SESSION["loggedIn"]) && $_SESSION["loggedIn"] == "ok";
+  $route = isset($_GET["route"]) ? basename($_GET["route"]) : "map";
 ?>
 <html lang="en" class="h-100">
 <head>
@@ -13,8 +15,8 @@
   <!-- Favicon -->
   <link rel="icon" type="image/png" sizes="16x16" href="views/assets/images/favicon.png">
 
-<!-- Leaflet CSS -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
   <!-- CSS -->
   <link rel="stylesheet" href="views/assets/vendor/jqvmap/css/jqvmap.min.css">
@@ -35,48 +37,48 @@
     </div>
   </div>
 
-  <?php if(isset($_SESSION["loggedIn"]) && $_SESSION["loggedIn"] == "ok"): ?>
-
-    <!-- Main Wrapper -->
+  <?php if($isLoggedIn): ?>
+    <!-- LOGGED IN: Show full app with navbar and sidebar -->
     <div id="main-wrapper">
-
-      <!-- Navbar & Sidebar -->
       <?php include "modules/navbar.php"; ?>
       <?php include "modules/sidebar.php"; ?>
-
-      <!-- Main Content Area -->
+      
       <div class="content-body">
         <div class="container-fluid">
-
           <?php
-            if(isset($_GET["route"])){
-              $route = basename($_GET["route"]);
-              $allowedRoutes = [
-                'home',
-                'logout',
-                'centers'
-              ];
-
-              if(in_array($route, $allowedRoutes)){
-                include "modules/" . $route . ".php";
-              } else {
-                include "modules/404.php";
-              }
+            $allowedRoutes = ['home', 'map', 'logout', 'centers'];
+            if(in_array($route, $allowedRoutes)){
+              include "modules/" . $route . ".php";
             } else {
-              include "modules/home.php";
+              include "modules/map.php";
             }
           ?>
-
         </div>
       </div>
-
     </div>
-    <!-- End Main Wrapper -->
 
   <?php else: ?>
-
-    <?php include "modules/login.php"; ?>
-
+    <!-- NOT LOGGED IN -->
+    <?php if($route == "login"): ?>
+      <!-- Login page - NO navbar, just the form -->
+      <div class="content-body" style="margin-left: 0; padding: 0;">
+        <div class="container-fluid" style="padding: 0;">
+          <?php include "modules/login.php"; ?>
+        </div>
+      </div>
+    <?php else: ?>
+      <!-- Map page - Show navbar (with login button) but NO sidebar -->
+      <div id="main-wrapper" class="no-sidebar">
+        <?php include "modules/navbar.php"; ?>
+        <!-- Sidebar is NOT included -->
+        
+        <div class="content-body">
+          <div class="container-fluid" style="padding: 0;">
+            <?php include "modules/map.php"; ?>
+          </div>
+        </div>
+      </div>
+    <?php endif; ?>
   <?php endif; ?>
 
   <!-- Scripts -->
@@ -104,6 +106,7 @@
   <?php if(isset($route)): ?>
     <?php
       $routeScripts = [
+        'map'     => ['map.js'],
         'home'    => ['home.js'],
         'centers' => ['centers.js'],
       ];

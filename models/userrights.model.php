@@ -11,10 +11,13 @@ class ModelUserRights {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
+    // This method is redundant - you can remove it since mdlGetUserCredentials does the same thing
     static public function mdlGetUserLogin($username, $password){
-		$encryptpass = $password;
-		$stmt = (new Connection)->connect()->prepare("SELECT userid, username, password FROM userrights WHERE (username = '$username') AND (password = '$encryptpass')");
-		$stmt -> execute();
-		return $stmt -> fetch();
-	}
+        $encryptpass = $password;
+        $stmt = (new Connection)->connect()->prepare("SELECT userid, username, password FROM userrights WHERE username = :username AND password = :password");
+        $stmt->bindParam(":username", $username, PDO::PARAM_STR);
+        $stmt->bindParam(":password", $encryptpass, PDO::PARAM_STR);
+        $stmt->execute();
+        return $stmt->fetch();
+    }
 }
