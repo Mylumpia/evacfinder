@@ -65,7 +65,7 @@
       <div class="content-body">
         <div class="container-fluid">
           <?php
-            $allowedRoutes = ['home', 'map', 'logout', 'centers'];
+            $allowedRoutes = ['home', 'map', 'logout', 'centers', 'evacuees'];
             if(in_array($route, $allowedRoutes)){
               include "modules/" . $route . ".php";
             } else {
@@ -128,6 +128,7 @@
         'map'     => ['map.js'],
         'home'    => ['home.js'],
         'centers' => ['centers.js'],
+        'evacuees' => ['evacuees.js'],
       ];
       if(array_key_exists($route, $routeScripts)){
         foreach($routeScripts[$route] as $script){
