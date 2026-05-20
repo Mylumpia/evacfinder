@@ -25,6 +25,25 @@
   <link rel="stylesheet" href="views/assets/css/perfect-scrollbar.css">
   <link rel="stylesheet" href="views/assets/css/style.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  
+  <style>
+    /* Ensure map displays properly */
+    #homeMap, #centerMap {
+      width: 100%;
+      z-index: 1;
+    }
+    .map-loading {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 10;
+      background: rgba(0,0,0,0.7);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 5px;
+    }
+  </style>
 </head>
 <body>
 
@@ -113,8 +132,12 @@
       if(array_key_exists($route, $routeScripts)){
         foreach($routeScripts[$route] as $script){
           $scriptPath = "views/js/" . $script;
+          // Remove /EvacFinder/ prefix if not needed - use relative path
           if(file_exists($scriptPath)){
-            echo '<script src="/EvacFinder/' . $scriptPath . '"></script>';
+            echo '<script src="' . $scriptPath . '"></script>';
+          } else {
+            // Try alternative path
+            echo '<script src="/views/js/' . $script . '"></script>';
           }
         }
       }
