@@ -57,9 +57,9 @@
                                         <label class="form-label" for="relation_to_head">Relation To Head</label>
                                         <input type="text" id="relation_to_head" name="relation_to_head" class="form-control" placeholder="Relation To Head" />
                                     </div>
-                                    <div class="col-md-6">
-                                        <label for="sex" class="form-label">Sex</label>
-                                        <select id="sex" name="sex" class="select2 form-select" data-allow-clear="true">
+                                    <div class="col-md-3">
+                                        <label class="form-label" for="sex">Sex</label>
+                                        <select id="sex" name="sex" class="form-control">
                                             <option value="">- select sex -</option>
                                             <option value="Male">Male</option>
                                             <option value="Female">Female</option>
