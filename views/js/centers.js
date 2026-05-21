@@ -53,7 +53,7 @@ $(function () {
             },
             buttonsStyling: false
         }).then(function (result) {
-            if (result.value) {
+            if (result.isConfirmed) {
                 window.location = 'centers';
             }
         });
@@ -102,7 +102,7 @@ $(function () {
             },
             buttonsStyling: false
         }).then(function (result) {
-            if (result.value) {
+            if (result.isConfirmed) {
                 saveCenter();
             }
         });
@@ -180,8 +180,8 @@ $(function () {
                         customClass: { confirmButton: 'btn btn-success waves-effect waves-light' },
                         buttonsStyling: false
                     }).then(function (result) {
-                        if (result.value) {
-                            window.location = 'centers';
+                        if (result.isConfirmed) {
+                            window.location = '?route=active';
                         }
                     });
                 } else if (answer == 'existing') {

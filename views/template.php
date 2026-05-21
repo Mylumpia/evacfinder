@@ -10,10 +10,12 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow">
-  <title>EvacFinder</title>
+  <title>Evac</title>
 
   <!-- Favicon -->
-  <link rel="icon" type="image/png" sizes="16x16" href="views/assets/images/favicon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="views/assets/images/evaclogo.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="views/assets/images/evaclogo.png">
+  <link rel="shortcut icon" href="views/assets/images/evaclogo.png">
 
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -43,6 +45,18 @@
       padding: 10px 20px;
       border-radius: 5px;
     }
+    .nav-header .brand-logo {
+      justify-content: center !important;
+      padding-left: 0 !important;
+      padding-right: 0 !important;
+    }
+    .nav-header .logo-centered {
+      max-width: 180px;
+      width: auto;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+    }
   </style>
 </head>
 <body>
@@ -65,7 +79,7 @@
       <div class="content-body">
         <div class="container-fluid">
           <?php
-            $allowedRoutes = ['home', 'map', 'logout', 'centers', 'evacuees'];
+            $allowedRoutes = ['home', 'map', 'logout', 'centers', 'evacuees', 'active'];
             if(in_array($route, $allowedRoutes)){
               include "modules/" . $route . ".php";
             } else {

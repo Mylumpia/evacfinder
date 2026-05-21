@@ -1,9 +1,7 @@
 <!-- Nav Header (Logo) -->
 <div class="nav-header">
   <a href="?route=map" class="brand-logo">
-    <img class="logo-abbr"    src="views/assets/images/logo-white.png"      alt="Logo">
-    <img class="logo-compact" src="views/assets/images/logo-text-white.png" alt="Logo Text">
-    <img class="brand-title"  src="views/assets/images/logo-text-white.png" alt="Brand">
+    <img class="logo-centered" src="views/assets/images/evaclogo.png" alt="EvacFinder Logo">
   </a>
   <?php if(isset($_SESSION["loggedIn"]) && $_SESSION["loggedIn"] == "ok"): ?>
     <div class="nav-control">

@@ -102,5 +102,39 @@ class ModelCenters{
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
     }
+
+    static public function mdlGetCenterSummary() {
+        $db = new Connection();
+        $pdo = $db->connect();
+
+        $stmt = $pdo->prepare(
+            "SELECT 
+                COUNT(*) AS total_centers,
+                COALESCE(SUM(capacity), 0) AS total_capacity,
+                COALESCE(SUM(current_occupants), 0) AS currently_occupied,
+                COALESCE(SUM(CASE WHEN status = 'Active' THEN 1 ELSE 0 END), 0) AS active_centers
+            FROM centers"
+        );
+        $stmt->execute();
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    static public function mdlGetActiveCenters() {
+        $db = new Connection();
+        $pdo = $db->connect();
+
+        $stmt = $pdo->prepare("SELECT center_id, center_name, category, barangay, city, province, address, capacity, current_occupants, status FROM centers WHERE status = 'Active' ORDER BY center_name");
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    static public function mdlGetAllCenters() {
+        $db = new Connection();
+        $pdo = $db->connect();
+
+        $stmt = $pdo->prepare("SELECT center_id, center_name, category, barangay, city, province, address, capacity, current_occupants, status FROM centers ORDER BY center_name");
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }
 ?>
