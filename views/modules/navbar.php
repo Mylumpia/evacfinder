@@ -36,6 +36,12 @@
           </div>
         </div>
 
+
+    
+
+
+
+
         <!-- Right: Show Login or Profile based on session -->
         <ul class="navbar-nav header-right">
           <?php 

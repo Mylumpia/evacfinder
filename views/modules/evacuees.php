@@ -18,7 +18,7 @@
                                 <!-- Row 1: Registration Date -->
                                 <div class="row g-6">
                                     <div class="col-md-4">
-                                        <label class="form-label" for="registration_date">Registration Date</label>
+                                        <label class="form-label" for="registration_date">Registration Date :</label>
                                         <input type="date" id="registration_date" name="registration_date" class="form-control" required />
                                     </div>
                                 </div>
@@ -34,19 +34,19 @@
 
                                 <div class="row g-6">
                                     <div class="col-md-3">
-                                        <label class="form-label" for="last_name">Last Name</label>
+                                        <label class="form-label" for="last_name">Last Name :</label>
                                         <input type="text" id="last_name" name="last_name" class="form-control" placeholder="Last Name" />
                                     </div>
                                     <div class="col-md-3">
-                                        <label class="form-label" for="first_name">First Name</label>
+                                        <label class="form-label" for="first_name">First Name :</label>
                                         <input type="text" id="first_name" name="first_name" class="form-control" placeholder="First Name" />
                                     </div>
                                     <div class="col-md-3">
-                                        <label class="form-label" for="middle_name">Middle Name</label>
+                                        <label class="form-label" for="middle_name">Middle Name :</label>
                                         <input type="text" id="middle_name" name="middle_name" class="form-control" placeholder="Middle Name" />
                                     </div>
                                     <div class="col-md-3">
-                                        <label class="form-label" for="extension_name">Extension Name</label>
+                                        <label class="form-label" for="extension_name">Extension Name :</label>
                                         <input type="text" id="extension_name" name="extension_name" class="form-control" placeholder="Extension Name" />
                                     </div>
                                 </div>
@@ -54,11 +54,11 @@
 
                                 <div class="row g-6">
                                     <div class="col-md-6">
-                                        <label class="form-label" for="relation_to_head">Relation To Head</label>
+                                        <label class="form-label" for="relation_to_head">Relation To Head :</label>
                                         <input type="text" id="relation_to_head" name="relation_to_head" class="form-control" placeholder="Relation To Head" />
                                     </div>
                                     <div class="col-md-3">
-                                        <label class="form-label" for="sex">Sex</label>
+                                        <label class="form-label" for="sex">Sex :</label>
                                         <select id="sex" name="sex" class="form-control">
                                             <option value="">- select sex -</option>
                                             <option value="Male">Male</option>
@@ -71,15 +71,16 @@
 
                                 <div class="row g-6">
                                     <div class="col-md-3">
-                                        <label class="form-label" for="birth_date">Birth Date</label>
+                                        <label class="form-label" for="birth_date">Birth Date :</label>
                                         <input type="date" id="birth_date" name="birth_date" class="form-control" />
                                     </div>
                                     <div class="col-md-2">
-                                        <label class="form-label" for="age">Age</label>
+                                        <label class="form-label" for="age">Age :</label>
                                         <input type="number" id="age" name="age" class="form-control" placeholder="Age" min="0" />
                                     </div>
                                     <div class="col-md-3">
-                                        <label for="civil_status" class="form-label">Civil Status</label>
+                                        <label for="civil_status" class="form-label">Civil Status :</label>
+                                        <br>
                                         <select id="civil_status" name="civil_status" class="select2 form-select" data-allow-clear="true">
                                             <option value="">- select civil status -</option>
                                             <option value="Single">Single</option>
@@ -89,7 +90,7 @@
                                         </select>
                                     </div>
                                     <div class="col-md-4">
-                                        <label class="form-label" for="occupation">Occupation</label>
+                                        <label class="form-label" for="occupation">Occupation :</label>
                                         <input type="text" id="occupation" name="occupation" class="form-control" placeholder="Occupation" />
                                     </div>
                                 </div>
@@ -97,11 +98,11 @@
 
                                 <div class="row g-6">
                                     <div class="col-md-6">
-                                        <label class="form-label" for="contact_number">Contact Number</label>
+                                        <label class="form-label" for="contact_number">Contact Number :</label>
                                         <input type="text" id="contact_number" name="contact_number" class="form-control" placeholder="Mobile/Phone number" />
                                     </div>
                                     <div class="col-md-6">
-                                        <label class="form-label" for="complete_address">Complete Address</label>
+                                        <label class="form-label" for="complete_address">Complete Address :</label>
                                         <input type="text" id="complete_address" name="complete_address" class="form-control" placeholder="Complete home address" />
                                     </div>
                                 </div>
@@ -117,11 +118,11 @@
 
                                 <div class="row g-6">
                                     <div class="col-md-6">
-                                        <label class="form-label" for="emergency_contact_person">Emergency Contact Person</label>
+                                        <label class="form-label" for="emergency_contact_person">Emergency Contact Person :</label>
                                         <input type="text" id="emergency_contact_person" name="emergency_contact_person" class="form-control" placeholder="Name of contact person" />
                                     </div>
                                     <div class="col-md-6">
-                                        <label class="form-label" for="emergency_contact_number">Emergency Contact Number</label>
+                                        <label class="form-label" for="emergency_contact_number">Emergency Contact Number :</label>
                                         <input type="text" id="emergency_contact_number" name="emergency_contact_number" class="form-control" placeholder="Contact number" />
                                     </div>
                                 </div>
@@ -141,18 +142,22 @@
                                             <input class="form-check-input" type="checkbox" id="condition_pregnant" name="condition_pregnant" value="1" />
                                             <label class="form-check-label" for="condition_pregnant">Pregnant</label>
                                         </div>
+                                        <br>
                                         <div class="form-check form-check-inline">
                                             <input class="form-check-input" type="checkbox" id="condition_lactating" name="condition_lactating" value="1" />
                                             <label class="form-check-label" for="condition_lactating">Lactating</label>
                                         </div>
+                                        <br>
                                         <div class="form-check form-check-inline">
                                             <input class="form-check-input" type="checkbox" id="condition_elderly" name="condition_elderly" value="1" />
                                             <label class="form-check-label" for="condition_elderly">Elderly</label>
                                         </div>
+                                        <br>
                                         <div class="form-check form-check-inline">
                                             <input class="form-check-input" type="checkbox" id="condition_pwd" name="condition_pwd" value="1" />
                                             <label class="form-check-label" for="condition_pwd">PWD</label>
                                         </div>
+                                        <br>
                                         <div class="form-check form-check-inline">
                                             <input class="form-check-input" type="checkbox" id="condition_4ps" name="condition_4ps" value="1" />
                                             <label class="form-check-label" for="condition_4ps">4Ps Beneficiary</label>
@@ -160,10 +165,9 @@
                                     </div>
                                 </div>
                                 <br>
-
                                 <div class="row g-6">
                                     <div class="col-md-4">
-                                        <label class="form-label" for="pwd_type">PWD Type (if applicable)</label>
+                                        <label class="form-label" for="pwd_type">PWD Type (if applicable) :</label>
                                         <select id="pwd_type" name="pwd_type" class="select2 form-select" data-allow-clear="true">
                                             <option value="">- select or specify -</option>
                                             <option value="Mobility">Mobility</option>
@@ -187,7 +191,7 @@
 
                                 <div class="row g-6">
                                     <div class="col-md-6">
-                                        <label for="health_status" class="form-label">Health Status</label>
+                                        <label for="health_status" class="form-label">Health Status :</label>
                                         <select id="health_status" name="health_status" class="select2 form-select" data-allow-clear="true">
                                             <option value="">- select health status -</option>
                                             <option value="Good">Good</option>
@@ -196,7 +200,7 @@
                                         </select>
                                     </div>
                                     <div class="col-md-6">
-                                        <label for="emergency_medical_condition" class="form-label">Emergency Medical Condition</label>
+                                        <label for="emergency_medical_condition" class="form-label">Emergency Medical Condition :</label>
                                         <select id="emergency_medical_condition" name="emergency_medical_condition" class="select2 form-select" data-allow-clear="true">
                                             <option value="">- select condition -</option>
                                             <option value="None">None</option>
@@ -215,7 +219,7 @@
 
                                 <div class="row g-6">
                                     <div class="col-md-12">
-                                        <label class="form-label" for="medications_taken">Medications Taken</label>
+                                        <label class="form-label" for="medications_taken">Medications Taken :</label>
                                         <textarea id="medications_taken" name="medications_taken" class="form-control" rows="2" placeholder="List current medications (e.g., Amlodipine 5mg once daily, Metformin 500mg twice daily)"></textarea>
                                     </div>
                                 </div>
@@ -223,7 +227,7 @@
 
                                 <div class="row g-6">
                                     <div class="col-md-12">
-                                        <label class="form-label" for="known_allergies">Known Allergies</label>
+                                        <label class="form-label" for="known_allergies">Known Allergies :</label>
                                         <textarea id="known_allergies" name="known_allergies" class="form-control" rows="2" placeholder="List known allergies (e.g., Penicillin, Peanuts, Dust, Latex)"></textarea>
                                     </div>
                                 </div>
@@ -239,7 +243,8 @@
 
                                 <div class="row g-6">
                                     <div class="col-md-4">
-                                        <label for="evacuation_center_id" class="form-label">Evacuation Center Assigned</label>
+                                        <label for="evacuation_center_id" class="form-label">Evacuation Center Assigned :</label>
+                                        <br>
                                         <select id="evacuation_center_id" name="evacuation_center_id" class="select2 form-select" data-allow-clear="true">
                                             <option value="">- select evacuation center -</option>
                                             <?php
@@ -255,11 +260,11 @@
                                         </select>
                                     </div>
                                     <div class="col-md-4">
-                                        <label class="form-label" for="arrival_date">Arrival Date</label>
+                                        <label class="form-label" for="arrival_date">Arrival Date :</label>
                                         <input type="date" id="arrival_date" name="arrival_date" class="form-control" />
                                     </div>
                                     <div class="col-md-4">
-                                        <label class="form-label" for="departure_date">Departure Date</label>
+                                        <label class="form-label" for="departure_date">Departure Date :</label>
                                         <input type="date" id="departure_date" name="departure_date" class="form-control" />
                                     </div>
                                 </div>
@@ -267,7 +272,7 @@
 
                                 <div class="row g-6">
                                     <div class="col-md-6">
-                                        <label for="evacuee_status" class="form-label">Status</label>
+                                        <label for="evacuee_status" class="form-label">Status :</label>
                                         <select id="evacuee_status" name="evacuee_status" class="select2 form-select" data-allow-clear="true">
                                             <option value="">- select status -</option>
                                             <option value="Active">Active in Center</option>

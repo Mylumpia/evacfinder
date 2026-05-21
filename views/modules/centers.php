@@ -76,8 +76,7 @@
                                         <label class="form-label" for="province">Province</label>
                                         <select id="province" name="province" class="form-select" required>
                                             <option value="">- select province -</option>
-                                            <option value="Province A">Province A</option>
-                                            <option value="Province B">Province B</option>
+                                            <option value="Negros Occidental">Negros Occidental</option>
                                         </select>
                                     </div>
                                 </div>

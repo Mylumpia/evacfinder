@@ -1,7 +1,5 @@
 $(function () {
-
-    // ─── Map Init ────────────────────────────────────────────────────
-    const defaultLat = 10.4167; // Negros Oriental (closer to Canlaon area)
+    const defaultLat = 10.4167;
     const defaultLng = 123.3833;
     const defaultZoom = 10;
 
@@ -12,7 +10,6 @@ $(function () {
         maxZoom: 19
     }).addTo(map);
 
-    // Force Leaflet to recalculate container size
     setTimeout(function () {
         map.invalidateSize();
     }, 200);
@@ -42,7 +39,6 @@ $(function () {
         map.setView(e.latlng, Math.max(map.getZoom(), 15));
     });
 
-    // ─── New Center ───────────────────────────────────────────────────
     newCenter();
 
     $("#btn-new").click(function () {
@@ -63,7 +59,6 @@ $(function () {
         });
     });
 
-    // ─── Save ─────────────────────────────────────────────────────────
     $("#btn-save").click(function () {
         let requiredFields = [
             { id: "#center_name", label: "Center Name" },
@@ -113,7 +108,6 @@ $(function () {
         });
     });
 
-    // ─── Functions ────────────────────────────────────────────────────
     function newCenter() {
         $("#center_name").val('');
         $("#category").val('').trigger('change');
@@ -131,7 +125,6 @@ $(function () {
         $("#available_facilities").val('');
         $("#remarks").val('');
 
-        // Reset map
         if (marker) {
             map.removeLayer(marker);
             marker = null;
@@ -158,9 +151,17 @@ $(function () {
         evacCenter.append("estimated_capacity",  $("#estimated_capacity").val());
         evacCenter.append("contact_number",      $("#contact_number").val());
         evacCenter.append("contact_person",      $("#contact_person").val());
-        evacCenter.append("accessibility",       $("#accessibility").val());
         evacCenter.append("available_facilities",$("#available_facilities").val());
         evacCenter.append("remarks",             $("#remarks").val());
+        
+        evacCenter.append("capacity",            $("#estimated_capacity").val() || 0);
+        evacCenter.append("max_persons",         $("#estimated_capacity").val() || 0);
+        evacCenter.append("current_occupants",   0);
+        evacCenter.append("alternate_contact",   "");
+        evacCenter.append("facilities",          $("#available_facilities").val() || "");
+        evacCenter.append("hazard_type",         "");
+        evacCenter.append("date_established",    "");
+        evacCenter.append("accessibility",       $("#accessibility").val() || "");
 
         $.ajax({
             url: "ajax/centers_save.ajax.php",
@@ -183,9 +184,25 @@ $(function () {
                             window.location = 'centers';
                         }
                     });
+                } else if (answer == 'existing') {
+                    Swal.fire({
+                        title: 'Center already exists!',
+                        icon: 'warning',
+                        confirmButtonText: 'Got it',
+                        customClass: { confirmButton: 'btn btn-warning' },
+                        buttonsStyling: false
+                    });
+                } else {
+                    Swal.fire({
+                        title: 'Error saving center!',
+                        icon: 'error',
+                        confirmButtonText: 'Got it',
+                        customClass: { confirmButton: 'btn btn-danger' },
+                        buttonsStyling: false
+                    });
                 }
             },
-            error: function () {
+            error: function() {
                 Swal.fire({
                     title: 'Oops. Something went wrong!',
                     icon: 'error',
@@ -196,5 +213,4 @@ $(function () {
             }
         });
     }
-
 });
