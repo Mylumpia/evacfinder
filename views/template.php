@@ -86,13 +86,20 @@
           <?php include "modules/login.php"; ?>
         </div>
       </div>
-    <?php elseif($route == "registration"): ?>
-      <!-- Register page - NO navbar, just the form -->
-      <div class="content-body" style="margin-left: 0; padding: 0;">
-        <div class="container-fluid" style="padding: 0;">
-          <?php include "modules/registration.php"; ?>
+    <?php elseif($route == "registration_lgu"): ?>
+        <!-- LGU Registration Page -->
+        <div class="content-body" style="margin-left: 0; padding: 0;">
+            <div class="container-fluid" style="padding: 0;">
+                <?php include "modules/registration_lgu.php"; ?>
+            </div>
         </div>
-      </div>
+    <?php elseif($route == "registration"): ?>
+        <!-- Regular Registration Page -->
+        <div class="content-body" style="margin-left: 0; padding: 0;">
+            <div class="container-fluid" style="padding: 0;">
+                <?php include "modules/registration.php"; ?>
+            </div>
+        </div>
     <?php else: ?>
       <!-- Map page - Show navbar (with login button) but NO sidebar -->
       <div id="main-wrapper" class="no-sidebar">

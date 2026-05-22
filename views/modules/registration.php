@@ -96,18 +96,18 @@
                         </div>
 
                         <!-- Row 5: Password Fields -->
-<div class="row g-4 mb-4">
-    <div class="col-md-6" style="position: relative;">
-        <label class="form-label" for="password">Password <span class="text-danger">*</span></label>
-        <input type="password" id="password" name="password" class="form-control" placeholder="Enter password" required style="padding-right: 40px;">
-        <i class="fas fa-eye-slash togglePassword" data-target="password" style="position: absolute; right: 24px; top: 70%; transform: translateY(-50%); cursor: pointer; z-index: 10; color: #6c757d;"></i>
-    </div>
-    <div class="col-md-6" style="position: relative;">
-        <label class="form-label" for="confirmPassword">Confirm Password <span class="text-danger">*</span></label>
-        <input type="password" id="confirmPassword" name="confirmPassword" class="form-control" placeholder="Confirm password" required style="padding-right: 40px;">
-        <i class="fas fa-eye-slash togglePassword" data-target="confirmPassword" style="position: absolute; right: 24px; top: 70%; transform: translateY(-50%); cursor: pointer; z-index: 10; color: #6c757d;"></i>
-    </div>
-</div>
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-6" style="position: relative;">
+                                <label class="form-label" for="password">Password <span class="text-danger">*</span></label>
+                                <input type="password" id="password" name="password" class="form-control" placeholder="Enter password" required style="padding-right: 40px;">
+                                <i class="fas fa-eye-slash togglePassword" data-target="password" style="position: absolute; right: 24px; top: 70%; transform: translateY(-50%); cursor: pointer; z-index: 10; color: #6c757d;"></i>
+                            </div>
+                            <div class="col-md-6" style="position: relative;">
+                                <label class="form-label" for="confirmPassword">Confirm Password <span class="text-danger">*</span></label>
+                                <input type="password" id="confirmPassword" name="confirmPassword" class="form-control" placeholder="Confirm password" required style="padding-right: 40px;">
+                                <i class="fas fa-eye-slash togglePassword" data-target="confirmPassword" style="position: absolute; right: 24px; top: 70%; transform: translateY(-50%); cursor: pointer; z-index: 10; color: #6c757d;"></i>
+                            </div>
+                        </div>
 
                         <!-- Action Buttons -->
                         <div class="d-flex gap-3 mt-2">
