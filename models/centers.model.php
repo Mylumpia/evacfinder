@@ -136,5 +136,107 @@ class ModelCenters{
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    // NEW METHOD: Get center by ID
+    static public function mdlGetCenterById($center_id) {
+        $db = new Connection();
+        $pdo = $db->connect();
+        
+        $stmt = $pdo->prepare("SELECT * FROM centers WHERE center_id = :center_id");
+        $stmt->bindParam(":center_id", $center_id, PDO::PARAM_STR);
+        $stmt->execute();
+        
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    // NEW METHOD: Update center
+    static public function mdlUpdateCenter($data) {
+        $db = new Connection();
+        $pdo = $db->connect();
+        
+        try {
+            $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            
+            $stmt = $pdo->prepare("
+                UPDATE centers SET
+                    center_name = :center_name,
+                    category = :category,
+                    status = :status,
+                    address = :address,
+                    barangay = :barangay,
+                    city = :city,
+                    province = :province,
+                    capacity = :capacity,
+                    estimated_capacity = :estimated_capacity,
+                    current_occupants = :current_occupants,
+                    contact_number = :contact_number,
+                    contact_person = :contact_person,
+                    latitude = :latitude,
+                    longitude = :longitude,
+                    accessibility = :accessibility,
+                    available_facilities = :available_facilities,
+                    remarks = :remarks
+                WHERE center_id = :center_id
+            ");
+            
+            $stmt->bindParam(":center_id", $data["center_id"], PDO::PARAM_STR);
+            $stmt->bindParam(":center_name", $data["center_name"], PDO::PARAM_STR);
+            $stmt->bindParam(":category", $data["category"], PDO::PARAM_STR);
+            $stmt->bindParam(":status", $data["status"], PDO::PARAM_STR);
+            $stmt->bindParam(":address", $data["address"], PDO::PARAM_STR);
+            $stmt->bindParam(":barangay", $data["barangay"], PDO::PARAM_STR);
+            $stmt->bindParam(":city", $data["city"], PDO::PARAM_STR);
+            $stmt->bindParam(":province", $data["province"], PDO::PARAM_STR);
+            $stmt->bindParam(":capacity", $data["capacity"], PDO::PARAM_INT);
+            $stmt->bindParam(":estimated_capacity", $data["estimated_capacity"], PDO::PARAM_INT);
+            $stmt->bindParam(":current_occupants", $data["current_occupants"], PDO::PARAM_INT);
+            $stmt->bindParam(":contact_number", $data["contact_number"], PDO::PARAM_STR);
+            $stmt->bindParam(":contact_person", $data["contact_person"], PDO::PARAM_STR);
+            $stmt->bindParam(":latitude", $data["latitude"], PDO::PARAM_STR);
+            $stmt->bindParam(":longitude", $data["longitude"], PDO::PARAM_STR);
+            $stmt->bindParam(":accessibility", $data["accessibility"], PDO::PARAM_STR);
+            $stmt->bindParam(":available_facilities", $data["available_facilities"], PDO::PARAM_STR);
+            $stmt->bindParam(":remarks", $data["remarks"], PDO::PARAM_STR);
+            
+            if($stmt->execute()) {
+                return true;
+            }
+            return false;
+        } catch (PDOException $e) {
+            error_log("Update error in mdlUpdateCenter: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    // NEW METHOD: Update center fields (for inline editing)
+    static public function mdlUpdateCenterFields($center_id, $fields) {
+        $db = new Connection();
+        $pdo = $db->connect();
+        
+        try {
+            $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            
+            $setClause = "";
+            $params = [":center_id" => $center_id];
+            
+            foreach ($fields as $key => $value) {
+                $setClause .= "$key = :$key, ";
+                $params[":$key"] = $value;
+            }
+            
+            $setClause = rtrim($setClause, ", ");
+            
+            $stmt = $pdo->prepare("UPDATE centers SET $setClause WHERE center_id = :center_id");
+            
+            foreach ($params as $param => $value) {
+                $stmt->bindValue($param, $value);
+            }
+            
+            return $stmt->execute();
+        } catch (PDOException $e) {
+            error_log("Update fields error: " . $e->getMessage());
+            return false;
+        }
+    }
 }
 ?>
