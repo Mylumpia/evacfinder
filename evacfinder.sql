@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: May 21, 2026 at 12:00 PM
+-- Generation Time: May 23, 2026 at 12:00 PM
 -- Server version: 8.4.3
 -- PHP Version: 8.3.30
 
@@ -24,6 +24,7 @@ SET time_zone = "+00:00";
 
 --
 -- Table structure for table `centers`
+-- (ORIGINAL - UNCHANGED)
 --
 
 CREATE TABLE `centers` (
@@ -54,15 +55,11 @@ CREATE TABLE `centers` (
   `available_facilities` varchar(300) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-
-
-
-
-
 -- --------------------------------------------------------
 
 --
 -- Table structure for table `evacuees`
+-- (ORIGINAL - UNCHANGED)
 --
 
 CREATE TABLE `evacuees` (
@@ -108,6 +105,7 @@ CREATE TABLE `evacuees` (
 
 --
 -- Table structure for table `userrights`
+-- (ORIGINAL - UNCHANGED)
 --
 
 CREATE TABLE `userrights` (
@@ -125,6 +123,59 @@ INSERT INTO `userrights` (`id`, `userid`, `username`, `password`) VALUES
 (1, '00001', 'user', 'user');
 
 -- --------------------------------------------------------
+
+--
+-- Table structure for table `personal_users`
+-- (NEW - For Personal/Individual Registration)
+--
+
+CREATE TABLE `personal_users` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `user_id` varchar(10) NOT NULL,
+  `first_name` varchar(50) NOT NULL,
+  `last_name` varchar(50) NOT NULL,
+  `middle_initial` varchar(2) DEFAULT NULL,
+  `extension` varchar(10) DEFAULT NULL,
+  `date_of_birth` date NOT NULL,
+  `sex` varchar(10) NOT NULL,
+  `email_address` varchar(100) NOT NULL,
+  `phone_number` varchar(20) NOT NULL,
+  `region` varchar(100) NOT NULL,
+  `account_type` varchar(50) DEFAULT 'User',
+  `password` varchar(255) NOT NULL,
+  `registration_date` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `status` varchar(20) DEFAULT 'Active',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `user_id` (`user_id`),
+  UNIQUE KEY `email_address` (`email_address`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `lgu_users`
+-- (NEW - For LGU Registration)
+--
+
+CREATE TABLE `lgu_users` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `lgu_id` varchar(10) NOT NULL,
+  `lgu_office_name` varchar(100) NOT NULL,
+  `office_email_address` varchar(100) NOT NULL,
+  `office_type` varchar(50) NOT NULL,
+  `province` varchar(100) DEFAULT NULL,
+  `region` varchar(100) NOT NULL,
+  `position_role` varchar(100) NOT NULL,
+  `first_name` varchar(50) DEFAULT NULL,
+  `last_name` varchar(50) DEFAULT NULL,
+  `phone_number` varchar(20) DEFAULT NULL,
+  `password` varchar(255) NOT NULL,
+  `registration_date` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `status` varchar(20) DEFAULT 'Pending',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `lgu_id` (`lgu_id`),
+  UNIQUE KEY `office_email_address` (`office_email_address`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Indexes for dumped tables
@@ -159,12 +210,9 @@ ALTER TABLE `centers`
 ALTER TABLE `userrights`
   MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
--- --------------------------------------------------------
-
 --
--- Add foreign key constraint after tables are created
+-- Add foreign key constraint for evacuees
 --
-
 ALTER TABLE `evacuees`
   ADD CONSTRAINT `fk_evacuees_center` 
   FOREIGN KEY (`evacuation_center_id`) 
