@@ -7,5 +7,8 @@ require_once "models/userrights.model.php";
 require_once "controllers/centers.controller.php";
 require_once "models/centers.model.php";
 
+require_once "controllers/announcement.controller.php";
+require_once "models/announcement.model.php";
+
 $template = new ControllerTemplate();
 $template->ctrTemplate();

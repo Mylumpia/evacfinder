@@ -79,7 +79,7 @@
       <div class="content-body">
         <div class="container-fluid">
           <?php
-            $allowedRoutes = ['home', 'map', 'logout', 'centers', 'evacuees', 'active'];
+            $allowedRoutes = ['home', 'map', 'logout', 'centers', 'evacuees', 'active', 'announcement'];
             if(in_array($route, $allowedRoutes)){
               include "modules/" . $route . ".php";
             } else {
@@ -158,7 +158,8 @@
         'home'    => ['home.js'],
         'login'   => ['login.js'],  
         'centers' => ['centers.js'],
-        'evacuees' => ['evacuees.js']
+        'evacuees' => ['evacuees.js'],
+        'announcement' => ['announcement.js']
         
       ];
       if(array_key_exists($route, $routeScripts)){
