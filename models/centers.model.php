@@ -1,6 +1,5 @@
 <?php
 require_once "connection.php";
-
 class ModelCenters{
     static public function mdlSaveCenters($data){
         $db = new Connection();

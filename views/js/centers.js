@@ -53,7 +53,7 @@ $(function () {
             },
             buttonsStyling: false
         }).then(function (result) {
-            if (result.isConfirmed) {
+            if (result.value) {
                 window.location = 'centers';
             }
         });
@@ -102,7 +102,7 @@ $(function () {
             },
             buttonsStyling: false
         }).then(function (result) {
-            if (result.isConfirmed) {
+            if (result.value) {
                 saveCenter();
             }
         });
@@ -180,7 +180,7 @@ $(function () {
                         customClass: { confirmButton: 'btn btn-success waves-effect waves-light' },
                         buttonsStyling: false
                     }).then(function (result) {
-                        if (result.isConfirmed) {
+                        if (result.value) {
                             window.location = '?route=active';
                         }
                     });

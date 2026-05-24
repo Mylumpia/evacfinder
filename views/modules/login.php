@@ -31,10 +31,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit'])) {
                                         <label><strong>Username</strong></label>
                                         <input type="text" name="loginUser" class="form-control" placeholder="Enter your username" required>
                                     </div>
-                                    <div class="form-group">
-                                        <label><strong>Password</strong></label>
-                                        <input type="password" name="loginPass" class="form-control" placeholder="Enter your password" required>
-                                    </div>
+                                    <div class="form-group" style="position: relative;">
+    <label><strong>Password</strong></label>
+    <input type="password" name="loginPass" id="loginPass" class="form-control" placeholder="Enter your password" required style="padding-right: 40px;">
+    <i class="fas fa-eye-slash" id="togglePassword" style="position: absolute; right: 12px; top: 70%; transform: translateY(-50%); cursor: pointer; z-index: 10; color: #6c757d;"></i>
+</div>
+
                                     <div class="form-row d-flex justify-content-between mt-4 mb-2">
                                         <div class="form-group">
                                             <div class="custom-control custom-checkbox ml-1">
@@ -51,7 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit'])) {
                                     </div>
                                 </form>
                                 <div class="new-account mt-3">
-                                    <p>Don't have an account? <a class="text-primary" href="page-register.html">Sign up</a></p>
+                                    <p>Don't have an account? <a class="text-primary" href="?route=registration">Sign up</a></p>
                                 </div>
                             </div>
                         </div>

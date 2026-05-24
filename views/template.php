@@ -99,6 +99,20 @@
           <?php include "modules/login.php"; ?>
         </div>
       </div>
+    <?php elseif($route == "registration_lgu"): ?>
+        <!-- LGU Registration Page -->
+        <div class="content-body" style="margin-left: 0; padding: 0;">
+            <div class="container-fluid" style="padding: 0;">
+                <?php include "modules/registration_lgu.php"; ?>
+            </div>
+        </div>
+    <?php elseif($route == "registration"): ?>
+        <!-- Regular Registration Page -->
+        <div class="content-body" style="margin-left: 0; padding: 0;">
+            <div class="container-fluid" style="padding: 0;">
+                <?php include "modules/registration.php"; ?>
+            </div>
+        </div>
     <?php else: ?>
       <!-- Map page - Show navbar (with login button) but NO sidebar -->
       <div id="main-wrapper" class="no-sidebar">
@@ -139,10 +153,13 @@
   <?php if(isset($route)): ?>
     <?php
       $routeScripts = [
+        'registration' => ['registration.js'],
         'map'     => ['map.js'],
         'home'    => ['home.js'],
+        'login'   => ['login.js'],  
         'centers' => ['centers.js'],
-        'evacuees' => ['evacuees.js'],
+        'evacuees' => ['evacuees.js']
+        
       ];
       if(array_key_exists($route, $routeScripts)){
         foreach($routeScripts[$route] as $script){
