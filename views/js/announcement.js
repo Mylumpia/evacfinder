@@ -1,6 +1,7 @@
 $(function () {
 
     newAnnouncement();
+    loadAnnouncements();
 
     // ── NEW ──────────────────────────────────────────────────────────────────
     function newAnnouncement() {
@@ -20,6 +21,7 @@ $(function () {
         let requiredFields = [
             { id: "#ann_type", label: "Type of Announcement" },
             { id: "#ann_desc", label: "Description"          },
+            { id: "#title", label: "Title" },
         ];
 
         let emptyFields = [];
@@ -71,6 +73,7 @@ $(function () {
         formData.append("encodedby",        $("#encodedby").val());
         formData.append("ann_type",         $("#ann_type").val());
         formData.append("ann_desc",         $("#ann_desc").val());
+        formData.append("ann_title", $("#title").val());
 
         $.ajax({
             url:         "ajax/announcement_save.ajax.php",
@@ -90,7 +93,8 @@ $(function () {
                         buttonsStyling:    false
                     }).then(function (result) {
                         if (result.value) {
-                            window.location = '?route=announcements';
+                            loadAnnouncements();
+                            newAnnouncement();
                         }
                     });
                 } else if (answer === 'existing') {
@@ -122,5 +126,82 @@ $(function () {
             }
         });
     }
+
+    // ── LOAD ANNOUNCEMENTS ───────────────────────────────────────────────────
+    function loadAnnouncements() {
+        console.log("Loading announcements...");
+        $.ajax({
+            url: "ajax/get_announcements.ajax.php",
+            method: "GET",
+            dataType: "json",
+            success: function(announcements) {
+                console.log("Data received:", announcements);
+                console.log("Number of records:", announcements.length);
+                displayAnnouncements(announcements);
+            },
+            error: function(xhr, status, error) {
+                console.error("Error loading announcements:", error);
+                console.error("Status:", status);
+                console.error("Response:", xhr.responseText);
+                $("#announcementError").text("Failed to load announcements: " + error).show();
+            }
+        });
+    }
+
+    // ── DISPLAY ANNOUNCEMENTS IN TABLE ───────────────────────────────────────
+    function displayAnnouncements(announcements) {
+        let tbody = $(".table tbody");
+        tbody.empty(); // Clear existing rows
+        
+        if (!announcements || announcements.length === 0) {
+            tbody.html('<tr><td colspan="6" class="text-center">No announcements found</td></tr>');
+            return;
+        }
+        
+        announcements.forEach(function(announcement) {
+            let row = `
+                <tr>
+                    <td>${escapeHtml(announcement.announcement_id)}</td>
+                    <td>${escapeHtml(announcement.ann_title)}</td>
+                    <td>${escapeHtml(announcement.ann_type)}</td>
+                    <td>${escapeHtml(announcement.ann_desc)}</td>
+                    <td>${escapeHtml(announcement.encodedby)}</td>
+                    <td>${formatDate(announcement.date_created)}</td>
+                </tr>
+            `;
+            tbody.append(row);
+        });
+    }
+
+    // ── HELPER: Escape HTML to prevent XSS ───────────────────────────────────
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    // ── HELPER: Format date ──────────────────────────────────────────────────
+    function formatDate(dateString) {
+        if (!dateString) return '';
+        let date = new Date(dateString);
+        return date.toLocaleString(); // Adjust format as needed
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 });

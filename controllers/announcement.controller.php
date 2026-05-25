@@ -6,5 +6,9 @@ class ControllerAnnouncement {
         return $answer;
     }
 
+    static public function ctrGetAnnouncements() {
+        return (new ModelAnnouncement)->mdlGetAnnouncements();
+    }
+
 }
 ?>

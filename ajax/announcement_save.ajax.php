@@ -11,6 +11,7 @@ class Announcement {
     public $encodedby;
     public $ann_type;
     public $ann_desc;
+    public $ann_title;
 
     public function saveAnnouncement() {
         error_log("saveAnnouncement called - trans_type: " . $this->trans_type);
@@ -18,6 +19,7 @@ class Announcement {
         $data = array(
             "ann_type"  => $this->ann_type,
             "ann_desc"  => $this->ann_desc,
+            "ann_title"  => $this->ann_title,
             "encodedby" => $this->encodedby,
         );
 
@@ -44,6 +46,7 @@ $save_announcement = new Announcement();
 
 $save_announcement->trans_type = isset($_POST["trans_type"]) ? $_POST["trans_type"] : "";
 $save_announcement->encodedby  = isset($_POST["encodedby"])  ? $_POST["encodedby"]  : "";
+$save_announcement->ann_title  = isset($_POST["ann_title"])  ? $_POST["ann_title"]  : "";
 $save_announcement->ann_type   = isset($_POST["ann_type"])   ? $_POST["ann_type"]   : "";
 $save_announcement->ann_desc   = isset($_POST["ann_desc"])   ? $_POST["ann_desc"]   : "";
 

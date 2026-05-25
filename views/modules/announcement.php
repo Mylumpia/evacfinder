@@ -16,8 +16,6 @@
                         <input type="hidden" name="trans_type" id="trans_type" value="New">
                         <input type="hidden" name="evacuee_id" id="evacuee_id" value="">
                     </div>
-                   
-                    <input type="hidden" name="trans_type" id="trans_type" value="New">
                     <input type="hidden" name="announcement_id" id="announcement_id" value="">
 
                     <div class="card-body">
@@ -36,6 +34,14 @@
                             </div>
                         </div>
 
+                        <div class="row g-6">
+                            <div class="col-12">
+                                <label class="form-label" for="title">Title</label>
+                                <input type="text" id="title" name="title" class="form-control" placeholder="Enter title" required />
+                            </div>
+                        </div>
+                        <br>
+
                         <!-- Row 2: Announcement Description -->
                         <div class="row g-4 mb-4">
                             <div class="col-md-12">
@@ -50,6 +56,36 @@
                             <button type="submit" name="btn_announcement_submit" class="btn btn-outline-success" id="btn-save">
                                 <i class="ti tabler-device-floppy me-2"></i>Save Announcement
                             </button>                                   
+                        </div>
+
+                        <!-- Centers Table -->
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-header d-flex justify-content-between align-items-center">
+                                        <h5 class="card-title mb-0">Announcement Lists</h5>
+                                        <a href="?route=active" class="btn btn-primary btn-sm">Refresh</a>
+                                    </div>
+                                    <div class="card-body p-0">
+                                        <div class="table-responsive">
+                                            <table class="table table-hover mb-0">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th>Announcement ID</th>
+                                                        <th>Title</th>
+                                                        <th>Type</th>
+                                                        <th>Description</th>
+                                                        <th>Encoded By</th>
+                                                        <th>Date Created</th>                                                                                                              
+                                                    </tr>
+                                                </thead>    
+                                                <tbody>
+                                                </tbody>                                            
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Error container -->
