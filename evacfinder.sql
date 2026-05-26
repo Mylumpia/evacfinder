@@ -157,6 +157,13 @@ CREATE TABLE `lgu_users` (
   `status` varchar(20) DEFAULT 'Pending'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+--
+-- Dumping data for table `lgu_users`
+--
+
+INSERT INTO `lgu_users` (`id`, `lgu_id`, `lgu_office_name`, `office_email_address`, `office_type`, `province`, `region`, `position_role`, `first_name`, `last_name`, `phone_number`, `password`, `registration_date`, `status`) VALUES
+(2, 'LGU00001', 'based', 'allen@gmail.com', 'municipal', 'negros-occidental', 'region-vi', 'pretty', 'allen', 'sarmiento', '09491744739', 'me', '2026-05-26 04:54:08', 'Pending');
+
 -- --------------------------------------------------------
 
 --
@@ -181,6 +188,13 @@ CREATE TABLE `personal_users` (
   `status` varchar(20) DEFAULT 'Active'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+--
+-- Dumping data for table `personal_users`
+--
+
+INSERT INTO `personal_users` (`id`, `user_id`, `first_name`, `last_name`, `middle_initial`, `extension`, `date_of_birth`, `sex`, `email_address`, `phone_number`, `region`, `account_type`, `password`, `registration_date`, `status`) VALUES
+(9, '00004', 'lance', 'sarmiento', 'G', 'hey', '2005-12-12', 'Male', 'lancesarmiento40@gmail.com', '09491744739', 'negros-occidental-region6', 'Public User', '123', '2026-05-26 07:39:32', 'Active');
+
 -- --------------------------------------------------------
 
 --
@@ -190,16 +204,20 @@ CREATE TABLE `personal_users` (
 CREATE TABLE `userrights` (
   `id` int NOT NULL,
   `userid` varchar(5) NOT NULL,
-  `username` varchar(20) NOT NULL,
-  `password` varchar(20) NOT NULL
+  `email` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `password` varchar(20) NOT NULL,
+  `Type` varchar(10) NOT NULL,
+  `last_login` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Dumping data for table `userrights`
 --
 
-INSERT INTO `userrights` (`id`, `userid`, `username`, `password`) VALUES
-(1, '00001', 'user', 'user');
+INSERT INTO `userrights` (`id`, `userid`, `email`, `password`, `Type`, `last_login`) VALUES
+(1, '00001', 'sample@gmail.com', 'user', '', NULL),
+(7, '00003', 'allen@gmail.com', 'me', 'lgu', '2026-05-26 07:46:10'),
+(8, '00004', 'lancesarmiento40@gmail.com', '123', 'public', '2026-05-26 07:39:47');
 
 --
 -- Indexes for dumped tables
@@ -283,10 +301,28 @@ ALTER TABLE `personal_users`
   MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT for table `evacuees`
+--
+ALTER TABLE `evacuees`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `lgu_users`
+--
+ALTER TABLE `lgu_users`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- AUTO_INCREMENT for table `personal_users`
+--
+ALTER TABLE `personal_users`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+
+--
 -- AUTO_INCREMENT for table `userrights`
 --
 ALTER TABLE `userrights`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- Constraints for dumped tables
