@@ -1,9 +1,10 @@
-<!DOCTYPE html>
 <?php
   session_start();
+  ob_start();
   $isLoggedIn = isset($_SESSION["loggedIn"]) && $_SESSION["loggedIn"] == "ok";
   $route = isset($_GET["route"]) ? basename($_GET["route"]) : "map";
 ?>
+<!DOCTYPE html>
 <html lang="en" class="h-100">
 <head>
   <meta charset="utf-8">
@@ -154,21 +155,19 @@
     <?php
       $routeScripts = [
         'registration' => ['registration.js'],
-        'map'     => ['map.js'],
+            'registration_lgu' => ['registration.js'],
+            'map'     => ['map.js'],
         'home'    => ['home.js'],
-        'login'   => ['login.js'],  
+        'login'   => ['login.js'],
         'centers' => ['centers.js'],
         'evacuees' => ['evacuees.js']
-        
       ];
       if(array_key_exists($route, $routeScripts)){
         foreach($routeScripts[$route] as $script){
           $scriptPath = "views/js/" . $script;
-          // Remove /EvacFinder/ prefix if not needed - use relative path
           if(file_exists($scriptPath)){
             echo '<script src="' . $scriptPath . '"></script>';
           } else {
-            // Try alternative path
             echo '<script src="/views/js/' . $script . '"></script>';
           }
         }

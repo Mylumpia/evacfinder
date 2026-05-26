@@ -1,3 +1,31 @@
+<?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+$registrationData = $_SESSION['lgu_registration'] ?? [];
+$registrationError = null;
+$registrationSuccess = false;
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['btn_next'])) {
+    $_SESSION['lgu_registration'] = [
+        'firstName' => trim($_POST['firstName'] ?? ''),
+        'lastName' => trim($_POST['lastName'] ?? ''),
+        'email' => trim($_POST['email'] ?? ''),
+        'password' => $_POST['password'] ?? '',
+        'accountType' => $_POST['accountType'] ?? 'lgu'
+    ];
+    header('Location: ?route=registration_lgu');
+    exit;
+}
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['btn_register_submit'])) {
+    $registrationResult = ControllerUserRights::ctrUserRegister();
+    if ($registrationResult === true) {
+        unset($_SESSION['lgu_registration']);
+        $registrationSuccess = true;
+    } else {
+        $registrationError = $registrationResult;
+    }
+}
+?>
 <style>
     .content-body {
         min-height: unset !important;
@@ -26,15 +54,23 @@
                    
 
                     <div class="card-body">
+                        <?php if ($registrationError): ?>
+                            <div class="alert alert-danger"><?php echo $registrationError; ?></div>
+                        <?php endif; ?>
+                        <?php if ($registrationSuccess): ?>
+                            <script>
+                                window.location.href = '?route=login';
+                            </script>
+                        <?php endif; ?>
                         <!-- Row 1: Name Fields -->
                         <div class="row g-4 mb-4">
                             <div class="col-md-4">
                                 <label class="form-label" for="firstName">First Name <span class="text-danger">*</span></label>
-                                <input type="text" id="firstName" name="firstName" class="form-control" placeholder="First name" required />
+                                <input type="text" id="firstName" name="firstName" class="form-control" placeholder="First name" required value="<?php echo htmlspecialchars($registrationData['firstName'] ?? '', ENT_QUOTES, 'UTF-8'); ?>" />
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label" for="lastName">Last Name <span class="text-danger">*</span></label>
-                                <input type="text" id="lastName" name="lastName" class="form-control" placeholder="Last name" required />
+                                <input type="text" id="lastName" name="lastName" class="form-control" placeholder="Last name" required value="<?php echo htmlspecialchars($registrationData['lastName'] ?? '', ENT_QUOTES, 'UTF-8'); ?>" />
                             </div>
                             <div class="col-md-2">
                                 <label class="form-label" for="middleInitial">Middle Initial</label>
@@ -67,11 +103,11 @@
                         <div class="row g-4 mb-4">
                             <div class="col-md-6">
                                 <label class="form-label" for="emailAddress">Email Address <span class="text-danger">*</span></label>
-                                <input type="email" id="emailAddress" name="emailAddress" class="form-control" placeholder="example@gmail.com" required />
+                                <input type="email" id="emailAddress" name="email" class="form-control" placeholder="example@gmail.com" required value="<?php echo htmlspecialchars($registrationData['email'] ?? '', ENT_QUOTES, 'UTF-8'); ?>" />
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label" for="phoneNumber">Phone Number <span class="text-danger">*</span></label>
-                                <input type="tel" id="phoneNumber" name="phoneNumber" class="form-control" placeholder="09** *** ****" required />
+                                <input type="tel" id="phoneNumber" name="phoneNumber" class="form-control" placeholder="09** *** ****" required value="<?php echo htmlspecialchars($registrationData['phoneNumber'] ?? '', ENT_QUOTES, 'UTF-8'); ?>" />
                             </div>
                         </div>
 
@@ -89,8 +125,8 @@
                                 <label for="accountType" class="form-label">Account Type</label>
                                 <br>
                                 <select id="accountType" name="accountType" class="select2 form-select">
-                                    <option value="public">Public User</option>
-                                    <option value="lgu">Local Government Unit User</option>
+                                    <option value="public" <?php echo (isset($registrationData['accountType']) && $registrationData['accountType'] === 'public') ? 'selected' : ''; ?>>Public User</option>
+                                    <option value="lgu" <?php echo (isset($registrationData['accountType']) && $registrationData['accountType'] === 'lgu') ? 'selected' : ''; ?>>Local Government Unit User</option>
                                 </select>
                             </div>
                         </div>
@@ -100,12 +136,12 @@
                             <div class="col-md-6" style="position: relative;">
                                 <label class="form-label" for="password">Password <span class="text-danger">*</span></label>
                                 <input type="password" id="password" name="password" class="form-control" placeholder="Enter password" required style="padding-right: 40px;">
-                                <i class="fas fa-eye-slash togglePassword" data-target="password" style="position: absolute; right: 24px; top: 70%; transform: translateY(-50%); cursor: pointer; z-index: 10; color: #6c757d;"></i>
+                                <i class="fa fa-eye-slash togglePassword" data-target="password" style="position: absolute; right: 24px; top: 70%; transform: translateY(-50%); cursor: pointer; z-index: 10; color: #6c757d;"></i>
                             </div>
                             <div class="col-md-6" style="position: relative;">
                                 <label class="form-label" for="confirmPassword">Confirm Password <span class="text-danger">*</span></label>
                                 <input type="password" id="confirmPassword" name="confirmPassword" class="form-control" placeholder="Confirm password" required style="padding-right: 40px;">
-                                <i class="fas fa-eye-slash togglePassword" data-target="confirmPassword" style="position: absolute; right: 24px; top: 70%; transform: translateY(-50%); cursor: pointer; z-index: 10; color: #6c757d;"></i>
+                                <i class="fa fa-eye-slash togglePassword" data-target="confirmPassword" style="position: absolute; right: 24px; top: 70%; transform: translateY(-50%); cursor: pointer; z-index: 10; color: #6c757d;"></i>
                             </div>
                         </div>
 
@@ -117,7 +153,7 @@
                             <button style="margin-left: auto;" type="submit" name="btn_register_submit" class="btn btn-outline-success" id="btn-register">
                                 <i class="ti tabler-search me-2"></i>Register
                             </button>
-                            <button style="margin-left: auto;" type="button" class="btn btn-outline-primary" id="btn-next" hidden>
+                            <button style="margin-left: auto;" type="submit" name="btn_next" class="btn btn-outline-primary" id="btn-next" hidden>
                                 <i class="ti tabler-search me-2"></i>Next
                             </button>        
                         </div>

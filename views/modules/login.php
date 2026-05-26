@@ -28,13 +28,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit'])) {
                                 <h4 class="text-center mb-4">Sign in your account</h4>
                                 <form method="POST" action="">
                                     <div class="form-group">
-                                        <label><strong>Username</strong></label>
-                                        <input type="text" name="loginUser" class="form-control" placeholder="Enter your username" required>
+                                        <label><strong>Email</strong></label>
+                                        <input type="email" name="loginEmail" class="form-control" placeholder="Enter your email" required>
                                     </div>
                                     <div class="form-group" style="position: relative;">
     <label><strong>Password</strong></label>
     <input type="password" name="loginPass" id="loginPass" class="form-control" placeholder="Enter your password" required style="padding-right: 40px;">
-    <i class="fas fa-eye-slash" id="togglePassword" style="position: absolute; right: 12px; top: 70%; transform: translateY(-50%); cursor: pointer; z-index: 10; color: #6c757d;"></i>
+    <i class="fa fa-eye-slash" id="togglePassword" style="position: absolute; right: 12px; top: 70%; transform: translateY(-50%); cursor: pointer; z-index: 10; color: #6c757d;"></i>
 </div>
 
                                     <div class="form-row d-flex justify-content-between mt-4 mb-2">

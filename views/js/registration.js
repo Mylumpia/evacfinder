@@ -12,6 +12,59 @@ $(function(){
             errorContainer.style.display = 'none';
         }
     }
+
+    function showError(message) {
+        const errorContainer = document.getElementById('registrationError');
+        if (errorContainer) {
+            errorContainer.style.display = 'block';
+            errorContainer.textContent = message;
+        }
+    }
+
+    if (form) {
+        form.addEventListener('submit', function (e) {
+            const requiredFields = ['firstName', 'lastName', 'dateOfBirth', 'sex', 'emailAddress', 'phoneNumber', 'region', 'password', 'confirmPassword'];
+            let isValid = true;
+            let firstInvalid = null;
+
+            requiredFields.forEach(fieldId => {
+                const field = document.getElementById(fieldId);
+                if (field) {
+                    if (!field.value.trim()) {
+                        field.classList.add('is-invalid');
+                        isValid = false;
+                        if (!firstInvalid) {
+                            firstInvalid = field;
+                        }
+                    } else {
+                        field.classList.remove('is-invalid');
+                    }
+                }
+            });
+
+            const password = document.getElementById('password');
+            const confirmPassword = document.getElementById('confirmPassword');
+            if (password && confirmPassword && password.value !== confirmPassword.value) {
+                isValid = false;
+                showError('Password and Confirm Password must match.');
+                confirmPassword.classList.add('is-invalid');
+                if (!firstInvalid) {
+                    firstInvalid = confirmPassword;
+                }
+            }
+
+            if (!isValid) {
+                e.preventDefault();
+                if (!document.getElementById('registrationError').textContent) {
+                    showError('Please fill in all required fields.');
+                }
+                if (firstInvalid) {
+                    firstInvalid.focus();
+                }
+                return false;
+            }
+        });
+    }
     
     $("#btn-back").click(function (e) {
         e.preventDefault();
@@ -62,34 +115,5 @@ $(function(){
             $(this).removeClass("fa-eye").addClass("fa-eye-slash");
         }
     });
-
-    // Next button handler for LGU registration
-    $("#btn-next").click(function(e) {
-        e.preventDefault();
-        
-        // Validate required fields
-        // const requiredFields = ['firstName', 'lastName', 'dateOfBirth', 'sex', 'emailAddress', 'phoneNumber', 'region'];
-        // let isValid = true;
-        
-        // requiredFields.forEach(fieldId => {
-        //     const field = document.getElementById(fieldId);
-        //     if (field && !field.value) {
-        //         field.classList.add('is-invalid');
-        //         isValid = false;
-        //     } else if (field) {
-        //         field.classList.remove('is-invalid');
-        //     }
-        // });
-        
-        // if (!isValid) {
-        //     showError('Please fill in all required fields');
-        //     return false;
-        // }
-        
-        // Simple redirect - no form submission
-        window.location.href = '?route=registration_lgu';
-    });
-
-
 
 });
