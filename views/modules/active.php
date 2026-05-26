@@ -70,7 +70,14 @@ $allCenters = ModelCenters::mdlGetAllCenters();
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="card-title mb-0">Evacuation Centers</h5>
-                    <a href="?route=active" class="btn btn-primary btn-sm">Refresh</a>
+                    <div>
+                        <a href="?route=centers" class="btn btn-primary btn-sm me-2">
+                            <i class="fa fa-plus"></i> Add Evacuation Center
+                        </a>
+                        <a href="?route=active" class="btn btn-secondary btn-sm">
+                            <i class="fa fa-refresh"></i> Refresh
+                        </a>
+                    </div>
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
@@ -124,6 +131,13 @@ $allCenters = ModelCenters::mdlGetAllCenters();
                                             <span class="badge <?php echo $badgeClass; ?>"><?php echo $statusText; ?></span>
                                         </td>
                                         <td>
+                                            <button type="button" class="btn btn-sm btn-success add-evacuee me-1" 
+                                                    data-center-id="<?php echo htmlspecialchars($center['center_id']); ?>"
+                                                    data-center-name="<?php echo htmlspecialchars($center['center_name']); ?>"
+                                                    data-current-occupants="<?php echo $center['current_occupants']; ?>"
+                                                    data-capacity="<?php echo $center['capacity']; ?>">
+                                                <i class="fa fa-user-plus"></i> Add Evacuee
+                                            </button>
                                             <button type="button" class="btn btn-sm btn-primary edit-center" 
                                                     data-center-id="<?php echo htmlspecialchars($center['center_id']); ?>"
                                                     data-center-name="<?php echo htmlspecialchars($center['center_name']); ?>"
@@ -150,7 +164,12 @@ $allCenters = ModelCenters::mdlGetAllCenters();
                                     <?php endforeach; ?>
                                 <?php else: ?>
                                     <tr>
-                                        <td colspan="7" class="text-center py-4">No evacuation centers found.</td>
+                                        <td colspan="7" class="text-center py-4">
+                                            No evacuation centers found. 
+                                            <a href="?route=centers" class="btn btn-primary btn-sm ms-2">
+                                                <i class="fa fa-plus"></i> Add Your First Center
+                                            </a>
+                                        </td>
                                     </tr>
                                 <?php endif; ?>
                             </tbody>
@@ -161,6 +180,224 @@ $allCenters = ModelCenters::mdlGetAllCenters();
         </div>
     </div>
 </div>
+</div>
+
+<!-- Add Evacuee Modal -->
+<div class="modal fade" id="addEvacueeModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Register New Evacuee</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addEvacueeForm">
+                    <input type="hidden" id="evac_center_id" name="evacuation_center_id">
+                    <input type="hidden" id="evac_center_name_display" name="center_name_display">
+                    <input type="hidden" id="evac_encodedby" name="encodedby" value="<?php echo $_SESSION['userid']; ?>">
+                    
+                    <!-- Center Info Display -->
+                    <div class="alert alert-info mb-3">
+                        <strong>Evacuation Center:</strong> <span id="selectedCenterName"></span>
+                        <br>
+                        <strong>Current Occupancy:</strong> <span id="selectedCenterOccupancy"></span> / <span id="selectedCenterCapacity"></span>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Registration Date <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" id="evac_registration_date" name="registration_date" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Arrival Date <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" id="evac_arrival_date" name="arrival_date" required>
+                        </div>
+                    </div>
+                    
+                    <h6 class="fw-bold mb-3">Personal Information</h6>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Last Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="evac_last_name" name="last_name" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">First Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="evac_first_name" name="first_name" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Middle Name</label>
+                            <input type="text" class="form-control" id="evac_middle_name" name="middle_name">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Extension Name</label>
+                            <input type="text" class="form-control" id="evac_extension_name" name="extension_name" placeholder="Jr., Sr., III">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Relation to Head</label>
+                            <input type="text" class="form-control" id="evac_relation_to_head" name="relation_to_head" placeholder="Self, Spouse, Child">
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Sex <span class="text-danger">*</span></label>
+                            <select class="form-control" id="evac_sex" name="sex" required>
+                                <option value="">Select</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Birth Date</label>
+                            <input type="date" class="form-control" id="evac_birth_date" name="birth_date">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Age</label>
+                            <input type="number" class="form-control" id="evac_age" name="age" readonly>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Civil Status</label>
+                            <select class="form-control" id="evac_civil_status" name="civil_status">
+                                <option value="">Select</option>
+                                <option value="Single">Single</option>
+                                <option value="Married">Married</option>
+                                <option value="Widowed">Widowed</option>
+                                <option value="Separated">Separated</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Occupation</label>
+                            <input type="text" class="form-control" id="evac_occupation" name="occupation">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Contact Number</label>
+                            <input type="text" class="form-control" id="evac_contact_number" name="contact_number">
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label class="form-label">Complete Address</label>
+                            <input type="text" class="form-control" id="evac_complete_address" name="complete_address" placeholder="Full home address">
+                        </div>
+                    </div>
+                    
+                    <h6 class="fw-bold mb-3">Emergency Contact</h6>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Emergency Contact Person</label>
+                            <input type="text" class="form-control" id="evac_emergency_contact_person" name="emergency_contact_person">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Emergency Contact Number</label>
+                            <input type="text" class="form-control" id="evac_emergency_contact_number" name="emergency_contact_number">
+                        </div>
+                    </div>
+                    
+                    <h6 class="fw-bold mb-3">Special Conditions</h6>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" id="evac_condition_pregnant" name="condition_pregnant" value="1">
+                                <label class="form-check-label" for="evac_condition_pregnant">Pregnant</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" id="evac_condition_lactating" name="condition_lactating" value="1">
+                                <label class="form-check-label" for="evac_condition_lactating">Lactating</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" id="evac_condition_elderly" name="condition_elderly" value="1">
+                                <label class="form-check-label" for="evac_condition_elderly">Elderly</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" id="evac_condition_pwd" name="condition_pwd" value="1">
+                                <label class="form-check-label" for="evac_condition_pwd">PWD</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" id="evac_condition_4ps" name="condition_4ps" value="1">
+                                <label class="form-check-label" for="evac_condition_4ps">4Ps Beneficiary</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label class="form-label">PWD Type (if applicable)</label>
+                            <select class="form-control" id="evac_pwd_type" name="pwd_type">
+                                <option value="">Select</option>
+                                <option value="Mobility">Mobility</option>
+                                <option value="Visual">Visual</option>
+                                <option value="Hearing">Hearing</option>
+                                <option value="Speech">Speech</option>
+                                <option value="Cognitive">Cognitive</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <h6 class="fw-bold mb-3">Medical Information</h6>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Health Status</label>
+                            <select class="form-control" id="evac_health_status" name="health_status">
+                                <option value="">Select</option>
+                                <option value="Good">Good</option>
+                                <option value="With illness">With illness</option>
+                                <option value="Under medication">Under medication</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Emergency Medical Condition</label>
+                            <select class="form-control" id="evac_emergency_medical_condition" name="emergency_medical_condition">
+                                <option value="">Select</option>
+                                <option value="None">None</option>
+                                <option value="Hypertension">Hypertension</option>
+                                <option value="Diabetes">Diabetes</option>
+                                <option value="Asthma">Asthma</option>
+                                <option value="Heart Disease">Heart Disease</option>
+                                <option value="Kidney Disease">Kidney Disease</option>
+                                <option value="Epilepsy">Epilepsy</option>
+                                <option value="Allergy">Allergy</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label class="form-label">Medications Taken</label>
+                            <textarea class="form-control" id="evac_medications_taken" name="medications_taken" rows="2" placeholder="List current medications"></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label class="form-label">Known Allergies</label>
+                            <textarea class="form-control" id="evac_known_allergies" name="known_allergies" rows="2" placeholder="List known allergies"></textarea>
+                        </div>
+                    </div>
+                    
+                    <input type="hidden" id="evac_evacuee_status" name="evacuee_status" value="Active">
+                    <input type="hidden" id="evac_departure_date" name="departure_date" value="">
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" id="confirmAddEvacuee">Register Evacuee</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- Edit Center Modal -->
@@ -255,7 +492,6 @@ $allCenters = ModelCenters::mdlGetAllCenters();
                         </div>
                     </div>
                     
-                    <!-- IMPORTANT: Current Occupancy and Capacity fields -->
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label class="form-label text-primary fw-bold">Current Occupants <span class="text-danger">*</span></label>
@@ -300,9 +536,210 @@ $allCenters = ModelCenters::mdlGetAllCenters();
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 $(document).ready(function() {
+    // Set default dates
+    var today = new Date().toISOString().split('T')[0];
+    $('#evac_registration_date').val(today);
+    $('#evac_arrival_date').val(today);
+    
+    // Auto-calculate age from birth date
+    $('#evac_birth_date').on('change', function() {
+        var birthDate = new Date($(this).val());
+        var today = new Date();
+        var age = today.getFullYear() - birthDate.getFullYear();
+        var m = today.getMonth() - birthDate.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+            age--;
+        }
+        if (age > 0 && age < 120) {
+            $('#evac_age').val(age);
+        } else {
+            $('#evac_age').val('');
+        }
+    });
+    
+    // Add Evacuee button click
+    $('.add-evacuee').on('click', function() {
+        var centerId = $(this).data('center-id');
+        var centerName = $(this).data('center-name');
+        var currentOccupants = $(this).data('current-occupants');
+        var capacity = $(this).data('capacity');
+        
+        $('#evac_center_id').val(centerId);
+        $('#selectedCenterName').text(centerName);
+        $('#selectedCenterOccupancy').text(currentOccupants);
+        $('#selectedCenterCapacity').text(capacity);
+        
+        // Reset form fields
+        $('#addEvacueeForm')[0].reset();
+        $('#evac_registration_date').val(today);
+        $('#evac_arrival_date').val(today);
+        $('#evac_center_id').val(centerId);
+        $('#evac_evacuee_status').val('Active');
+        
+        $('#addEvacueeModal').modal('show');
+    });
+    
+    // Confirm Add Evacuee
+    $('#confirmAddEvacuee').on('click', function() {
+        // Validate required fields
+        var requiredFields = [
+            { id: '#evac_last_name', label: 'Last Name' },
+            { id: '#evac_first_name', label: 'First Name' },
+            { id: '#evac_sex', label: 'Sex' }
+        ];
+        
+        var errors = [];
+        requiredFields.forEach(function(field) {
+            if (!$(field.id).val()) {
+                errors.push(field.label);
+            }
+        });
+        
+        if (errors.length > 0) {
+            Swal.fire({
+                title: 'Required Fields Missing',
+                html: 'Please fill in: ' + errors.join(', '),
+                icon: 'warning',
+                confirmButtonText: 'OK'
+            });
+            return;
+        }
+        
+        // Check if center has capacity
+        var currentOccupants = parseInt($('#selectedCenterOccupancy').text());
+        var capacity = parseInt($('#selectedCenterCapacity').text());
+        
+        if (currentOccupants >= capacity) {
+            Swal.fire({
+                title: 'Center Full!',
+                text: 'This evacuation center has reached its maximum capacity. Cannot add more evacuees.',
+                icon: 'warning',
+                confirmButtonText: 'OK'
+            });
+            return;
+        }
+        
+        Swal.fire({
+            title: 'Register Evacuee?',
+            text: 'Are you sure you want to register this evacuee?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, register',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire({
+                    title: 'Registering...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+                
+                // Collect form data
+                var formData = {
+                    trans_type: 'New',
+                    encodedby: $('#evac_encodedby').val(),
+                    registration_date: $('#evac_registration_date').val(),
+                    last_name: $('#evac_last_name').val(),
+                    first_name: $('#evac_first_name').val(),
+                    middle_name: $('#evac_middle_name').val(),
+                    extension_name: $('#evac_extension_name').val(),
+                    relation_to_head: $('#evac_relation_to_head').val(),
+                    sex: $('#evac_sex').val(),
+                    birth_date: $('#evac_birth_date').val(),
+                    age: $('#evac_age').val(),
+                    civil_status: $('#evac_civil_status').val(),
+                    occupation: $('#evac_occupation').val(),
+                    contact_number: $('#evac_contact_number').val(),
+                    complete_address: $('#evac_complete_address').val(),
+                    emergency_contact_person: $('#evac_emergency_contact_person').val(),
+                    emergency_contact_number: $('#evac_emergency_contact_number').val(),
+                    condition_pregnant: $('#evac_condition_pregnant').is(':checked') ? 1 : 0,
+                    condition_lactating: $('#evac_condition_lactating').is(':checked') ? 1 : 0,
+                    condition_elderly: $('#evac_condition_elderly').is(':checked') ? 1 : 0,
+                    condition_pwd: $('#evac_condition_pwd').is(':checked') ? 1 : 0,
+                    condition_4ps: $('#evac_condition_4ps').is(':checked') ? 1 : 0,
+                    pwd_type: $('#evac_pwd_type').val(),
+                    health_status: $('#evac_health_status').val(),
+                    emergency_medical_condition: $('#evac_emergency_medical_condition').val(),
+                    medications_taken: $('#evac_medications_taken').val(),
+                    known_allergies: $('#evac_known_allergies').val(),
+                    evacuation_center_id: $('#evac_center_id').val(),
+                    arrival_date: $('#evac_arrival_date').val(),
+                    departure_date: $('#evac_departure_date').val(),
+                    evacuee_status: $('#evac_evacuee_status').val()
+                };
+                
+                // Send AJAX request
+                $.ajax({
+                    url: "ajax/evacuees_save.ajax.php",
+                    method: "POST",
+                    data: formData,
+                    dataType: "text",
+                    success: function(response) {
+                        console.log("Response:", response);
+                        
+                        if (response && response.trim() !== 'error' && response.trim() !== '') {
+                            // Now update the center's occupancy count
+                            var newOccupants = currentOccupants + 1;
+                            $.ajax({
+                                url: "ajax/update_center_occupancy.ajax.php",
+                                method: "POST",
+                                data: {
+                                    center_id: $('#evac_center_id').val(),
+                                    current_occupants: newOccupants
+                                },
+                                dataType: "json",
+                                success: function(updateResponse) {
+                                    if (updateResponse.success) {
+                                        Swal.fire({
+                                            title: 'Success!',
+                                            text: 'Evacuee registered successfully and center occupancy updated!',
+                                            icon: 'success',
+                                            confirmButtonText: 'OK'
+                                        }).then(() => {
+                                            location.reload();
+                                        });
+                                    } else {
+                                        Swal.fire({
+                                            title: 'Partial Success',
+                                            text: 'Evacuee registered but occupancy update failed. Please refresh.',
+                                            icon: 'warning',
+                                            confirmButtonText: 'OK'
+                                        }).then(() => {
+                                            location.reload();
+                                        });
+                                    }
+                                },
+                                error: function(xhr, status, error) {
+                                    console.error("Update error:", error);
+                                    Swal.fire({
+                                        title: 'Partial Success',
+                                        text: 'Evacuee registered but occupancy update may have failed. Please refresh.',
+                                        icon: 'warning',
+                                        confirmButtonText: 'OK'
+                                    }).then(() => {
+                                        location.reload();
+                                    });
+                                }
+                            });
+                        } else {
+                            Swal.fire('Error', 'Failed to register evacuee. Response: ' + response, 'error');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error:', error);
+                        console.log('Response text:', xhr.responseText);
+                        Swal.fire('Error', 'An error occurred: ' + error, 'error');
+                    }
+                });
+            }
+        });
+    });
+    
     // Edit button click - Populate modal with center data
     $('.edit-center').on('click', function() {
-        // Get all data from button attributes
         var centerId = $(this).data('center-id');
         var centerName = $(this).data('center-name');
         var category = $(this).data('category');
@@ -322,7 +759,6 @@ $(document).ready(function() {
         var availableFacilities = $(this).data('available-facilities');
         var remarks = $(this).data('remarks');
         
-        // Populate modal fields
         $('#edit_center_id').val(centerId);
         $('#edit_center_name').val(centerName);
         $('#edit_category').val(category);
@@ -342,13 +778,11 @@ $(document).ready(function() {
         $('#edit_available_facilities').val(availableFacilities || '');
         $('#edit_remarks').val(remarks || '');
         
-        // Show modal
         $('#editCenterModal').modal('show');
     });
     
     // Update center button click
     $('#confirmUpdateCenter').on('click', function() {
-        // Collect form data
         var formData = {
             center_id: $('#edit_center_id').val(),
             center_name: $('#edit_center_name').val(),
@@ -370,7 +804,6 @@ $(document).ready(function() {
             remarks: $('#edit_remarks').val()
         };
         
-        // Validate
         var errors = [];
         if (!formData.center_name) errors.push('Center Name is required');
         if (!formData.category) errors.push('Category is required');
@@ -392,7 +825,6 @@ $(document).ready(function() {
             return;
         }
         
-        // Confirm update
         Swal.fire({
             title: 'Update Center?',
             text: 'Are you sure you want to update this evacuation center?',
@@ -402,7 +834,6 @@ $(document).ready(function() {
             cancelButtonText: 'Cancel'
         }).then((result) => {
             if (result.isConfirmed) {
-                // Show loading
                 Swal.fire({
                     title: 'Updating...',
                     allowOutsideClick: false,
@@ -411,7 +842,6 @@ $(document).ready(function() {
                     }
                 });
                 
-                // Send update request
                 $.ajax({
                     url: "ajax/update_center.ajax.php",
                     method: "POST",
