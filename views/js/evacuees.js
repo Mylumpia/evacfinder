@@ -177,4 +177,9 @@ $(function () {
             }
         });
     }
+    
+    $("#btn-print").click(function(){
+        window.open("reports/evacuee_form.php", "_blank");
+    });
+
 });

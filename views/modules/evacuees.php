@@ -286,18 +286,22 @@
                                 <br>
 
                                 <!-- Action Buttons -->
-                                <div class="demo-inline-spacing">
-                                    <button type="button" class="btn btn-outline-primary" id="btn-new">
-                                        <span class="icon-xs icon-base ti tabler-file me-2"></span>New
-                                    </button>
-                                    <button type="button" class="btn btn-outline-success" id="btn-save">
-                                        <span class="icon-xs icon-base ti tabler-star me-2"></span>Save
-                                    </button>
-                                    <button type="button" class="btn btn-outline-info" id="btn-search"
-                                        data-bs-toggle="modal" data-bs-target="#modal-search-evacuee">
-                                        <span class="icon-xs icon-base ti tabler-search me-2"></span>Search
-                                    </button>
-                                </div>
+                            <div class="demo-inline-spacing">
+                                <button type="button" class="btn btn-outline-primary" id="btn-new">
+                                    <span class="icon-xs icon-base ti tabler-file me-2"></span>New
+                                </button>
+                                <button type="button" class="btn btn-outline-success" id="btn-save">
+                                    <span class="icon-xs icon-base ti tabler-star me-2"></span>Save
+                                </button>
+                                <button type="button" class="btn btn-outline-info" id="btn-search"
+                                    data-bs-toggle="modal" data-bs-target="#modal-search-evacuee">
+                                    <span class="icon-xs icon-base ti tabler-search me-2"></span>Search
+                                </button>
+                                <!-- ADD THIS PRINT BUTTON -->
+                                <button type="button" class="btn btn-outline-secondary" id="btn-print">
+                                    <span class="icon-xs icon-base ti tabler-printer me-2"></span>Print Form
+                                </button>
+                            </div>
 
                                 <!-- Search Modal -->
                                 <div class="modal fade" id="modal-search-evacuee" tabindex="-1" aria-hidden="true">
@@ -329,6 +333,8 @@
                                     </div>
                                 </div>
                                 <!-- End Search Modal -->
+
+                                
 
                             </div>
                         </div>
