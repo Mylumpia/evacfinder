@@ -76,7 +76,8 @@
                                                         <th>Type</th>
                                                         <th>Description</th>
                                                         <th>Encoded By</th>
-                                                        <th>Date Created</th>                                                                                                              
+                                                        <th>Date Created</th>    
+                                                        <th>Edit</th>                                                                                                                                                  
                                                     </tr>
                                                 </thead>    
                                                 <tbody>

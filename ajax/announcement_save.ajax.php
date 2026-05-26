@@ -12,6 +12,7 @@ class Announcement {
     public $ann_type;
     public $ann_desc;
     public $ann_title;
+     public $announcement_id;
 
     public function saveAnnouncement() {
         error_log("saveAnnouncement called - trans_type: " . $this->trans_type);
@@ -28,6 +29,10 @@ class Announcement {
         if ($this->trans_type == "New") {
             $answer = (new ControllerAnnouncement)->ctrSaveAnnouncement($data);
             error_log("Answer from controller: " . $answer);
+            echo $answer;
+        } elseif ($this->trans_type == "Edit") {
+            $data["announcement_id"] = $this->announcement_id;
+            $answer = (new ControllerAnnouncement)->ctrUpdateAnnouncement($data);
             echo $answer;
         } else {
             echo "error: invalid trans_type";
@@ -49,6 +54,7 @@ $save_announcement->encodedby  = isset($_POST["encodedby"])  ? $_POST["encodedby
 $save_announcement->ann_title  = isset($_POST["ann_title"])  ? $_POST["ann_title"]  : "";
 $save_announcement->ann_type   = isset($_POST["ann_type"])   ? $_POST["ann_type"]   : "";
 $save_announcement->ann_desc   = isset($_POST["ann_desc"])   ? $_POST["ann_desc"]   : "";
+$save_announcement->announcement_id = isset($_POST["announcement_id"]) ? $_POST["announcement_id"] : "";
 
 $save_announcement->saveAnnouncement();
 ?>

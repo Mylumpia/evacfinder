@@ -78,5 +78,37 @@ class ModelAnnouncement {
         }
     }
 
+    static public function mdlUpdateAnnouncement($data) {
+        $db  = new Connection();
+        $pdo = $db->connect();
+ 
+        try {
+            $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+ 
+            $stmt = $pdo->prepare("
+                UPDATE announcements SET
+                    ann_title = :ann_title,
+                    ann_type  = :ann_type,
+                    ann_desc  = :ann_desc
+                WHERE announcement_id = :announcement_id
+            ");
+ 
+            $stmt->bindParam(":ann_title",       $data["ann_title"],       PDO::PARAM_STR);
+            $stmt->bindParam(":ann_type",        $data["ann_type"],        PDO::PARAM_STR);
+            $stmt->bindParam(":ann_desc",        $data["ann_desc"],        PDO::PARAM_STR);
+            $stmt->bindParam(":announcement_id", $data["announcement_id"], PDO::PARAM_STR);
+ 
+            if ($stmt->execute()) {
+                return "updated";
+            } else {
+                return "error";
+            }
+ 
+        } catch (PDOException $e) {
+            error_log("PDO Exception in mdlUpdateAnnouncement: " . $e->getMessage());
+            return "error";
+        }
+    }
+
 }
 ?>
