@@ -64,7 +64,7 @@
                                 <div class="card">
                                     <div class="card-header d-flex justify-content-between align-items-center">
                                         <h5 class="card-title mb-0">Announcement Lists</h5>
-                                        <a href="?route=active" class="btn btn-primary btn-sm">Refresh</a>
+                                        <a href="?route=announcement" class="btn btn-primary btn-sm">Refresh</a>
                                     </div>
                                     <div class="card-body p-0">
                                         <div class="table-responsive">

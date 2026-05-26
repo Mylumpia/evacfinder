@@ -1,11 +1,11 @@
 $(function () {
 
     newAnnouncement();
-    loadAnnouncements();
+    loadAnnouncementList(); // Add this to load announcements on page load
 
-    // ── NEW ──────────────────────────────────────────────────────────────────
     function newAnnouncement() {
         $("#ann_type").val('');
+        $("#title").val('');
         $("#ann_desc").val('');
         $("#trans_type").val('New');
         $("#announcement_id").val('');
@@ -13,67 +13,60 @@ $(function () {
         $("#ann_type").focus();
     }
 
-    // ── SAVE (form submit) ───────────────────────────────────────────────────
-    $("#btn-save").click(function (e) {
-        e.preventDefault();
-
-        // --- Client-side validation ---
-        let requiredFields = [
-            { id: "#ann_type", label: "Type of Announcement" },
-            { id: "#ann_desc", label: "Description"          },
-            { id: "#title", label: "Title" },
-        ];
-
-        let emptyFields = [];
-        requiredFields.forEach(function (field) {
-            let value = $(field.id).val();
-            if (!value || value.trim() === '') {
-                emptyFields.push(field.label);
-            }
-        });
-
-        if (emptyFields.length > 0) {
-            Swal.fire({
-                title: 'Required Fields Missing',
-                icon: 'warning',
-                html: '<div style="text-align:left;margin-left:20px;">' +
-                      '<p>The following fields are required:</p>' +
-                      '<ul>' +
-                      emptyFields.map(f => `<li>${f}</li>`).join('') +
-                      '</ul></div>',
-                confirmButtonText: 'OK',
-                customClass: { confirmButton: 'btn btn-primary' },
-                buttonsStyling: false
-            });
-            return;
-        }
-
-        // --- Confirm before saving ---
-        Swal.fire({
-            title: 'Save Announcement?',
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonText: 'Yes',
-            customClass: {
-                confirmButton: 'btn btn-primary',
-                cancelButton:  'btn btn-label-secondary'
+    // Add this new function to load announcements
+    function loadAnnouncementList() {
+        $.ajax({
+            url: "ajax/get_announcements.ajax.php",
+            method: "GET",
+            dataType: "json",
+            success: function(data) {
+                let tbody = $(".table tbody");
+                tbody.empty();
+                
+                if (data && data.length > 0) {
+                    $.each(data, function(index, announcement) {
+                        let row = `
+                            <tr>
+                                <td>${escapeHtml(announcement.announcement_id)}</td>
+                                <td>${escapeHtml(announcement.ann_title)}</td>
+                                <td><span class="badge bg-label-primary">${escapeHtml(announcement.ann_type)}</span></td>
+                                <td>${escapeHtml(announcement.ann_desc.substring(0, 100))}${announcement.ann_desc.length > 100 ? '...' : ''}</td>
+                                <td>${escapeHtml(announcement.encodedby)}</td>
+                                <td>${escapeHtml(announcement.date_created)}</td>
+                            </tr>
+                        `;
+                        tbody.append(row);
+                    });
+                } else {
+                    tbody.append('<tr><td colspan="6" class="text-center">No announcements found</td></tr>');
+                }
             },
-            buttonsStyling: false
-        }).then(function (result) {
-            if (result.value) {
-                saveAnnouncement();
+            error: function(xhr, status, error) {
+                console.error("Error loading announcements:", error);
+                $(".table tbody").html('<tr><td colspan="6" class="text-center text-danger">Error loading announcements</td></tr>');
             }
         });
-    });
+    }
 
-    // ── AJAX SAVE ────────────────────────────────────────────────────────────
+    // Helper function to prevent XSS
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    // Update saveAnnouncement to reload the table after saving
     function saveAnnouncement() {
         let formData = new FormData();
-        formData.append("trans_type",       $("#trans_type").val());
-        formData.append("encodedby",        $("#encodedby").val());
-        formData.append("ann_type",         $("#ann_type").val());
-        formData.append("ann_desc",         $("#ann_desc").val());
-        formData.append("ann_title", $("#title").val());
+        formData.append("trans_type", $("#trans_type").val());
+        formData.append("encodedby",  $("#encodedby").val());
+        formData.append("ann_title",  $("#title").val());
+        formData.append("ann_type",   $("#ann_type").val());
+        formData.append("ann_desc",   $("#ann_desc").val());
 
         $.ajax({
             url:         "ajax/announcement_save.ajax.php",
@@ -93,8 +86,8 @@ $(function () {
                         buttonsStyling:    false
                     }).then(function (result) {
                         if (result.value) {
-                            loadAnnouncements();
-                            newAnnouncement();
+                            newAnnouncement();           // Reset the form
+                            loadAnnouncementList();      // Reload the table
                         }
                     });
                 } else if (answer === 'existing') {
@@ -127,81 +120,54 @@ $(function () {
         });
     }
 
-    // ── LOAD ANNOUNCEMENTS ───────────────────────────────────────────────────
-    function loadAnnouncements() {
-        console.log("Loading announcements...");
-        $.ajax({
-            url: "ajax/get_announcements.ajax.php",
-            method: "GET",
-            dataType: "json",
-            success: function(announcements) {
-                console.log("Data received:", announcements);
-                console.log("Number of records:", announcements.length);
-                displayAnnouncements(announcements);
-            },
-            error: function(xhr, status, error) {
-                console.error("Error loading announcements:", error);
-                console.error("Status:", status);
-                console.error("Response:", xhr.responseText);
-                $("#announcementError").text("Failed to load announcements: " + error).show();
+    // Keep your existing button click handler
+    $("#btn-save").click(function (e) {
+        e.preventDefault();
+
+        let requiredFields = [
+            { id: "#ann_type", label: "Type of Announcement" },
+            { id: "#title",    label: "Title"                },
+            { id: "#ann_desc", label: "Description"          },
+        ];
+
+        let emptyFields = [];
+        requiredFields.forEach(function (field) {
+            let value = $(field.id).val();
+            if (!value || value.trim() === '') {
+                emptyFields.push(field.label);
             }
         });
-    }
 
-    // ── DISPLAY ANNOUNCEMENTS IN TABLE ───────────────────────────────────────
-    function displayAnnouncements(announcements) {
-        let tbody = $(".table tbody");
-        tbody.empty(); // Clear existing rows
-        
-        if (!announcements || announcements.length === 0) {
-            tbody.html('<tr><td colspan="6" class="text-center">No announcements found</td></tr>');
+        if (emptyFields.length > 0) {
+            Swal.fire({
+                title: 'Required Fields Missing',
+                icon: 'warning',
+                html: '<div style="text-align:left;margin-left:20px;">' +
+                      '<p>The following fields are required:</p><ul>' +
+                      emptyFields.map(f => `<li>${f}</li>`).join('') +
+                      '</ul></div>',
+                confirmButtonText: 'OK',
+                customClass: { confirmButton: 'btn btn-primary' },
+                buttonsStyling: false
+            });
             return;
         }
-        
-        announcements.forEach(function(announcement) {
-            let row = `
-                <tr>
-                    <td>${escapeHtml(announcement.announcement_id)}</td>
-                    <td>${escapeHtml(announcement.ann_title)}</td>
-                    <td>${escapeHtml(announcement.ann_type)}</td>
-                    <td>${escapeHtml(announcement.ann_desc)}</td>
-                    <td>${escapeHtml(announcement.encodedby)}</td>
-                    <td>${formatDate(announcement.date_created)}</td>
-                </tr>
-            `;
-            tbody.append(row);
+
+        Swal.fire({
+            title: 'Save Announcement?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Yes',
+            customClass: {
+                confirmButton: 'btn btn-primary',
+                cancelButton:  'btn btn-label-secondary'
+            },
+            buttonsStyling: false
+        }).then(function (result) {
+            if (result.value) {
+                saveAnnouncement();
+            }
         });
-    }
-
-    // ── HELPER: Escape HTML to prevent XSS ───────────────────────────────────
-    function escapeHtml(str) {
-        if (!str) return '';
-        return str
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#39;');
-    }
-
-    // ── HELPER: Format date ──────────────────────────────────────────────────
-    function formatDate(dateString) {
-        if (!dateString) return '';
-        let date = new Date(dateString);
-        return date.toLocaleString(); // Adjust format as needed
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
+    });
 
 });

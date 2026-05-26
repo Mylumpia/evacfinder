@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: May 24, 2026 at 05:46 PM
+-- Generation Time: May 26, 2026 at 04:55 AM
 -- Server version: 8.4.3
 -- PHP Version: 8.3.30
 
@@ -30,6 +30,7 @@ SET time_zone = "+00:00";
 CREATE TABLE `announcements` (
   `id` int NOT NULL,
   `announcement_id` varchar(20) NOT NULL,
+  `ann_title` varchar(100) NOT NULL,
   `ann_type` varchar(50) NOT NULL,
   `ann_desc` varchar(255) NOT NULL,
   `encodedby` varchar(20) NOT NULL,
@@ -40,9 +41,15 @@ CREATE TABLE `announcements` (
 -- Dumping data for table `announcements`
 --
 
-INSERT INTO `announcements` (`id`, `announcement_id`, `ann_type`, `ann_desc`, `encodedby`, `date_created`) VALUES
-(1, 'ANN00001', 'General', 'testing', '1', '2026-05-25 01:41:50'),
-(2, 'ANN00002', 'Advisory', 'next', '1', '2026-05-25 01:42:07');
+INSERT INTO `announcements` (`id`, `announcement_id`, `ann_title`, `ann_type`, `ann_desc`, `encodedby`, `date_created`) VALUES
+(1, 'ANN00001', '', 'General', 'testing', '1', '2026-05-25 01:41:50'),
+(2, 'ANN00002', '', 'Advisory', 'next', '1', '2026-05-25 01:42:07'),
+(3, 'ANN00003', '', 'General', 'asdsad', '1', '2026-05-26 00:37:53'),
+(4, 'ANN00004', 'asdsa', 'General', 'asds', '1', '2026-05-26 00:41:11'),
+(5, 'ANN00005', 'sfss', 'General', 'efs', '1', '2026-05-26 00:43:10'),
+(6, 'ANN00006', 'TITLE', 'Advisory', 'blahbblahblahh', '1', '2026-05-26 12:34:36'),
+(7, 'ANN00007', 'asd', 'Advisory', 'wasaf', '1', '2026-05-26 12:35:06'),
+(8, 'ANN00008', 'asdw', 'Event', 'asd', '1', '2026-05-26 12:35:33');
 
 -- --------------------------------------------------------
 
@@ -249,7 +256,7 @@ ALTER TABLE `userrights`
 -- AUTO_INCREMENT for table `announcements`
 --
 ALTER TABLE `announcements`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `centers`
