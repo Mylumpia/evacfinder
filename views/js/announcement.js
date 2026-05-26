@@ -4,7 +4,7 @@ $(function () {
     loadAnnouncementList();
 
     function newAnnouncement() {
-        $("#ann_type").val('');
+        $("#ann_type").val('').trigger('change');
         $("#title").val('');
         $("#ann_desc").val('');
         $("#trans_type").val('New');
@@ -201,13 +201,38 @@ $(function () {
     $(document).on('click', '.btn-edit', function () {
         $("#announcement_id").val($(this).data('id'));
         $("#title").val($(this).data('title'));
-        $("#ann_type").val($(this).data('type'));
         $("#ann_desc").val($(this).data('desc'));
         $("#trans_type").val('Edit');
+        
+        // Fix for select dropdown - make sure to trigger change event
+        let announcementType = $(this).data('type');
+        $("#ann_type").val(announcementType).trigger('change');
+        
+        // Debug: Log to check if values are being set
+        console.log("Edit clicked - ID:", $(this).data('id'));
+        console.log("Type set to:", $("#ann_type").val());
+        console.log("Title set to:", $("#title").val());
+        
+        $('html, body').animate({ scrollTop: 0 }, 400);
+        $("#ann_type").focus();
+    });
+
+    // New button handler
+    $(document).on('click', '#btn-new', function() {
+        newAnnouncement();
+        
+        // Optional: Scroll to top to show the cleared form
         $('html, body').animate({ scrollTop: 0 }, 400);
         
-        // Optional: Show a visual indicator that you're in edit mode
-        $("#ann_type").focus();
+        // Optional: Show a brief notification
+        Swal.fire({
+            title: 'New Announcement',
+            text: 'Form cleared. You can now create a new announcement.',
+            icon: 'info',
+            timer: 1500,
+            showConfirmButton: false,
+            customClass: { popup: 'swal-small' }
+        });
     });
 
 });

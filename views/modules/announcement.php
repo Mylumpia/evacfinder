@@ -24,7 +24,7 @@
                             <div class="col-md-12">
                                 <label class="form-label" for="ann_type">Type of Announcement <span class="text-danger">*</span></label>
                                 <select id="ann_type" name="ann_type" class="form-select" required>
-                                    <option value="" disabled selected>- select -</option>
+                                    <option value="" selected>- select -</option>
                                     <option value="General">General Announcement</option>
                                     <option value="Event">Event</option>
                                     <option value="Advisory">Advisory</option>
@@ -64,7 +64,12 @@
                                 <div class="card">
                                     <div class="card-header d-flex justify-content-between align-items-center">
                                         <h5 class="card-title mb-0">Announcement Lists</h5>
-                                        <a href="?route=announcement" class="btn btn-primary btn-sm">Refresh</a>
+                                        <div>
+                                            <button type="button" class="btn btn-success btn-sm" id="btn-new">
+                                                <i class="ti tabler-plus me-1"></i>New Announcement
+                                            </button>
+                                            <a href="?route=announcement" class="btn btn-primary btn-sm">Refresh</a>
+                                        </div>
                                     </div>
                                     <div class="card-body p-0">
                                         <div class="table-responsive">

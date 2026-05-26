@@ -39,7 +39,7 @@ $base_url = '/evacfinder/';
           </a>
         </li>
 
-        <!-- Active Centers -->
+        <!-- Active Centers (This shows the list of centers with Add buttons) -->
         <li>
           <a class="ai-icon" href="<?php echo $base_url; ?>?route=active" aria-expanded="false">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
@@ -47,39 +47,7 @@ $base_url = '/evacfinder/';
                 stroke-width="2" class="feather feather-activity">
               <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
             </svg>
-            <span class="nav-text">Active</span>
-          </a>
-        </li>
-
-        <!-- Evacuation Centers -->
-        <li>
-          <a class="ai-icon" href="<?php echo $base_url; ?>?route=centers" aria-expanded="false">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                stroke-width="2" class="feather feather-building">
-              <rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect>
-              <line x1="9" y1="6" x2="15" y2="6"></line>
-              <line x1="9" y1="10" x2="15" y2="10"></line>
-              <line x1="9" y1="14" x2="15" y2="14"></line>
-              <line x1="9" y1="18" x2="11" y2="18"></line>
-            </svg>
-            <span class="nav-text">Evacuation Centers</span>
-          </a>
-        </li>
-
-        <!-- Evacuees -->
-        <li>
-          <a class="ai-icon" href="<?php echo $base_url; ?>?route=evacuees" aria-expanded="false">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                stroke-width="2" class="feather feather-users">
-              <rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect>
-              <line x1="9" y1="6" x2="15" y2="6"></line>
-              <line x1="9" y1="10" x2="15" y2="10"></line>
-              <line x1="9" y1="14" x2="15" y2="14"></line>
-              <line x1="9" y1="18" x2="11" y2="18"></line>
-            </svg>
-            <span class="nav-text">Evacuees</span>
+            <span class="nav-text">Active Centers</span>
           </a>
         </li>
 
