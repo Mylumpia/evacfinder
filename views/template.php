@@ -80,7 +80,7 @@
       <div class="content-body">
         <div class="container-fluid">
           <?php
-            $allowedRoutes = ['home', 'map', 'logout', 'centers', 'evacuees', 'active', 'announcement'];
+            $allowedRoutes = ['home', 'map', 'logout', 'centers', 'evacuees', 'active', 'announcement', 'forgot-password'];
             if(in_array($route, $allowedRoutes)){
               include "modules/" . $route . ".php";
             } else {
@@ -112,6 +112,13 @@
         <div class="content-body" style="margin-left: 0; padding: 0;">
             <div class="container-fluid" style="padding: 0;">
                 <?php include "modules/registration.php"; ?>
+            </div>
+        </div>
+    <?php elseif($route == "forgot-password"): ?>
+        <!-- Forgot Password Page -->
+        <div class="content-body" style="margin-left: 0; padding: 0;">
+            <div class="container-fluid" style="padding: 0;">
+                <?php include "modules/forgot-password.php"; ?>
             </div>
         </div>
     <?php else: ?>

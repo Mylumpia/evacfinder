@@ -48,10 +48,206 @@ if (isset($_SESSION["loggedIn"]) && $_SESSION["loggedIn"] == "ok") {
     }
 }
 
+$passwordResetMessage = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['passwordResetSubmit']) && isset($_SESSION['loggedIn']) && $_SESSION['loggedIn'] === 'ok') {
+    $newPassword = trim($_POST['newPassword'] ?? '');
+    $confirmPassword = trim($_POST['confirmPassword'] ?? '');
+    if ($newPassword === '' || $confirmPassword === '') {
+        $passwordResetMessage = 'Please enter both password fields.';
+    } elseif ($newPassword !== $confirmPassword) {
+        $passwordResetMessage = 'Passwords do not match.';
+    } elseif (strlen($newPassword) < 8) {
+        $passwordResetMessage = 'Password must be at least 8 characters.';
+    } elseif (!preg_match('/[0-9]/', $newPassword)) {
+        $passwordResetMessage = 'Password must include at least one number.';
+    } elseif (!preg_match('/[A-Z]/', $newPassword)) {
+        $passwordResetMessage = 'Password must include at least one uppercase letter.';
+    } elseif (!preg_match('/[\W_]/', $newPassword)) {
+        $passwordResetMessage = 'Password must include at least one symbol.';
+    } else {
+        $currentUserId = $_SESSION['userid'] ?? '';
+        $currentEmail = $_SESSION['email'] ?? '';
+        if ($currentUserId && $currentEmail) {
+            $updated = ModelUserRights::mdlUpdatePassword($currentUserId, $newPassword, $currentEmail);
+            if ($updated) {
+                $passwordResetMessage = 'Password updated successfully.';
+            } else {
+                $passwordResetMessage = 'Unable to update password. Please try again.';
+            }
+        } else {
+            $passwordResetMessage = 'Unable to identify your account.';
+        }
+    }
+}
+
 function profileDisplayValue($value, $default = 'N/A') {
     return $value ? htmlspecialchars($value, ENT_QUOTES, 'UTF-8') : $default;
 }
 ?>
+<style>
+body.theme-dark {
+  background-color: #0f172a;
+  color: #e2e8f0;
+}
+body.theme-dark .header,
+body.theme-dark .header .header-content {
+  background-color: #102040 !important;
+  color: #e2e8f0 !important;
+}
+body.theme-dark .nav-header {
+  background-color: #1565c0 !important;
+  box-shadow: none;
+}
+body.theme-dark .nav-header .brand-logo img {
+  opacity: 1;
+}
+body.theme-dark .navbar-nav .nav-link,
+body.theme-dark .navbar-nav .dropdown-item,
+body.theme-dark .search_bar .search_icon {
+  color: #e2e8f0 !important;
+}
+body.theme-dark .card,
+body.theme-dark .modal-content,
+body.theme-dark .dropdown-menu,
+body.theme-dark .content-body,
+body.theme-dark .table,
+body.theme-dark .table thead th,
+body.theme-dark .table tbody td {
+  background-color: #0b1220 !important;
+  color: #e2e8f0 !important;
+}
+body.theme-dark .card {
+  border-color: #0a1624 !important;
+}
+body.theme-dark .form-control {
+  background-color: #12243b !important;
+  border-color: #203651 !important;
+}
+body.theme-dark .form-control::placeholder {
+  color: #94a3b8 !important;
+}
+body.theme-dark .text-muted,
+body.theme-dark .text-white-75 {
+  color: #94a3b8 !important;
+}
+
+.dashboard-card {
+  border: none;
+  overflow: hidden;
+}
+.dashboard-card .card-body {
+  min-height: 170px;
+}
+.dashboard-card.dashboard-card-primary {
+  background: linear-gradient(135deg, #2163d9 0%, #3b8bff 100%) !important;
+}
+.dashboard-card.dashboard-card-success {
+  background: linear-gradient(135deg, #6fc42f 0%, #47a11a 100%) !important;
+}
+.dashboard-card.dashboard-card-info {
+  background: linear-gradient(135deg, #38d9d4 0%, #1aa6a4 100%) !important;
+}
+.stats-card {
+  background-color: #f8fafc;
+  border-color: #e2e8f0;
+}
+.stats-card-icon {
+  width: 60px;
+  height: 60px;
+  min-width: 60px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+}
+.stats-card-icon-primary { background: #1c5dbf; }
+.stats-card-icon-success { background: #2d8f30; }
+.stats-card-icon-warning { background: #d18f17; }
+.stats-card-icon-info { background: #15a5b0; }
+
+body.theme-dark .dashboard-card.dashboard-card-primary {
+  background: linear-gradient(135deg, #0f315f 0%, #2369b5 100%) !important;
+}
+body.theme-dark .dashboard-card.dashboard-card-success {
+  background: linear-gradient(135deg, #1f471f 0%, #2d7730 100%) !important;
+}
+body.theme-dark .dashboard-card.dashboard-card-info {
+  background: linear-gradient(135deg, #0f6360 0%, #18888a 100%) !important;
+}
+body.theme-dark .stats-card {
+  background-color: #071018 !important;
+  border-color: #071722 !important;
+}
+body.theme-dark .stats-card-icon-primary { background: #0f3a67; }
+body.theme-dark .stats-card-icon-success { background: #216a25; }
+body.theme-dark .stats-card-icon-warning { background: #a26c10; }
+body.theme-dark .stats-card-icon-info { background: #0c7c7b; }
+body.theme-dark .btn-outline-secondary {
+  color: #e2e8f0;
+  background-color: rgba(255,255,255,0.06);
+  border-color: rgba(226,232,240,.18);
+}
+body.theme-dark .btn-light {
+  background: #144a8d !important;
+  color: #e2e8f0 !important;
+  border-color: #1f4f8f !important;
+}
+body.theme-dark .btn-primary {
+  background-color: #1976d2 !important;
+  border-color: #1976d2 !important;
+}
+body.theme-dark .btn-primary:hover {
+  background-color: #165ea9 !important;
+  border-color: #165ea9 !important;
+}
+body.theme-dark .badge.bg-light {
+  background: #144a8d !important;
+  color: #e2e8f0 !important;
+}
+body.theme-dark .modal-body {
+  color: #e2e8f0;
+}
+body.theme-dark .alert {
+  background-color: #12263b;
+  border-color: #1f2a44;
+  color: #e2e8f0;
+}
+body.theme-dark .dropdown-menu {
+  background-color: #102040 !important;
+}
+body.theme-dark .sidebar {
+  background-color: #12243b !important;
+}
+body.theme-dark .navbar-expand .navbar-nav .nav-link {
+  color: #e2e8f0 !important;
+}
+
+.dark-mode-btn {
+  background-color: #f0f4f8 !important;
+  color: #1976d2 !important;
+  border-radius: 8px !important;
+  transition: all 0.3s ease;
+  font-weight: 600;
+}
+.dark-mode-btn:hover {
+  background-color: #e0e8f0 !important;
+  transform: scale(1.08);
+  box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3) !important;
+}
+.dark-mode-btn:active {
+  transform: scale(0.95);
+}
+
+body.theme-dark .dark-mode-btn {
+  background-color: #1f3f5f !important;
+  color: #ffd700 !important;
+  border-color: #ffd700 !important;
+}
+body.theme-dark .dark-mode-btn:hover {
+  background-color: #2a5480 !important;
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.4) !important;
+}
+</style>
 
 <!-- Top Navbar -->
 <div class="header">
@@ -74,7 +270,12 @@ function profileDisplayValue($value, $default = 'N/A') {
         </div>
 
         <!-- Right: Show Login or Profile based on session -->
-        <ul class="navbar-nav header-right">
+        <ul class="navbar-nav header-right align-items-center">
+          <li class="nav-item me-3">
+            <button type="button" class="btn btn-outline-secondary dark-mode-btn" id="darkModeToggle" title="Toggle dark mode" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; transition: all 0.3s ease; border: 2px solid #007bff;">
+              <i class="fa fa-lightbulb-o"></i>
+            </button>
+          </li>
           <?php 
             $isLoggedIn = isset($_SESSION["loggedIn"]) && $_SESSION["loggedIn"] == "ok";
           ?>
@@ -187,9 +388,13 @@ function profileDisplayValue($value, $default = 'N/A') {
                   <span class="text-muted">User ID</span>
                   <strong><?php echo profileDisplayValue($profileUserId, 'N/A'); ?></strong>
                 </div>
-                <div class="mb-3 d-flex justify-content-between">
+                <div class="mb-3 d-flex justify-content-between align-items-start">
                   <span class="text-muted">Password</span>
-                  <strong>••••••••</strong>
+                  <div style="width: 56%; text-align: right;">
+                    <div id="passwordView" class="d-inline-flex align-items-center">
+                      <strong id="maskedPassword">••••••••</strong>
+                    </div>
+                  </div>
                 </div>
                 <div class="mb-3 d-flex justify-content-between">
                   <span class="text-muted">Last login</span>
@@ -218,32 +423,221 @@ function profileDisplayValue($value, $default = 'N/A') {
         </div>
       </div>
       <div class="modal-footer border-0">
-        <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Close</button>
+        <div class="d-flex justify-content-between align-items-center w-100">
+          <button type="button" class="btn btn-outline-secondary" id="resetPasswordBtn">Reset Password</button>
+          <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Close</button>
+        </div>
       </div>
     </div>
   </div>
 </div>
+
+<!-- Password Reset Popup -->
+<div class="modal fade" id="passwordResetModal" tabindex="-1" role="dialog" aria-labelledby="passwordResetModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content bg-white border-0 rounded-4 shadow-lg">
+      <div class="modal-body p-4">
+        <div class="text-center mb-4">
+          <div class="rounded-circle bg-primary d-inline-flex align-items-center justify-content-center" style="width:60px; height:60px;">
+            <i class="fa fa-lock text-white" style="font-size:1.3rem;"></i>
+          </div>
+          <h5 class="mt-3 mb-2 text-dark">Set new password</h5>
+          <p class="text-muted mb-0">Must be at least 8 characters and include a number and symbol.</p>
+        </div>
+        <form id="passwordResetForm" method="post" action="">
+          <input type="hidden" name="passwordResetSubmit" value="1">
+          <?php if (!empty($passwordResetMessage)): ?>
+            <div class="alert alert-<?php echo strpos($passwordResetMessage, 'successfully') !== false ? 'success' : 'danger'; ?> py-2">
+              <?php echo htmlspecialchars($passwordResetMessage, ENT_QUOTES, 'UTF-8'); ?>
+            </div>
+          <?php endif; ?>
+          <div class="mb-3 position-relative">
+            <label class="form-label text-dark" for="popupNewPassword">New password</label>
+            <input type="password" id="popupNewPassword" name="newPassword" class="form-control rounded-pill border bg-light text-dark py-3 pe-5" placeholder="Enter new password" required>
+            <span class="position-absolute" style="right: 18px; top: 50%; transform: translateY(-50%); cursor: pointer;">
+              <i class="fa fa-eye text-secondary" id="popupToggleNew"></i>
+            </span>
+          </div>
+          <div class="mb-3 position-relative">
+            <label class="form-label text-dark" for="popupConfirmPassword">Confirm password</label>
+            <input type="password" id="popupConfirmPassword" name="confirmPassword" class="form-control rounded-pill border bg-light text-dark py-3 pe-5" placeholder="Re-enter new password" required>
+            <span class="position-absolute" style="right: 18px; top: 50%; transform: translateY(-50%); cursor: pointer;">
+              <i class="fa fa-eye text-secondary" id="popupToggleConfirm"></i>
+            </span>
+          </div>
+          <ul class="list-unstyled text-dark small mb-4">
+            <li class="d-flex align-items-start mb-2"><span class="badge rounded-circle bg-secondary mt-1 me-2" style="width:8px; height:8px;"></span><span>At least 8 characters</span></li>
+            <li class="d-flex align-items-start mb-2"><span class="badge rounded-circle bg-secondary mt-1 me-2" style="width:8px; height:8px;"></span><span>Contains a number</span></li>
+            <li class="d-flex align-items-start mb-2"><span class="badge rounded-circle bg-secondary mt-1 me-2" style="width:8px; height:8px;"></span><span>Contains a symbol</span></li>
+            <li class="d-flex align-items-start"><span class="badge rounded-circle bg-secondary mt-1 me-2" style="width:8px; height:8px;"></span><span>Contains an uppercase letter</span></li>
+          </ul>
+          <button type="submit" class="btn btn-primary w-100 py-2">Reset password</button>
+          <div class="text-center mt-3">
+            <button type="button" class="btn btn-link text-primary p-0" id="backToProfileBtn">&larr; Back to profile</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 document.addEventListener('DOMContentLoaded', function () {
   var el = document.getElementById('lastLoginValue');
-  if (!el) return;
-  var raw = el.getAttribute('data-last-login');
-  if (!raw) {
-    el.textContent = 'N/A';
-    return;
+  if (el) {
+    var raw = el.getAttribute('data-last-login');
+    if (!raw) {
+      el.textContent = 'N/A';
+    } else {
+      var date = new Date(raw);
+      if (!isNaN(date.getTime())) {
+        el.textContent = date.toLocaleString(undefined, {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          hour: 'numeric',
+          minute: '2-digit'
+        });
+      } else {
+        el.textContent = 'N/A';
+      }
+    }
   }
-  var parsed = new Date(raw);
-  if (isNaN(parsed.getTime())) {
-    el.textContent = raw;
-    return;
+
+  var resetButton = document.getElementById('resetPasswordBtn');
+  if (resetButton) {
+    resetButton.addEventListener('click', function () {
+      $('#profileModal').modal('hide');
+      $('#passwordResetModal').modal('show');
+    });
   }
-  el.textContent = parsed.toLocaleString(undefined, {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true
-  });
+
+  function togglePasswordField(toggleId, fieldId) {
+    var toggle = document.getElementById(toggleId);
+    var field = document.getElementById(fieldId);
+    if (!toggle || !field) return;
+    toggle.addEventListener('click', function () {
+      if (field.type === 'password') {
+        field.type = 'text';
+        toggle.classList.remove('fa-eye');
+        toggle.classList.add('fa-eye-slash');
+      } else {
+        field.type = 'password';
+        toggle.classList.remove('fa-eye-slash');
+        toggle.classList.add('fa-eye');
+      }
+    });
+  }
+
+  togglePasswordField('popupToggleNew', 'popupNewPassword');
+  togglePasswordField('popupToggleConfirm', 'popupConfirmPassword');
+
+  var resetForm = document.getElementById('passwordResetForm');
+  if (resetForm) {
+    resetForm.addEventListener('submit', function (event) {
+      // allow normal form submission so backend can update the DB and show feedback
+    });
+  }
+
+  var backToProfileBtn = document.getElementById('backToProfileBtn');
+  if (backToProfileBtn) {
+    backToProfileBtn.addEventListener('click', function () {
+      $('#passwordResetModal').modal('hide');
+      $('#profileModal').modal('show');
+    });
+  }
+
+  var darkModeToggle = document.getElementById('darkModeToggle');
+  function applyTheme(theme) {
+    if (theme === 'dark') {
+      document.body.classList.add('theme-dark');
+    } else {
+      document.body.classList.remove('theme-dark');
+    }
+  }
+
+  var savedTheme = localStorage.getItem('evacfinderTheme') || 'light';
+  applyTheme(savedTheme);
+
+  if (darkModeToggle) {
+    darkModeToggle.addEventListener('click', function () {
+      var nextTheme = document.body.classList.contains('theme-dark') ? 'light' : 'dark';
+      localStorage.setItem('evacfinderTheme', nextTheme);
+      applyTheme(nextTheme);
+    });
+  }
+
+  // Inline password edit handlers
+  var editBtn = document.getElementById('editPasswordInlineBtn');
+  var passwordView = document.getElementById('passwordView');
+  var passwordEditForm = document.getElementById('passwordEditForm');
+  var cancelBtn = document.getElementById('cancelInlinePassword');
+  var saveBtn = document.getElementById('saveInlinePassword');
+  var inlineMsg = document.getElementById('inlinePasswordMessage');
+
+  if (editBtn) {
+    editBtn.addEventListener('click', function () {
+      passwordView.style.display = 'none';
+      passwordEditForm.style.display = 'block';
+      inlineMsg.innerText = '';
+      document.getElementById('inlineNewPassword').focus();
+    });
+  }
+
+  if (cancelBtn) {
+    cancelBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      passwordEditForm.style.display = 'none';
+      passwordView.style.display = 'inline-flex';
+      inlineMsg.innerText = '';
+      document.getElementById('inlineNewPassword').value = '';
+      document.getElementById('inlineConfirmPassword').value = '';
+    });
+  }
+
+  if (saveBtn) {
+    saveBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      inlineMsg.innerText = '';
+      var newPw = document.getElementById('inlineNewPassword').value.trim();
+      var confPw = document.getElementById('inlineConfirmPassword').value.trim();
+      if (!newPw || !confPw) {
+        inlineMsg.innerText = 'Please enter both password fields.';
+        return;
+      }
+
+      var formData = new FormData();
+      formData.append('newPassword', newPw);
+      formData.append('confirmPassword', confPw);
+
+      fetch('ajax/password_reset.ajax.php', {
+        method: 'POST',
+        credentials: 'same-origin',
+        body: formData
+      }).then(function (res) { return res.json(); }).then(function (json) {
+        if (json.success) {
+          inlineMsg.style.color = '#198754';
+          inlineMsg.innerText = json.message;
+          setTimeout(function () {
+            passwordEditForm.style.display = 'none';
+            passwordView.style.display = 'inline-flex';
+            document.getElementById('inlineNewPassword').value = '';
+            document.getElementById('inlineConfirmPassword').value = '';
+            inlineMsg.innerText = '';
+          }, 1200);
+        } else {
+          inlineMsg.style.color = '#dc3545';
+          inlineMsg.innerText = json.message || 'Error updating password';
+        }
+      }).catch(function (err) {
+        inlineMsg.style.color = '#dc3545';
+        inlineMsg.innerText = 'Server error';
+      });
+    });
+  }
+
+  <?php if (!empty($passwordResetMessage)): ?>
+    $('#passwordResetModal').modal('show');
+  <?php endif; ?>
 });
 </script>

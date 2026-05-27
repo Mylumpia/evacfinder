@@ -8,13 +8,13 @@ $allCenters = ModelCenters::mdlGetAllCenters();
     <!-- Statistics Cards -->
     <div class="row g-3 mb-4">
         <div class="col-sm-6 col-xl-3">
-            <div class="card shadow-sm h-100">
+            <div class="card shadow-sm h-100 stats-card">
                 <div class="card-body d-flex justify-content-between align-items-center">
                     <div>
                         <p class="mb-1 text-uppercase text-primary fw-bold">Total Centers</p>
                         <h3 class="mb-0"><?php echo number_format($summary['total_centers']); ?></h3>
                     </div>
-                    <div class="bg-primary text-white rounded-3 p-3">
+                    <div class="stats-card-icon stats-card-icon-primary text-white rounded-3">
                         <i class="fa fa-home"></i>
                     </div>
                 </div>
@@ -22,13 +22,13 @@ $allCenters = ModelCenters::mdlGetAllCenters();
         </div>
 
         <div class="col-sm-6 col-xl-3">
-            <div class="card shadow-sm h-100">
+            <div class="card shadow-sm h-100 stats-card">
                 <div class="card-body d-flex justify-content-between align-items-center">
                     <div>
                         <p class="mb-1 text-uppercase text-success fw-bold">Total Capacity</p>
                         <h3 class="mb-0"><?php echo number_format($summary['total_capacity']); ?></h3>
                     </div>
-                    <div class="bg-success text-white rounded-3 p-3">
+                    <div class="stats-card-icon stats-card-icon-success text-white rounded-3">
                         <i class="fa fa-users"></i>
                     </div>
                 </div>
@@ -36,13 +36,13 @@ $allCenters = ModelCenters::mdlGetAllCenters();
         </div>
 
         <div class="col-sm-6 col-xl-3">
-            <div class="card shadow-sm h-100">
+            <div class="card shadow-sm h-100 stats-card">
                 <div class="card-body d-flex justify-content-between align-items-center">
                     <div>
                         <p class="mb-1 text-uppercase text-warning fw-bold">Currently Occupied</p>
                         <h3 class="mb-0"><?php echo number_format($summary['currently_occupied']); ?></h3>
                     </div>
-                    <div class="bg-warning text-dark rounded-3 p-3">
+                    <div class="stats-card-icon stats-card-icon-warning text-white rounded-3">
                         <i class="fa fa-bed"></i>
                     </div>
                 </div>
@@ -50,13 +50,13 @@ $allCenters = ModelCenters::mdlGetAllCenters();
         </div>
 
         <div class="col-sm-6 col-xl-3">
-            <div class="card shadow-sm h-100">
+            <div class="card shadow-sm h-100 stats-card">
                 <div class="card-body d-flex justify-content-between align-items-center">
                     <div>
                         <p class="mb-1 text-uppercase text-info fw-bold">Active Centers</p>
                         <h3 class="mb-0"><?php echo number_format($summary['active_centers']); ?></h3>
                     </div>
-                    <div class="bg-info text-white rounded-3 p-3">
+                    <div class="stats-card-icon stats-card-icon-info text-white rounded-3">
                         <i class="fa fa-check-circle"></i>
                     </div>
                 </div>

@@ -11,7 +11,7 @@
             <div class="row">
               <!-- Welcome Card -->
               <div class="col-md-6 col-lg-4 mb-4">
-                <div class="card bg-primary text-white">
+                <div class="card dashboard-card dashboard-card-primary text-white">
                   <div class="card-body">
                     <h5 class="card-title">Welcome, <?php echo htmlspecialchars($_SESSION['username'] ?? 'User'); ?>!</h5>
                     <p class="card-text">Welcome to your personal EvacFinder dashboard.</p>
@@ -21,7 +21,7 @@
               
               <!-- Statistics Card -->
               <div class="col-md-6 col-lg-4 mb-4">
-                <div class="card bg-success text-white">
+                <div class="card dashboard-card dashboard-card-success text-white">
                   <div class="card-body">
                     <h5 class="card-title">Evacuation Centers</h5>
                     <p class="card-text">View and manage evacuation centers in your area.</p>
@@ -32,7 +32,7 @@
               
               <!-- Alerts Card -->
               <div class="col-md-6 col-lg-4 mb-4">
-                <div class="card bg-info text-white">
+                <div class="card dashboard-card dashboard-card-info text-white">
                   <div class="card-body">
                     <h5 class="card-title">Emergency Alerts</h5>
                     <p class="card-text">Configure your alert preferences.</p>

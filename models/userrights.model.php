@@ -131,6 +131,40 @@ class ModelUserRights {
         }
     }
 
+    static public function mdlUpdatePassword($userid, $password, $email) {
+        $db = (new Connection)->connect();
+
+        try {
+            $db->beginTransaction();
+
+            $stmt = $db->prepare("UPDATE userrights SET password = :password WHERE userid = :userid");
+            $stmt->bindParam(":password", $password, PDO::PARAM_STR);
+            $stmt->bindParam(":userid", $userid, PDO::PARAM_STR);
+            $stmt->execute();
+
+            $userData = self::mdlGetUserCredentials('userrights', 'userid', $userid);
+            if (!empty($userData) && isset($userData['Type'])) {
+                if ($userData['Type'] === 'lgu') {
+                    $stmtLgu = $db->prepare("UPDATE lgu_users SET password = :password WHERE office_email_address = :email");
+                    $stmtLgu->bindParam(":password", $password, PDO::PARAM_STR);
+                    $stmtLgu->bindParam(":email", $email, PDO::PARAM_STR);
+                    $stmtLgu->execute();
+                } elseif ($userData['Type'] === 'public') {
+                    $stmtPersonal = $db->prepare("UPDATE personal_users SET password = :password WHERE email_address = :email");
+                    $stmtPersonal->bindParam(":password", $password, PDO::PARAM_STR);
+                    $stmtPersonal->bindParam(":email", $email, PDO::PARAM_STR);
+                    $stmtPersonal->execute();
+                }
+            }
+
+            $db->commit();
+            return true;
+        } catch (PDOException $e) {
+            $db->rollBack();
+            return false;
+        }
+    }
+
     static public function mdlUpdateLastLogin($userid, $timestamp) {
         $db = (new Connection)->connect();
         // Ensure column exists (MySQL supports IF NOT EXISTS)

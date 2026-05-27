@@ -9,7 +9,6 @@
         <div class="row justify-content-center">
             <div class="col-12">
                 <div class="card">
-
                     <div class="card-header sticky-element bg-label-secondary d-flex justify-content-sm-between align-items-sm-center flex-column flex-sm-row">
                         <h5 class="card-title mb-sm-0 me-2">ANNOUNCEMENT</h5>
                         <input type="hidden" name="encodedby" id="encodedby" value="<?php echo $_SESSION['userid']; ?>">
