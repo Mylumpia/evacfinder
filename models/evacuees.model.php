@@ -30,7 +30,7 @@ class ModelEvacuees {
                     condition_elderly, condition_pwd, condition_4ps, 
                     pwd_type, health_status, emergency_medical_condition, 
                     medications_taken, known_allergies, evacuation_center_id, 
-                    arrival_date, departure_date, evacuee_status, encodedby
+                    arrival_date, departure_date, evacuee_status, encodedby, registered_by_lgu_id
                 ) VALUES (
                     :evacuee_id, :registration_date, :last_name, :first_name,
                     :middle_name, :extension_name, :relation_to_head, :sex,
@@ -40,7 +40,7 @@ class ModelEvacuees {
                     :condition_elderly, :condition_pwd, :condition_4ps,
                     :pwd_type, :health_status, :emergency_medical_condition,
                     :medications_taken, :known_allergies, :evacuation_center_id,
-                    :arrival_date, :departure_date, :evacuee_status, :encodedby
+                    :arrival_date, :departure_date, :evacuee_status, :encodedby, :registered_by_lgu_id
                 )
             ");
 
@@ -75,6 +75,7 @@ class ModelEvacuees {
             $stmt->bindParam(":departure_date", $data["departure_date"], PDO::PARAM_STR);
             $stmt->bindParam(":evacuee_status", $data["evacuee_status"], PDO::PARAM_STR);
             $stmt->bindParam(":encodedby", $data["encodedby"], PDO::PARAM_STR);
+            $stmt->bindParam(":registered_by_lgu_id", $data["registered_by_lgu_id"], PDO::PARAM_STR);
 
             if($stmt->execute()){
                 $pdo->commit();

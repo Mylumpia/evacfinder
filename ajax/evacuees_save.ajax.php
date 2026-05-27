@@ -1,6 +1,7 @@
 <?php
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
+session_start();
 require_once "../controllers/evacuees.controller.php";
 require_once "../models/evacuees.model.php";
 
@@ -37,6 +38,7 @@ class evacueeRegistration {
     public $arrival_date;
     public $departure_date;
     public $evacuee_status;
+    public $registered_by_lgu_id;
 
     public function saveEvacuee() {
         error_log("saveEvacuee called - trans_type: " . $this->trans_type);
@@ -71,7 +73,8 @@ class evacueeRegistration {
             "arrival_date" => $this->arrival_date,
             "departure_date" => $this->departure_date,
             "evacuee_status" => $this->evacuee_status,
-            "encodedby" => $this->encodedby
+            "encodedby" => $this->encodedby,
+            "registered_by_lgu_id" => $this->registered_by_lgu_id
         );
 
         error_log("Data to save: " . print_r($data, true));
@@ -125,6 +128,7 @@ $save_evacuee->evacuation_center_id = isset($_POST["evacuation_center_id"]) && $
 $save_evacuee->arrival_date = isset($_POST["arrival_date"]) && $_POST["arrival_date"] !== "" ? $_POST["arrival_date"] : null;
 $save_evacuee->departure_date = isset($_POST["departure_date"]) && $_POST["departure_date"] !== "" ? $_POST["departure_date"] : null;
 $save_evacuee->evacuee_status = isset($_POST["evacuee_status"]) ? $_POST["evacuee_status"] : "Active";
+$save_evacuee->registered_by_lgu_id = isset($_SESSION["userid"]) ? $_SESSION["userid"] : null;
 
 $save_evacuee->saveEvacuee();
 ?>

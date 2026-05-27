@@ -136,7 +136,6 @@ class ModelCenters{
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // NEW METHOD: Get center by ID
     static public function mdlGetCenterById($center_id) {
         $db = new Connection();
         $pdo = $db->connect();
@@ -148,7 +147,6 @@ class ModelCenters{
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    // NEW METHOD: Update center
     static public function mdlUpdateCenter($data) {
         $db = new Connection();
         $pdo = $db->connect();
@@ -207,7 +205,6 @@ class ModelCenters{
         }
     }
 
-    // NEW METHOD: Update center fields (for inline editing)
     static public function mdlUpdateCenterFields($center_id, $fields) {
         $db = new Connection();
         $pdo = $db->connect();
@@ -236,6 +233,135 @@ class ModelCenters{
             error_log("Update fields error: " . $e->getMessage());
             return false;
         }
+    }
+
+    // NEW: Get centers with assigned LGU user info
+    static public function mdlGetCentersWithLGU() {
+        $db = new Connection();
+        $pdo = $db->connect();
+
+        $stmt = $pdo->prepare("
+            SELECT c.*, 
+                   u.email as assigned_lgu_email,
+                   CONCAT(l.first_name, ' ', l.last_name) as assigned_lgu_name,
+                   l.phone_number as assigned_lgu_phone
+            FROM centers c
+            LEFT JOIN userrights u ON c.assigned_lgu_user_id = u.userid
+            LEFT JOIN lgu_users l ON u.email = l.office_email_address
+            ORDER BY c.center_name
+        ");
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    // NEW: Get available LGU users (not assigned to any center)
+    static public function mdlGetAvailableLGUUsers() {
+        $db = new Connection();
+        $pdo = $db->connect();
+
+        $stmt = $pdo->prepare("
+            SELECT u.userid, u.email, l.first_name, l.last_name, l.phone_number, l.position_role
+            FROM userrights u
+            INNER JOIN lgu_users l ON u.email = l.office_email_address
+            WHERE u.Type = 'lgu' 
+            AND u.userid NOT IN (SELECT assigned_lgu_user_id FROM centers WHERE assigned_lgu_user_id IS NOT NULL AND assigned_lgu_user_id != '')
+            AND u.status = 'Active'
+            ORDER BY l.last_name, l.first_name
+        ");
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    // NEW: Assign LGU user to center
+    static public function mdlAssignLGUToCenter($center_id, $lgu_user_id, $assigned_by = null) {
+        $db = new Connection();
+        $pdo = $db->connect();
+        
+        try {
+            $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            $pdo->beginTransaction();
+            
+            // Update centers table
+            $stmt = $pdo->prepare("UPDATE centers SET assigned_lgu_user_id = :lgu_user_id WHERE center_id = :center_id");
+            $stmt->bindParam(":center_id", $center_id);
+            $stmt->bindParam(":lgu_user_id", $lgu_user_id);
+            $stmt->execute();
+            
+            // Record assignment in assignments table
+            $stmt2 = $pdo->prepare("
+                INSERT INTO lgu_center_assignments (lgu_user_id, center_id, assigned_by, status)
+                VALUES (:lgu_user_id, :center_id, :assigned_by, 'Active')
+                ON DUPLICATE KEY UPDATE assigned_date = CURRENT_TIMESTAMP, status = 'Active', assigned_by = :assigned_by
+            ");
+            $stmt2->bindParam(":lgu_user_id", $lgu_user_id);
+            $stmt2->bindParam(":center_id", $center_id);
+            $stmt2->bindParam(":assigned_by", $assigned_by);
+            $stmt2->execute();
+            
+            $pdo->commit();
+            return true;
+        } catch (PDOException $e) {
+            $pdo->rollBack();
+            error_log("Assignment error: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    // NEW: Get center report with evacuees
+    static public function mdlGetCenterReport($center_id) {
+        $db = new Connection();
+        $pdo = $db->connect();
+        
+        // Get center details
+        $stmt = $pdo->prepare("
+            SELECT c.*, 
+                   u.email as assigned_lgu_email,
+                   CONCAT(l.first_name, ' ', l.last_name) as assigned_lgu_name
+            FROM centers c
+            LEFT JOIN userrights u ON c.assigned_lgu_user_id = u.userid
+            LEFT JOIN lgu_users l ON u.email = l.office_email_address
+            WHERE c.center_id = :center_id
+        ");
+        $stmt->bindParam(":center_id", $center_id);
+        $stmt->execute();
+        $center = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        // Get evacuees in this center
+        $stmt2 = $pdo->prepare("
+            SELECT e.*, 
+                   CONCAT(l.first_name, ' ', l.last_name) as encoded_by_name
+            FROM evacuees e
+            LEFT JOIN lgu_users l ON e.encodedby = l.id
+            WHERE e.evacuation_center_id = :center_id AND e.evacuee_status = 'Active'
+            ORDER BY e.arrival_date DESC, e.last_name, e.first_name
+        ");
+        $stmt2->bindParam(":center_id", $center_id);
+        $stmt2->execute();
+        $evacuees = $stmt2->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Get statistics
+        $stats = [
+            'total_evacuees' => count($evacuees),
+            'male' => 0,
+            'female' => 0,
+            'pwd' => 0,
+            'elderly' => 0,
+            'pregnant' => 0,
+            'lactating' => 0,
+            'children' => 0
+        ];
+        
+        foreach ($evacuees as $evacuee) {
+            if ($evacuee['sex'] == 'Male') $stats['male']++;
+            if ($evacuee['sex'] == 'Female') $stats['female']++;
+            if ($evacuee['condition_pwd']) $stats['pwd']++;
+            if ($evacuee['condition_elderly']) $stats['elderly']++;
+            if ($evacuee['condition_pregnant']) $stats['pregnant']++;
+            if ($evacuee['condition_lactating']) $stats['lactating']++;
+            if ($evacuee['age'] && $evacuee['age'] < 18) $stats['children']++;
+        }
+        
+        return ['center' => $center, 'evacuees' => $evacuees, 'statistics' => $stats];
     }
 }
 ?>

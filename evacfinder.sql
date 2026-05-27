@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: May 26, 2026 at 04:55 AM
+-- Generation Time: May 27, 2026 at 06:35 PM
 -- Server version: 8.4.3
 -- PHP Version: 8.3.30
 
@@ -49,7 +49,11 @@ INSERT INTO `announcements` (`id`, `announcement_id`, `ann_title`, `ann_type`, `
 (5, 'ANN00005', 'sfss', 'General', 'efs', '1', '2026-05-26 00:43:10'),
 (6, 'ANN00006', 'TITLE', 'Advisory', 'blahbblahblahh', '1', '2026-05-26 12:34:36'),
 (7, 'ANN00007', 'asd', 'Advisory', 'wasaf', '1', '2026-05-26 12:35:06'),
-(8, 'ANN00008', 'asdw', 'Event', 'asd', '1', '2026-05-26 12:35:33');
+(8, 'ANN00008', 'asdw', 'Event', 'asd', '1', '2026-05-26 12:35:33'),
+(9, 'ANN00009', '', '', '', '6', '2026-05-26 22:34:38'),
+(10, 'ANN00010', '', '', '', '6', '2026-05-26 22:34:47'),
+(11, 'ANN00011', '', '', '', '6', '2026-05-26 22:35:26'),
+(12, 'ANN00012', '', '', '', '6', '2026-05-26 22:39:24');
 
 -- --------------------------------------------------------
 
@@ -82,15 +86,17 @@ CREATE TABLE `centers` (
   `longitude` decimal(11,8) DEFAULT NULL,
   `estimated_capacity` int DEFAULT NULL,
   `accessibility` varchar(300) DEFAULT NULL,
-  `available_facilities` varchar(300) DEFAULT NULL
+  `available_facilities` varchar(300) DEFAULT NULL,
+  `assigned_lgu_user_id` varchar(10) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Dumping data for table `centers`
 --
 
-INSERT INTO `centers` (`id`, `center_id`, `center_name`, `category`, `status`, `barangay`, `city`, `province`, `address`, `capacity`, `max_persons`, `current_occupants`, `contact_number`, `contact_person`, `alternate_contact`, `date_established`, `facilities`, `hazard_type`, `remarks`, `encodedby`, `latitude`, `longitude`, `estimated_capacity`, `accessibility`, `available_facilities`) VALUES
-(1, 'EvacC00001', 'Banago Elem', 'Secondary', 'Inactive', '', '', 'Negros Occidental', '', 0, 0, 0, '', '', '', NULL, '', '', '', 1, NULL, NULL, NULL, '', '');
+INSERT INTO `centers` (`id`, `center_id`, `center_name`, `category`, `status`, `barangay`, `city`, `province`, `address`, `capacity`, `max_persons`, `current_occupants`, `contact_number`, `contact_person`, `alternate_contact`, `date_established`, `facilities`, `hazard_type`, `remarks`, `encodedby`, `latitude`, `longitude`, `estimated_capacity`, `accessibility`, `available_facilities`, `assigned_lgu_user_id`) VALUES
+(1, 'EvacC00001', 'Banago Elem', 'Secondary', 'Inactive', '', '', 'Negros Occidental', '', 300, 0, 0, '', '', '', NULL, '', '', '', 1, NULL, NULL, 300, '', '', NULL),
+(2, 'EvacC00002', 'Alijis', 'Primary', 'Active', 'Alijis', 'Bacolod', 'Negros Occidental', 'Alijis', 400, 400, 1, '', '', '', NULL, '', '', '', 6, 10.65656800, 122.96001400, 400, '', '', '00006');
 
 -- --------------------------------------------------------
 
@@ -131,8 +137,38 @@ CREATE TABLE `evacuees` (
   `departure_date` date DEFAULT NULL,
   `evacuee_status` varchar(20) DEFAULT 'Active',
   `encodedby` varchar(5) NOT NULL,
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `registered_by_lgu_id` varchar(10) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `evacuees`
+--
+
+INSERT INTO `evacuees` (`id`, `evacuee_id`, `registration_date`, `last_name`, `first_name`, `middle_name`, `extension_name`, `relation_to_head`, `sex`, `birth_date`, `age`, `civil_status`, `occupation`, `contact_number`, `complete_address`, `emergency_contact_person`, `emergency_contact_number`, `condition_pregnant`, `condition_lactating`, `condition_elderly`, `condition_pwd`, `condition_4ps`, `pwd_type`, `health_status`, `emergency_medical_condition`, `medications_taken`, `known_allergies`, `evacuation_center_id`, `arrival_date`, `departure_date`, `evacuee_status`, `encodedby`, `created_at`, `registered_by_lgu_id`) VALUES
+(1, 'Evac00001', '2026-05-26', 'Garcia', 'Kit', '', '', '', 'Male', NULL, NULL, '', '', '', '', '', '', 0, 0, 0, 0, 0, '', '', '', '', '', 'EvacC00002', '2026-05-26', NULL, 'Active', '00006', '2026-05-26 14:52:14', NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `lgu_center_assignments`
+--
+
+CREATE TABLE `lgu_center_assignments` (
+  `id` int NOT NULL,
+  `lgu_user_id` varchar(10) NOT NULL,
+  `center_id` varchar(10) NOT NULL,
+  `assigned_date` datetime DEFAULT CURRENT_TIMESTAMP,
+  `assigned_by` varchar(10) DEFAULT NULL,
+  `status` varchar(20) DEFAULT 'Active'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `lgu_center_assignments`
+--
+
+INSERT INTO `lgu_center_assignments` (`id`, `lgu_user_id`, `center_id`, `assigned_date`, `assigned_by`, `status`) VALUES
+(1, '00006', 'EvacC00002', '2026-05-28 02:33:54', '00006', 'Active');
 
 -- --------------------------------------------------------
 
@@ -162,7 +198,8 @@ CREATE TABLE `lgu_users` (
 --
 
 INSERT INTO `lgu_users` (`id`, `lgu_id`, `lgu_office_name`, `office_email_address`, `office_type`, `province`, `region`, `position_role`, `first_name`, `last_name`, `phone_number`, `password`, `registration_date`, `status`) VALUES
-(2, 'LGU00001', 'based', 'allen@gmail.com', 'municipal', 'negros-occidental', 'region-vi', 'pretty', 'allen', 'sarmiento', '09491744739', 'me', '2026-05-26 04:54:08', 'Pending');
+(2, 'LGU00001', 'based', 'allen@gmail.com', 'municipal', 'negros-occidental', 'region-vi', 'pretty', 'allen', 'sarmiento', '09491744739', 'me', '2026-05-26 04:54:08', 'Pending'),
+(3, 'LGU00003', 'Bacolod', '123@gmail.com', 'city', 'negros-occidental', 'region-vi', 'Okay', 'john', 'Garcia', '12312321', '123', '2026-05-26 08:42:47', 'Pending');
 
 -- --------------------------------------------------------
 
@@ -193,7 +230,8 @@ CREATE TABLE `personal_users` (
 --
 
 INSERT INTO `personal_users` (`id`, `user_id`, `first_name`, `last_name`, `middle_initial`, `extension`, `date_of_birth`, `sex`, `email_address`, `phone_number`, `region`, `account_type`, `password`, `registration_date`, `status`) VALUES
-(9, '00004', 'lance', 'sarmiento', 'G', 'hey', '2005-12-12', 'Male', 'lancesarmiento40@gmail.com', '09491744739', 'negros-occidental-region6', 'Public User', '123', '2026-05-26 07:39:32', 'Active');
+(9, '00004', 'lance', 'sarmiento', 'G', 'hey', '2005-12-12', 'Male', 'lancesarmiento40@gmail.com', '09491744739', 'negros-occidental-region6', 'Public User', '123', '2026-05-26 07:39:32', 'Active'),
+(10, '00005', 'john', 'Garcia', 'P', '', '2026-04-30', 'Male', 'capkeith43@gmail.com', '09494949494', 'negros-occidental-region6', 'Public User', '123', '2026-05-26 08:41:52', 'Active');
 
 -- --------------------------------------------------------
 
@@ -207,17 +245,20 @@ CREATE TABLE `userrights` (
   `email` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `password` varchar(20) NOT NULL,
   `Type` varchar(10) NOT NULL,
-  `last_login` datetime DEFAULT NULL
+  `last_login` datetime DEFAULT NULL,
+  `status` varchar(20) DEFAULT 'Active'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Dumping data for table `userrights`
 --
 
-INSERT INTO `userrights` (`id`, `userid`, `email`, `password`, `Type`, `last_login`) VALUES
-(1, '00001', 'sample@gmail.com', 'user', '', NULL),
-(7, '00003', 'allen@gmail.com', 'me', 'lgu', '2026-05-26 07:46:10'),
-(8, '00004', 'lancesarmiento40@gmail.com', '123', 'public', '2026-05-26 07:39:47');
+INSERT INTO `userrights` (`id`, `userid`, `email`, `password`, `Type`, `last_login`, `status`) VALUES
+(1, '00001', 'sample@gmail.com', 'user', '', '2026-05-26 08:41:12', 'Active'),
+(7, '00003', 'allen@gmail.com', 'me', 'lgu', '2026-05-26 07:46:10', 'Active'),
+(8, '00004', 'lancesarmiento40@gmail.com', '123', 'public', '2026-05-26 07:39:47', 'Active'),
+(9, '00005', 'capkeith43@gmail.com', '123', 'public', '2026-05-26 08:42:00', 'Active'),
+(10, '00006', '123@gmail.com', '123', 'lgu', '2026-05-27 18:33:15', 'Active');
 
 --
 -- Indexes for dumped tables
@@ -234,7 +275,8 @@ ALTER TABLE `announcements`
 --
 ALTER TABLE `centers`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `center_id` (`center_id`);
+  ADD UNIQUE KEY `center_id` (`center_id`),
+  ADD KEY `fk_centers_assigned_lgu` (`assigned_lgu_user_id`);
 
 --
 -- Indexes for table `evacuees`
@@ -242,7 +284,16 @@ ALTER TABLE `centers`
 ALTER TABLE `evacuees`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `evacuee_id` (`evacuee_id`),
-  ADD KEY `evacuation_center_id` (`evacuation_center_id`);
+  ADD KEY `evacuation_center_id` (`evacuation_center_id`),
+  ADD KEY `fk_evacuees_registered_by` (`registered_by_lgu_id`);
+
+--
+-- Indexes for table `lgu_center_assignments`
+--
+ALTER TABLE `lgu_center_assignments`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `unique_assignment` (`lgu_user_id`,`center_id`),
+  ADD KEY `fk_lgu_assignments_center` (`center_id`);
 
 --
 -- Indexes for table `lgu_users`
@@ -264,7 +315,8 @@ ALTER TABLE `personal_users`
 -- Indexes for table `userrights`
 --
 ALTER TABLE `userrights`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `unique_userid` (`userid`);
 
 --
 -- AUTO_INCREMENT for dumped tables
@@ -274,65 +326,67 @@ ALTER TABLE `userrights`
 -- AUTO_INCREMENT for table `announcements`
 --
 ALTER TABLE `announcements`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT for table `centers`
 --
 ALTER TABLE `centers`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
-
---
--- AUTO_INCREMENT for table `evacuees`
---
-ALTER TABLE `evacuees`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `lgu_users`
---
-ALTER TABLE `lgu_users`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `personal_users`
---
-ALTER TABLE `personal_users`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `evacuees`
---
-ALTER TABLE `evacuees`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `lgu_users`
---
-ALTER TABLE `lgu_users`
   MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
+-- AUTO_INCREMENT for table `evacuees`
+--
+ALTER TABLE `evacuees`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT for table `lgu_center_assignments`
+--
+ALTER TABLE `lgu_center_assignments`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT for table `lgu_users`
+--
+ALTER TABLE `lgu_users`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
 -- AUTO_INCREMENT for table `personal_users`
 --
 ALTER TABLE `personal_users`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `userrights`
 --
 ALTER TABLE `userrights`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- Constraints for dumped tables
 --
 
 --
+-- Constraints for table `centers`
+--
+ALTER TABLE `centers`
+  ADD CONSTRAINT `fk_centers_assigned_lgu` FOREIGN KEY (`assigned_lgu_user_id`) REFERENCES `userrights` (`userid`) ON DELETE SET NULL;
+
+--
 -- Constraints for table `evacuees`
 --
 ALTER TABLE `evacuees`
-  ADD CONSTRAINT `fk_evacuees_center` FOREIGN KEY (`evacuation_center_id`) REFERENCES `centers` (`center_id`) ON DELETE SET NULL;
+  ADD CONSTRAINT `fk_evacuees_center` FOREIGN KEY (`evacuation_center_id`) REFERENCES `centers` (`center_id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_evacuees_registered_by` FOREIGN KEY (`registered_by_lgu_id`) REFERENCES `userrights` (`userid`) ON DELETE SET NULL;
+
+--
+-- Constraints for table `lgu_center_assignments`
+--
+ALTER TABLE `lgu_center_assignments`
+  ADD CONSTRAINT `fk_lgu_assignments_center` FOREIGN KEY (`center_id`) REFERENCES `centers` (`center_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_lgu_assignments_user` FOREIGN KEY (`lgu_user_id`) REFERENCES `userrights` (`userid`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

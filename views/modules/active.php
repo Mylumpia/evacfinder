@@ -138,7 +138,7 @@ $allCenters = ModelCenters::mdlGetAllCenters();
                                                     data-capacity="<?php echo $center['capacity']; ?>">
                                                 <i class="fa fa-user-plus"></i> Add Evacuee
                                             </button>
-                                            <button type="button" class="btn btn-sm btn-primary edit-center" 
+                                            <button type="button" class="btn btn-sm btn-primary edit-center me-1" 
                                                     data-center-id="<?php echo htmlspecialchars($center['center_id']); ?>"
                                                     data-center-name="<?php echo htmlspecialchars($center['center_name']); ?>"
                                                     data-category="<?php echo htmlspecialchars($center['category']); ?>"
@@ -158,6 +158,15 @@ $allCenters = ModelCenters::mdlGetAllCenters();
                                                     data-available-facilities="<?php echo htmlspecialchars($fullCenter['available_facilities']); ?>"
                                                     data-remarks="<?php echo htmlspecialchars($fullCenter['remarks']); ?>">
                                                 <i class="fa fa-edit"></i> Edit
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-info assign-lgu me-1" 
+                                                    data-center-id="<?php echo htmlspecialchars($center['center_id']); ?>"
+                                                    data-center-name="<?php echo htmlspecialchars($center['center_name']); ?>">
+                                                <i class="fa fa-user-md"></i> Assign LGU
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-secondary print-report" 
+                                                    data-center-id="<?php echo htmlspecialchars($center['center_id']); ?>">
+                                                <i class="fa fa-print"></i> Print Report
                                             </button>
                                         </td>
                                     </tr>
@@ -532,6 +541,52 @@ $allCenters = ModelCenters::mdlGetAllCenters();
     </div>
 </div>
 
+<!-- Assign LGU Modal -->
+<div class="modal fade" id="assignLGMModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Assign LGU User to Center</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="assignLGUForm">
+                    <input type="hidden" id="assign_center_id" name="center_id">
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Evacuation Center:</label>
+                        <input type="text" class="form-control" id="assign_center_name" readonly>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="lgu_user_id" class="form-label">Select LGU User <span class="text-danger">*</span></label>
+                        <select class="form-control" id="lgu_user_id" name="lgu_user_id" required>
+                            <option value="">-- Select LGU User --</option>
+                            <?php
+                            require_once "models/centers.model.php";
+                            $availableLGU = ModelCenters::mdlGetAvailableLGUUsers();
+                            foreach ($availableLGU as $lgu) {
+                                echo '<option value="' . $lgu['userid'] . '">' . 
+                                     htmlspecialchars($lgu['first_name'] . ' ' . $lgu['last_name'] . ' - ' . $lgu['position_role']) . 
+                                     '</option>';
+                            }
+                            ?>
+                        </select>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="fa fa-info-circle"></i> Assigned LGU users will be able to manage this evacuation center and view its reports.
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirmAssignLGU">Assign LGU User</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
@@ -868,6 +923,76 @@ $(document).ready(function() {
                 });
             }
         });
+    });
+    
+    // Assign LGU button click
+    $('.assign-lgu').on('click', function() {
+        var centerId = $(this).data('center-id');
+        var centerName = $(this).data('center-name');
+        
+        $('#assign_center_id').val(centerId);
+        $('#assign_center_name').val(centerName);
+        $('#lgu_user_id').val('');
+        
+        $('#assignLGMModal').modal('show');
+    });
+    
+    // Confirm Assign LGU
+    $('#confirmAssignLGU').on('click', function() {
+        var centerId = $('#assign_center_id').val();
+        var lguUserId = $('#lgu_user_id').val();
+        
+        if (!lguUserId) {
+            Swal.fire('Error', 'Please select an LGU user to assign', 'warning');
+            return;
+        }
+        
+        Swal.fire({
+            title: 'Assign LGU User?',
+            text: 'Are you sure you want to assign this LGU user to the center?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, assign',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire({
+                    title: 'Assigning...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+                
+                $.ajax({
+                    url: "ajax/assign_lgu_to_center.ajax.php",
+                    method: "POST",
+                    data: {
+                        center_id: centerId,
+                        lgu_user_id: lguUserId
+                    },
+                    dataType: "json",
+                    success: function(response) {
+                        if (response.success) {
+                            Swal.fire('Success!', response.message, 'success').then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire('Error', response.message, 'error');
+                        }
+                    },
+                    error: function() {
+                        Swal.fire('Error', 'Failed to assign LGU user', 'error');
+                    }
+                });
+            }
+        });
+    });
+    
+    // Print Report button click
+    $('.print-report').on('click', function() {
+        var centerId = $(this).data('center-id');
+        window.open('reports/center_report.php?center_id=' + centerId, '_blank');
     });
 });
 </script>
