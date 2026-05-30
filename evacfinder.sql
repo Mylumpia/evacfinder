@@ -66,7 +66,7 @@ CREATE TABLE `centers` (
   `center_id` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `center_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `category` varchar(50) NOT NULL,
-  `status` varchar(20) NOT NULL,
+  `status` varchar(50) NOT NULL,
   `barangay` varchar(50) NOT NULL,
   `city` varchar(50) NOT NULL,
   `province` varchar(50) NOT NULL,
@@ -181,7 +181,7 @@ CREATE TABLE `lgu_users` (
   `lgu_id` varchar(10) NOT NULL,
   `lgu_office_name` varchar(100) NOT NULL,
   `office_email_address` varchar(100) NOT NULL,
-  `office_type` varchar(50) NOT NULL,
+  `department` varchar(50) NOT NULL,
   `province` varchar(100) DEFAULT NULL,
   `region` varchar(100) NOT NULL,
   `position_role` varchar(100) NOT NULL,
@@ -197,7 +197,7 @@ CREATE TABLE `lgu_users` (
 -- Dumping data for table `lgu_users`
 --
 
-INSERT INTO `lgu_users` (`id`, `lgu_id`, `lgu_office_name`, `office_email_address`, `office_type`, `province`, `region`, `position_role`, `first_name`, `last_name`, `phone_number`, `password`, `registration_date`, `status`) VALUES
+INSERT INTO `lgu_users` (`id`, `lgu_id`, `lgu_office_name`, `office_email_address`, `department`, `province`, `region`, `position_role`, `first_name`, `last_name`, `phone_number`, `password`, `registration_date`, `status`) VALUES
 (2, 'LGU00001', 'based', 'allen@gmail.com', 'municipal', 'negros-occidental', 'region-vi', 'pretty', 'allen', 'sarmiento', '09491744739', 'me', '2026-05-26 04:54:08', 'Pending'),
 (3, 'LGU00003', 'Bacolod', '123@gmail.com', 'city', 'negros-occidental', 'region-vi', 'Okay', 'john', 'Garcia', '12312321', '123', '2026-05-26 08:42:47', 'Pending');
 

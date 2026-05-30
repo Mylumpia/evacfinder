@@ -142,7 +142,6 @@ class ControllerUserRights {
             $officeEmail = trim($_POST['lguOfficeEmail'] ?? '');
             $lguOfficeName = trim($_POST['lguOfficeName'] ?? '');
             $lguPhone = trim($_POST['lguPhone'] ?? '');
-            $lguOfficeType = trim($_POST['lguOfficeType'] ?? '');
             $lguDepartment = trim($_POST['lguDepartment'] ?? '');
             $lguRegion = trim($_POST['lguRegion'] ?? '');
             $lguProvince = trim($_POST['lguProvince'] ?? '');
@@ -152,7 +151,7 @@ class ControllerUserRights {
                 return "Please complete the first registration step before submitting LGU details.";
             }
 
-            if (!$email || !$password || !$firstName || !$lastName || !$lguOfficeName || !$lguPhone || !$lguOfficeType || !$lguDepartment || !$lguRegion || !$lguProvince || !$lguPosition) {
+            if (!$email || !$password || !$firstName || !$lastName || !$lguOfficeName || !$lguPhone || !$lguDepartment || !$lguRegion || !$lguProvince || !$lguPosition) {
                 return "Please fill in all required fields for LGU registration.";
             }
 
@@ -189,7 +188,7 @@ class ControllerUserRights {
                 'lgu_id' => $lguId,
                 'lgu_office_name' => $lguOfficeName,
                 'office_email_address' => $officeEmail,
-                'office_type' => $lguOfficeType,
+                'department' => $lguDepartment,
                 'province' => $lguProvince,
                 'region' => $lguRegion,
                 'position_role' => $lguPosition,
