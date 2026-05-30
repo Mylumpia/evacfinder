@@ -41,6 +41,7 @@
                                             <option value="Active">Active</option>
                                             <option value="Inactive">Inactive</option>
                                             <option value="Full">Full</option>
+                                            <option value="Standby">Standby</option>
                                             <option value="Under Maintenance">Under Maintenance</option>
                                         </select>
                                     </div>

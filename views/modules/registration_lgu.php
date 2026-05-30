@@ -93,24 +93,26 @@ if (empty($lguData) && $_SERVER['REQUEST_METHOD'] !== 'POST') {
                             </div>
                         </div>
 
-                        <!-- Row 3: Office Type, Department / Office -->
-                        <div class="row g-4 mb-4">
-                            <div class="col-md-6">
-                                <label for="lguOfficeType" class="form-label">Office Type <span class="text-danger">*</span></label>
-                                <br> <select id="lguOfficeType" name="lguOfficeType" class="select2 form-select" required>
-                                    <option value="">- select office type -</option>
-                                    <option value="municipal">Municipal Office</option>
-                                    <option value="city">City Office</option>
-                                    <option value="provincial">Provincial Office</option>
-                                </select>
-                            </div>
+                        <!-- Row 3: Position / Role (full width) -->
+                        <div class="row g-4 mb-4">         
                             <div class="col-md-6">
                                 <label for="lguDepartment" class="form-label">Department / Office <span class="text-danger">*</span></label>
                                 <br> <select id="lguDepartment" name="lguDepartment" class="select2 form-select" required>
                                     <option value="">- select department / office -</option>
-                                    <option value="disaster-management">Disaster Management Office</option>
-                                    <option value="public-safety">Public Safety Office</option>
-                                    <option value="information-technology">Information Technology Office</option>
+                                    <option value="Local Disaster Risk Reduction and Management Office (LDRRMO)">Local Disaster Risk Reduction and Management Office (LDRRMO)</option>
+                                    <option value="Municipal Social Welfare and Development Office (MSWDO)">Municipal Social Welfare and Development Office (MSWDO)</option>
+                                    <option value="Barangay Council">Barangay Council</option>
+                                </select>
+                            </div>                   
+                            <div class="col-6">
+                                <label class="form-label" for="lguPosition">Position / Role <span class="text-danger">*</span></label>
+                                <br><select id="lguPosition" name="lguPosition" class="form-select" required>
+                                    <option value="" disabled selected>Select position / role</option>
+                                    <option value="Brgy. Captain">Brgy. Captain</option>
+                                    <option value="Brgy. DRRMO Volunteer">Brgy. DRRMO Volunteer</option>
+                                    <option value="DRRM Officer">DRRM Officer</option>
+                                    <option value="Center Manager">Center Manager</option>
+                                    <option value="Social Welfare">Social Welfare</option>
                                 </select>
                             </div>
                         </div>
@@ -130,14 +132,6 @@ if (empty($lguData) && $_SERVER['REQUEST_METHOD'] !== 'POST') {
                                     <option value="">- select province -</option>
                                     <option value="negros-occidental">Negros Occidental</option>
                                 </select>
-                            </div>
-                        </div>
-
-                        <!-- Row 5: Position / Role (full width) -->
-                        <div class="row g-4 mb-4">                            
-                            <div class="col-12">
-                                <label class="form-label" for="lguPosition">Position / Role <span class="text-danger">*</span></label>
-                                <input type="text" id="lguPosition" name="lguPosition" class="form-control" placeholder="Enter position / role" required />
                             </div>
                         </div>
 

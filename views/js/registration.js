@@ -1,9 +1,77 @@
 $(function(){
     const form = document.querySelector('.registration-form');
+    const lguForm = document.querySelector('.registration-lgu-form');
     
     const accountTypeSelect = document.getElementById('accountType');
     const btnRegister = document.getElementById('btn-register');
     const btnNext = document.getElementById('btn-next');
+
+    
+    // Clear only on page refresh (not on first load)
+    if (performance.navigation && performance.navigation.type === 1) {
+        // This is a refresh
+        if (form) {
+            form.querySelectorAll('input, select, textarea').forEach(field => {
+                if (field.type !== 'submit' && field.type !== 'button' && field.type !== 'hidden') {
+                    field.value = '';
+                }
+            });
+        }
+        if (lguForm) {
+            lguForm.querySelectorAll('input, select, textarea').forEach(field => {
+                if (field.type !== 'submit' && field.type !== 'button' && field.type !== 'hidden') {
+                    field.value = '';
+                }
+            });
+        }
+    }
+
+    $("#btn-save").on('click', function () {
+        const isLgu = !!lguForm;
+
+        if (isLgu) {
+            // Basic LGU form validation
+            const lguRequired = ['lguOfficeName', 'lguOfficeEmail', 'lguPhone', 'lguPosition', 'lguDepartment', 'lguProvince', 'lguRegion'];
+            let lguValid = true;
+            lguRequired.forEach(function (id) {
+                const field = document.getElementById(id);
+                if (field && !field.value.trim()) {
+                    field.classList.add('is-invalid');
+                    lguValid = false;
+                } else if (field) {
+                    field.classList.remove('is-invalid');
+                }
+            });
+            if (!lguValid) return;
+
+            // Removed showSuccess call
+        } else {
+            // Basic user form validation
+            const userRequired = ['firstName', 'lastName', 'dateOfBirth', 'emailAddress', 'phoneNumber', 'region', 'password', 'confirmPassword'];
+            let userValid = true;
+            userRequired.forEach(function (id) {
+                const field = document.getElementById(id);
+                if (field && !field.value.trim()) {
+                    field.classList.add('is-invalid');
+                    userValid = false;
+                } else if (field) {
+                    field.classList.remove('is-invalid');
+                }
+            });
+
+            const password = document.getElementById('password');
+            const confirmPassword = document.getElementById('confirmPassword');
+            if (password && confirmPassword && password.value !== confirmPassword.value) {
+                showError('Password and Confirm Password must match.');
+                confirmPassword.classList.add('is-invalid');
+                userValid = false;
+            }
+
+            if (!userValid) return;
+
+            // Removed showSuccess call
+        }
+    });
     
 
     function hideError() {
@@ -20,6 +88,8 @@ $(function(){
             errorContainer.textContent = message;
         }
     }
+
+    // Removed showSuccess function entirely
 
     if (form) {
         form.addEventListener('submit', function (e) {
@@ -68,7 +138,7 @@ $(function(){
     
     $("#btn-back").click(function (e) {
         e.preventDefault();
-        
+
         if (confirm('Are you sure you want to leave the page?')) {
             if (form) form.reset();
             
@@ -77,7 +147,7 @@ $(function(){
             });
             
             hideError();
-            window.location.href = '?route=login';
+            history.go(-1);
         }
     });
 
@@ -103,7 +173,7 @@ $(function(){
     }
 
     $(".togglePassword").click(function(e){
-        e.preventDefault(); // prevents accidental form submit
+        e.preventDefault();
         const targetId = $(this).data('target');
         const input = $("#" + targetId);
         
@@ -115,5 +185,4 @@ $(function(){
             $(this).removeClass("fa-eye").addClass("fa-eye-slash");
         }
     });
-
 });

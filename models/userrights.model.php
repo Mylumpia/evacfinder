@@ -67,12 +67,12 @@ class ModelUserRights {
             $stmtUser->execute();
 
             $stmtLgu = $db->prepare(
-                "INSERT INTO lgu_users (lgu_id, lgu_office_name, office_email_address, office_type, province, region, position_role, first_name, last_name, phone_number, password) VALUES (:lgu_id, :lgu_office_name, :office_email_address, :office_type, :province, :region, :position_role, :first_name, :last_name, :phone_number, :password)"
+                "INSERT INTO lgu_users (lgu_id, lgu_office_name, office_email_address, department, province, region, position_role, first_name, last_name, phone_number, password) VALUES (:lgu_id, :lgu_office_name, :office_email_address, :department, :province, :region, :position_role, :first_name, :last_name, :phone_number, :password)"
             );
             $stmtLgu->bindParam(":lgu_id", $data["lgu_id"], PDO::PARAM_STR);
             $stmtLgu->bindParam(":lgu_office_name", $data["lgu_office_name"], PDO::PARAM_STR);
             $stmtLgu->bindParam(":office_email_address", $data["office_email_address"], PDO::PARAM_STR);
-            $stmtLgu->bindParam(":office_type", $data["office_type"], PDO::PARAM_STR);
+            $stmtLgu->bindParam(":department", $data["department"], PDO::PARAM_STR);
             $stmtLgu->bindParam(":province", $data["province"], PDO::PARAM_STR);
             $stmtLgu->bindParam(":region", $data["region"], PDO::PARAM_STR);
             $stmtLgu->bindParam(":position_role", $data["position_role"], PDO::PARAM_STR);
