@@ -1,40 +1,239 @@
 $(document).ready(function() {
-    // Set default dates
+    // Set default date
     var today = new Date().toISOString().split('T')[0];
     $('#evac_registration_date').val(today);
     $('#evac_arrival_date').val(today);
     
-    // Auto-calculate age from birth date
-    $('#evac_birth_date').on('change', function() {
-        var birthDate = new Date($(this).val());
-        var today = new Date();
-        var age = today.getFullYear() - birthDate.getFullYear();
-        var m = today.getMonth() - birthDate.getMonth();
-        if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-            age--;
-        }
-        if (age > 0 && age < 120) {
-            $('#evac_age').val(age);
+    // Toggle details row when clicking on the entire row
+    function toggleCenterDetails(centerId) {
+        var $detailsRow = $('#details-' + centerId);
+        var $icon = $('#expand-icon-' + centerId);
+        
+        if ($detailsRow.is(':visible')) {
+            $detailsRow.slideUp(200);
+            $icon.text('▶');
         } else {
-            $('#evac_age').val('');
+            // Close other open rows
+            $('.details-row:visible').each(function() {
+                var otherId = $(this).attr('id').replace('details-', '');
+                $('#details-' + otherId).slideUp(200);
+                $('#expand-icon-' + otherId).text('▶');
+            });
+            
+            $detailsRow.slideDown(200);
+            $icon.text('▼');
         }
-    });
-    
-    // Close modal function
-    function closeModal(modalId) {
-        $('#' + modalId).modal('hide');
     }
     
-    // Handle all close buttons (X icon and Cancel buttons)
-    $('.close-modal-btn').on('click', function() {
+    // Click on the entire row
+    $('.clickable-row').off('click').on('click', function(e) {
+        var centerId = $(this).data('center-id');
+        toggleCenterDetails(centerId);
+    });
+    
+    // Function to close any modal
+    function closeModal(modalId) {
+        $('#' + modalId).modal('hide');
+        // Remove backdrop if stuck
+        $('.modal-backdrop').remove();
+        $('body').removeClass('modal-open');
+    }
+    
+    // Handle ALL close buttons (X icon and Cancel buttons) for ALL modals
+    $(document).on('click', '.close-modal-btn', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
         var modalId = $(this).data('modal');
         if (modalId) {
             closeModal(modalId);
+        } else {
+            // If no data-modal, find the closest modal
+            var $modal = $(this).closest('.modal');
+            if ($modal.length) {
+                closeModal($modal.attr('id'));
+            }
         }
     });
     
-    // Add Evacuee button click
-    $('.add-evacuee').on('click', function() {
+    // Also handle any element with data-bs-dismiss (Bootstrap 4 standard)
+    $(document).on('click', '[data-dismiss="modal"]', function(e) {
+        e.preventDefault();
+        var $modal = $(this).closest('.modal');
+        if ($modal.length) {
+            closeModal($modal.attr('id'));
+        }
+    });
+    
+    // Load evacuees button click
+    $('.load-evacuees-btn').off('click').on('click', function(e) {
+        e.stopPropagation();
+        var centerId = $(this).data('center-id');
+        loadEvacueesForCenter(centerId);
+    });
+    
+    // Function to load evacuees
+    function loadEvacueesForCenter(centerId) {
+        var tbody = $('#evacuees-tbody-' + centerId);
+        tbody.html('<tr><td colspan="7" class="text-center"><i class="fa fa-spinner fa-spin"></i> Loading...</td></tr>');
+        
+        $.ajax({
+            url: "ajax/get_center_evacuees.ajax.php",
+            method: "POST",
+            data: { center_id: centerId },
+            dataType: "json",
+            success: function(response) {
+                if (response.success && response.evacuees.length > 0) {
+                    var html = '';
+                    $.each(response.evacuees, function(index, evacuee) {
+                        var statusClass = '';
+                        var statusIcon = '';
+                        if (evacuee.evacuee_status === 'Active') {
+                            statusClass = 'status-active';
+                            statusIcon = '🟢';
+                        } else if (evacuee.evacuee_status === 'Departed') {
+                            statusClass = 'status-departed';
+                            statusIcon = '🏠';
+                        } else if (evacuee.evacuee_status === 'Transferred') {
+                            statusClass = 'status-transferred';
+                            statusIcon = '🔄';
+                        } else if (evacuee.evacuee_status === 'Missing') {
+                            statusClass = 'status-missing';
+                            statusIcon = '❓';
+                        } else if (evacuee.evacuee_status === 'Deceased') {
+                            statusClass = 'status-deceased';
+                            statusIcon = '⚰️';
+                        }
+                        
+                        html += '<tr>' +
+                            '<td>' + (evacuee.evacuee_id || 'N/A') + '</td>' +
+                            '<td>' + evacuee.last_name + ', ' + evacuee.first_name + ' ' + (evacuee.middle_name ? evacuee.middle_name.charAt(0) + '.' : '') + '</td>' +
+                            '<td>' + (evacuee.age || 'N/A') + '</td>' +
+                            '<td>' + (evacuee.sex || 'N/A') + '</td>' +
+                            '<td><span class="evacuee-status-badge ' + statusClass + '">' + statusIcon + ' ' + evacuee.evacuee_status + '</span></td>' +
+                            '<td>' + (evacuee.arrival_date ? new Date(evacuee.arrival_date).toLocaleDateString() : 'N/A') + '</td>' +
+                            '<td><button class="btn btn-sm btn-warning edit-evacuee-status" data-evacuee-id="' + evacuee.evacuee_id + '" data-evacuee-name="' + evacuee.last_name + ', ' + evacuee.first_name + '" data-current-status="' + evacuee.evacuee_status + '" data-center-id="' + centerId + '"><i class="fa fa-exchange-alt"></i> Update Status</button></td>' +
+                            '</tr>';
+                    });
+                    tbody.html(html);
+                } else {
+                    tbody.html('<tr><td colspan="7" class="text-center">No evacuees found in this center</td></tr>');
+                }
+            },
+            error: function() {
+                tbody.html('<tr><td colspan="7" class="text-center text-danger">Error loading evacuees</td></tr>');
+            }
+        });
+    }
+    
+    // Update evacuee status button click (delegated)
+    $(document).on('click', '.edit-evacuee-status', function(e) {
+        e.stopPropagation();
+        var evacueeId = $(this).data('evacuee-id');
+        var evacueeName = $(this).data('evacuee-name');
+        var currentStatus = $(this).data('current-status');
+        var centerId = $(this).data('center-id');
+        
+        $('#update_evacuee_id').val(evacueeId);
+        $('#update_evacuee_name').val(evacueeName);
+        $('#update_center_id').val(centerId);
+        $('#update_status').val(currentStatus);
+        $('#transfer_center_div').hide();
+        $('#status_remarks').val('');
+        
+        $('#updateEvacueeStatusModal').modal('show');
+    });
+    
+    // Show/hide transfer center field based on status
+    $('#update_status').off('change').on('change', function() {
+        if ($(this).val() === 'Transferred') {
+            $('#transfer_center_div').show();
+            // Load centers for transfer
+            $.ajax({
+                url: "ajax/get_centers.ajax.php",
+                method: "POST",
+                data: { action: "get_centers" },
+                dataType: "json",
+                success: function(centers) {
+                    var options = '<option value="">-- Select Center --</option>';
+                    var currentCenterId = $('#update_center_id').val();
+                    $.each(centers, function(i, center) {
+                        if (center.center_id != currentCenterId) {
+                            options += '<option value="' + center.center_id + '">' + center.center_name + '</option>';
+                        }
+                    });
+                    $('#transfer_center_id').html(options);
+                }
+            });
+        } else {
+            $('#transfer_center_div').hide();
+        }
+    });
+    
+    // Confirm update status
+    $('#confirmUpdateStatus').off('click').on('click', function() {
+        var evacueeId = $('#update_evacuee_id').val();
+        var newStatus = $('#update_status').val();
+        var transferCenterId = $('#transfer_center_id').val();
+        var centerId = $('#update_center_id').val();
+        var remarks = $('#status_remarks').val();
+        
+        if (newStatus === 'Transferred' && !transferCenterId) {
+            Swal.fire('Error', 'Please select a center to transfer to', 'warning');
+            return;
+        }
+        
+        Swal.fire({
+            title: 'Update Status?',
+            text: 'Are you sure you want to update this evacuee\'s status?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, update',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire({
+                    title: 'Updating...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+                
+                $.ajax({
+                    url: "ajax/update_evacuee_status.ajax.php",
+                    method: "POST",
+                    data: {
+                        evacuee_id: evacueeId,
+                        evacuee_status: newStatus,
+                        transfer_center_id: transferCenterId,
+                        center_id: centerId,
+                        remarks: remarks
+                    },
+                    dataType: "json",
+                    success: function(response) {
+                        if (response.success) {
+                            Swal.fire('Success!', response.message, 'success').then(() => {
+                                closeModal('updateEvacueeStatusModal');
+                                loadEvacueesForCenter(centerId);
+                                setTimeout(function() {
+                                    location.reload();
+                                }, 1000);
+                            });
+                        } else {
+                            Swal.fire('Error', response.message, 'error');
+                        }
+                    },
+                    error: function() {
+                        Swal.fire('Error', 'Failed to update evacuee status', 'error');
+                    }
+                });
+            }
+        });
+    });
+    
+    // Add Evacuee button click (inside dropdown)
+    $(document).on('click', '.add-evacuee', function(e) {
+        e.stopPropagation();
         var centerId = $(this).data('center-id');
         var centerName = $(this).data('center-name');
         var currentOccupants = $(this).data('current-occupants');
@@ -45,55 +244,40 @@ $(document).ready(function() {
         $('#selectedCenterOccupancy').text(currentOccupants);
         $('#selectedCenterCapacity').text(capacity);
         
-        // Reset form fields
         $('#addEvacueeForm')[0].reset();
         $('#evac_registration_date').val(today);
         $('#evac_arrival_date').val(today);
         $('#evac_center_id').val(centerId);
-        $('#evac_evacuee_status').val('Active');
+        $('#evac_sex').val('');
         
         $('#addEvacueeModal').modal('show');
     });
     
     // Confirm Add Evacuee
-    $('#confirmAddEvacuee').on('click', function() {
-        // Validate required fields
-        var requiredFields = [
-            { id: '#evac_last_name', label: 'Last Name' },
-            { id: '#evac_first_name', label: 'First Name' },
-            { id: '#evac_sex', label: 'Sex' }
-        ];
+    $('#confirmAddEvacuee').off('click').on('click', function() {
+        var last_name = $('#evac_last_name').val();
+        var first_name = $('#evac_first_name').val();
+        var sex = $('#evac_sex').val();
         
-        var errors = [];
-        requiredFields.forEach(function(field) {
-            if (!$(field.id).val()) {
-                errors.push(field.label);
-            }
-        });
-        
-        if (errors.length > 0) {
-            Swal.fire({
-                title: 'Required Fields Missing',
-                html: 'Please fill in: ' + errors.join(', '),
-                icon: 'warning',
-                confirmButtonText: 'OK'
-            });
+        if (!last_name || !first_name || !sex) {
+            Swal.fire('Error', 'Please fill in all required fields', 'warning');
             return;
         }
         
-        // Check if center has capacity
-        var currentOccupants = parseInt($('#selectedCenterOccupancy').text());
-        var capacity = parseInt($('#selectedCenterCapacity').text());
-        
-        if (currentOccupants >= capacity) {
-            Swal.fire({
-                title: 'Center Full!',
-                text: 'This evacuation center has reached its maximum capacity. Cannot add more evacuees.',
-                icon: 'warning',
-                confirmButtonText: 'OK'
-            });
-            return;
-        }
+        var formData = {
+            trans_type: 'New',
+            encodedby: $('#evac_encodedby').val(),
+            registration_date: $('#evac_registration_date').val(),
+            last_name: last_name,
+            first_name: first_name,
+            middle_name: $('#evac_middle_name').val(),
+            sex: sex,
+            age: $('#evac_age').val(),
+            contact_number: $('#evac_contact_number').val(),
+            evacuation_center_id: $('#evac_center_id').val(),
+            arrival_date: $('#evac_arrival_date').val(),
+            evacuee_status: 'Active'
+        };
         
         Swal.fire({
             title: 'Register Evacuee?',
@@ -112,194 +296,80 @@ $(document).ready(function() {
                     }
                 });
                 
-                // Collect form data
-                var formData = {
-                    trans_type: 'New',
-                    encodedby: $('#evac_encodedby').val(),
-                    registration_date: $('#evac_registration_date').val(),
-                    last_name: $('#evac_last_name').val(),
-                    first_name: $('#evac_first_name').val(),
-                    middle_name: $('#evac_middle_name').val(),
-                    extension_name: $('#evac_extension_name').val(),
-                    relation_to_head: $('#evac_relation_to_head').val(),
-                    sex: $('#evac_sex').val(),
-                    birth_date: $('#evac_birth_date').val(),
-                    age: $('#evac_age').val(),
-                    civil_status: $('#evac_civil_status').val(),
-                    occupation: $('#evac_occupation').val(),
-                    contact_number: $('#evac_contact_number').val(),
-                    complete_address: $('#evac_complete_address').val(),
-                    emergency_contact_person: $('#evac_emergency_contact_person').val(),
-                    emergency_contact_number: $('#evac_emergency_contact_number').val(),
-                    condition_pregnant: $('#evac_condition_pregnant').is(':checked') ? 1 : 0,
-                    condition_lactating: $('#evac_condition_lactating').is(':checked') ? 1 : 0,
-                    condition_elderly: $('#evac_condition_elderly').is(':checked') ? 1 : 0,
-                    condition_pwd: $('#evac_condition_pwd').is(':checked') ? 1 : 0,
-                    condition_4ps: $('#evac_condition_4ps').is(':checked') ? 1 : 0,
-                    pwd_type: $('#evac_pwd_type').val(),
-                    health_status: $('#evac_health_status').val(),
-                    emergency_medical_condition: $('#evac_emergency_medical_condition').val(),
-                    medications_taken: $('#evac_medications_taken').val(),
-                    known_allergies: $('#evac_known_allergies').val(),
-                    evacuation_center_id: $('#evac_center_id').val(),
-                    arrival_date: $('#evac_arrival_date').val(),
-                    departure_date: $('#evac_departure_date').val(),
-                    evacuee_status: $('#evac_evacuee_status').val()
-                };
-                
-                // Send AJAX request
                 $.ajax({
                     url: "ajax/evacuees_save.ajax.php",
                     method: "POST",
                     data: formData,
                     dataType: "text",
                     success: function(response) {
-                        console.log("Response:", response);
-                        
-                        if (response && response.trim() !== 'error' && response.trim() !== '') {
-                            // Now update the center's occupancy count
+                        if (response && response.trim() !== 'error') {
+                            var centerId = $('#evac_center_id').val();
+                            var currentOccupants = parseInt($('#selectedCenterOccupancy').text());
                             var newOccupants = currentOccupants + 1;
+                            
                             $.ajax({
                                 url: "ajax/update_center_occupancy.ajax.php",
                                 method: "POST",
-                                data: {
-                                    center_id: $('#evac_center_id').val(),
-                                    current_occupants: newOccupants
-                                },
+                                data: { center_id: centerId, current_occupants: newOccupants },
                                 dataType: "json",
-                                success: function(updateResponse) {
-                                    if (updateResponse.success) {
-                                        Swal.fire({
-                                            title: 'Success!',
-                                            text: 'Evacuee registered successfully and center occupancy updated!',
-                                            icon: 'success',
-                                            confirmButtonText: 'OK'
-                                        }).then(() => {
-                                            location.reload();
-                                        });
-                                    } else {
-                                        Swal.fire({
-                                            title: 'Partial Success',
-                                            text: 'Evacuee registered but occupancy update failed. Please refresh.',
-                                            icon: 'warning',
-                                            confirmButtonText: 'OK'
-                                        }).then(() => {
-                                            location.reload();
-                                        });
-                                    }
+                                success: function() {
+                                    Swal.fire('Success!', 'Evacuee registered successfully', 'success').then(() => {
+                                        closeModal('addEvacueeModal');
+                                        location.reload();
+                                    });
                                 },
-                                error: function(xhr, status, error) {
-                                    console.error("Update error:", error);
-                                    Swal.fire({
-                                        title: 'Partial Success',
-                                        text: 'Evacuee registered but occupancy update may have failed. Please refresh.',
-                                        icon: 'warning',
-                                        confirmButtonText: 'OK'
-                                    }).then(() => {
+                                error: function() {
+                                    Swal.fire('Success', 'Evacuee registered but occupancy may need refresh', 'success').then(() => {
+                                        closeModal('addEvacueeModal');
                                         location.reload();
                                     });
                                 }
                             });
                         } else {
-                            Swal.fire('Error', 'Failed to register evacuee. Response: ' + response, 'error');
+                            Swal.fire('Error', 'Failed to register evacuee', 'error');
                         }
                     },
-                    error: function(xhr, status, error) {
-                        console.error('Error:', error);
-                        console.log('Response text:', xhr.responseText);
-                        Swal.fire('Error', 'An error occurred: ' + error, 'error');
+                    error: function() {
+                        Swal.fire('Error', 'An error occurred', 'error');
                     }
                 });
             }
         });
     });
     
-    // Edit button click - Populate modal with center data
-    $('.edit-center').on('click', function() {
-        var centerId = $(this).data('center-id');
-        var centerName = $(this).data('center-name');
-        var category = $(this).data('category');
-        var status = $(this).data('status');
-        var barangay = $(this).data('barangay');
-        var city = $(this).data('city');
-        var province = $(this).data('province');
-        var address = $(this).data('address');
-        var capacity = $(this).data('capacity');
-        var currentOccupants = $(this).data('current-occupants');
-        var contactNumber = $(this).data('contact-number');
-        var contactPerson = $(this).data('contact-person');
-        var latitude = $(this).data('latitude');
-        var longitude = $(this).data('longitude');
-        var estimatedCapacity = $(this).data('estimated-capacity');
-        var accessibility = $(this).data('accessibility');
-        var availableFacilities = $(this).data('available-facilities');
-        var remarks = $(this).data('remarks');
-        
-        $('#edit_center_id').val(centerId);
-        $('#edit_center_name').val(centerName);
-        $('#edit_category').val(category);
-        $('#edit_status').val(status);
-        $('#edit_barangay').val(barangay || '');
-        $('#edit_city').val(city || '');
-        $('#edit_province').val(province || 'Negros Occidental');
-        $('#edit_address').val(address || '');
-        $('#edit_capacity').val(capacity);
-        $('#edit_current_occupants').val(currentOccupants);
-        $('#edit_contact_number').val(contactNumber || '');
-        $('#edit_contact_person').val(contactPerson || '');
-        $('#edit_latitude').val(latitude || '');
-        $('#edit_longitude').val(longitude || '');
-        $('#edit_estimated_capacity').val(estimatedCapacity || capacity);
-        $('#edit_accessibility').val(accessibility || '');
-        $('#edit_available_facilities').val(availableFacilities || '');
-        $('#edit_remarks').val(remarks || '');
+    // Edit center button click (inside dropdown)
+    $(document).on('click', '.edit-center', function(e) {
+        e.stopPropagation();
+        $('#edit_center_id').val($(this).data('center-id'));
+        $('#edit_center_name').val($(this).data('center-name'));
+        $('#edit_category').val($(this).data('category'));
+        $('#edit_status').val($(this).data('status'));
+        $('#edit_barangay').val($(this).data('barangay') || '');
+        $('#edit_city').val($(this).data('city') || '');
+        $('#edit_province').val($(this).data('province') || 'Negros Occidental');
+        $('#edit_capacity').val($(this).data('capacity'));
+        $('#edit_current_occupants').val($(this).data('current-occupants'));
+        $('#edit_contact_number').val($(this).data('contact-number') || '');
+        $('#edit_contact_person').val($(this).data('contact-person') || '');
         
         $('#editCenterModal').modal('show');
     });
     
     // Update center button click
-    $('#confirmUpdateCenter').on('click', function() {
+    $('#confirmUpdateCenter').off('click').on('click', function() {
         var formData = {
             center_id: $('#edit_center_id').val(),
             center_name: $('#edit_center_name').val(),
             category: $('#edit_category').val(),
             status: $('#edit_status').val(),
-            address: $('#edit_address').val(),
             barangay: $('#edit_barangay').val(),
             city: $('#edit_city').val(),
             province: $('#edit_province').val(),
             capacity: $('#edit_capacity').val(),
-            estimated_capacity: $('#edit_estimated_capacity').val(),
             current_occupants: $('#edit_current_occupants').val(),
             contact_number: $('#edit_contact_number').val(),
-            contact_person: $('#edit_contact_person').val(),
-            latitude: $('#edit_latitude').val(),
-            longitude: $('#edit_longitude').val(),
-            accessibility: $('#edit_accessibility').val(),
-            available_facilities: $('#edit_available_facilities').val(),
-            remarks: $('#edit_remarks').val()
+            contact_person: $('#edit_contact_person').val()
         };
-        
-        var errors = [];
-        if (!formData.center_name) errors.push('Center Name is required');
-        if (!formData.category) errors.push('Category is required');
-        if (!formData.status) errors.push('Status is required');
-        if (!formData.province) errors.push('Province is required');
-        if (!formData.capacity || formData.capacity < 0) errors.push('Valid Capacity is required');
-        if (!formData.current_occupants || formData.current_occupants < 0) errors.push('Valid Current Occupants is required');
-        if (parseInt(formData.current_occupants) > parseInt(formData.capacity)) {
-            errors.push('Current Occupants cannot exceed Maximum Capacity');
-        }
-        
-        if (errors.length > 0) {
-            Swal.fire({
-                title: 'Validation Error',
-                html: errors.join('<br>'),
-                icon: 'warning',
-                confirmButtonText: 'OK'
-            });
-            return;
-        }
         
         Swal.fire({
             title: 'Update Center?',
@@ -325,46 +395,55 @@ $(document).ready(function() {
                     dataType: "json",
                     success: function(response) {
                         if (response.success) {
-                            Swal.fire({
-                                title: 'Success!',
-                                text: 'Center updated successfully',
-                                icon: 'success',
-                                confirmButtonText: 'OK'
-                            }).then(() => {
+                            Swal.fire('Success!', 'Center updated successfully', 'success').then(() => {
+                                closeModal('editCenterModal');
                                 location.reload();
                             });
                         } else {
                             Swal.fire('Error', response.message || 'Failed to update center', 'error');
                         }
                     },
-                    error: function(xhr, status, error) {
-                        console.error('Update error:', error);
-                        Swal.fire('Error', 'An error occurred while updating. Please try again.', 'error');
+                    error: function() {
+                        Swal.fire('Error', 'An error occurred', 'error');
                     }
                 });
             }
         });
     });
     
-    // Assign LGU button click
-    $('.assign-lgu').on('click', function() {
+    // Assign LGU button click (inside dropdown)
+    $(document).on('click', '.assign-lgu', function(e) {
+        e.stopPropagation();
         var centerId = $(this).data('center-id');
         var centerName = $(this).data('center-name');
         
         $('#assign_center_id').val(centerId);
         $('#assign_center_name').val(centerName);
-        $('#lgu_user_id').val('');
+        
+        // Load available LGU users
+        $.ajax({
+            url: "ajax/get_available_lgu.ajax.php",
+            method: "GET",
+            dataType: "json",
+            success: function(users) {
+                var options = '<option value="">-- Select LGU User --</option>';
+                $.each(users, function(i, user) {
+                    options += '<option value="' + user.userid + '">' + user.first_name + ' ' + user.last_name + ' - ' + user.position_role + '</option>';
+                });
+                $('#lgu_user_id').html(options);
+            }
+        });
         
         $('#assignLGMModal').modal('show');
     });
     
     // Confirm Assign LGU
-    $('#confirmAssignLGU').on('click', function() {
+    $('#confirmAssignLGU').off('click').on('click', function() {
         var centerId = $('#assign_center_id').val();
         var lguUserId = $('#lgu_user_id').val();
         
         if (!lguUserId) {
-            Swal.fire('Error', 'Please select an LGU user to assign', 'warning');
+            Swal.fire('Error', 'Please select an LGU user', 'warning');
             return;
         }
         
@@ -388,14 +467,12 @@ $(document).ready(function() {
                 $.ajax({
                     url: "ajax/assign_lgu_to_center.ajax.php",
                     method: "POST",
-                    data: {
-                        center_id: centerId,
-                        lgu_user_id: lguUserId
-                    },
+                    data: { center_id: centerId, lgu_user_id: lguUserId },
                     dataType: "json",
                     success: function(response) {
                         if (response.success) {
                             Swal.fire('Success!', response.message, 'success').then(() => {
+                                closeModal('assignLGMModal');
                                 location.reload();
                             });
                         } else {
@@ -410,9 +487,27 @@ $(document).ready(function() {
         });
     });
     
-    // Print Report button click
-    $('.print-report').on('click', function() {
+    // Print Report button click (inline button)
+    $('.print-report-btn-inline').off('click').on('click', function(e) {
+        e.stopPropagation();
         var centerId = $(this).data('center-id');
         window.open('reports/center_report.php?center_id=' + centerId, '_blank');
+    });
+    
+    // Load assigned LGU info for each center
+    $('.center-row').each(function() {
+        var centerId = $(this).data('center-id');
+        $.ajax({
+            url: "ajax/get_center_details.ajax.php",
+            method: "POST",
+            data: { center_id: centerId },
+            dataType: "json",
+            success: function(response) {
+                if (response && !response.error) {
+                    var assignedLgu = response.assigned_lgu_name || 'Not Assigned';
+                    $('#assigned-lgu-' + centerId).text(assignedLgu);
+                }
+            }
+        });
     });
 });

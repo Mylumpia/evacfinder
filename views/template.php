@@ -141,6 +141,7 @@
   <script src="views/assets/js/deznav-init.js"></script>
   <script src="views/assets/vendor/bootstrap-select/dist/js/bootstrap-select.min.js"></script>
   <script src="views/assets/js/custom.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
   <!-- Charts -->
   <script src="views/assets/vendor/chart.js/Chart.bundle.min.js"></script>

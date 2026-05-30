@@ -41,8 +41,8 @@ $(function () {
                                             data-desc="${escapeHtml(announcement.ann_desc)}">
                                         <i class="ti tabler-edit"></i> Edit
                                     </button>
-                                 </td>
-                             </tr>
+                                </td>
+                            </tr>
                         `;
                         tbody.append(row);
                     });
