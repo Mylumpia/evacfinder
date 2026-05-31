@@ -40,7 +40,7 @@ $allCenters = ModelCenters::mdlGetAllCenters();
                 <div class="card-body d-flex justify-content-between align-items-center">
                     <div>
                         <p class="mb-1 text-uppercase text-warning fw-bold">Currently Occupied</p>
-                        <h3 class="mb-0"><?php echo number_format($summary['currently_occupied']); ?></h3>
+                        <h3 class="mb-0" id="currentlyOccupiedCount"><?php echo number_format(max(0, $summary['currently_occupied'])); ?></h3>
                     </div>
                     <div class="stats-card-icon stats-card-icon-warning text-white rounded-3">
                         <i class="fa fa-bed"></i>
@@ -103,7 +103,7 @@ $allCenters = ModelCenters::mdlGetAllCenters();
                                         if ($statusText === 'Active') {
                                             $badgeClass = 'bg-success';
                                         } elseif ($statusText === 'Inactive') {
-                                            $badgeClass = 'bg-warning';
+                                            $badgeClass = 'bg-secondary';
                                         } elseif ($statusText === 'Full') {
                                             $badgeClass = 'bg-warning text-dark';
                                         } elseif ($statusText === 'Under Maintenance') {
@@ -158,11 +158,11 @@ $allCenters = ModelCenters::mdlGetAllCenters();
                                             </button>
                                         </td>
                                     </tr>
-                                    <!-- Expanded details row with buttons inside -->
+                                    <!-- Expanded details row -->
                                     <tr class="details-row-<?php echo $center['center_id']; ?> details-row" style="display: none;">
                                         <td colspan="8" class="p-0">
                                             <div class="card-body bg-light p-3">
-                                                <!-- Action Buttons Row at top of dropdown -->
+                                                <!-- Action Buttons Row -->
                                                 <div class="row mb-3">
                                                     <div class="col-12">
                                                         <div class="btn-group" role="group">
@@ -258,7 +258,7 @@ $allCenters = ModelCenters::mdlGetAllCenters();
                                                         </div>
                                                     </div>
                                                     
-                                                    <!-- Evacuee List Panel with Search -->
+                                                    <!-- Evacuee List Panel -->
                                                     <div class="col-md-4">
                                                         <div class="card mb-3">
                                                             <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
@@ -954,6 +954,19 @@ $allCenters = ModelCenters::mdlGetAllCenters();
 $(document).ready(function() {
     var evacueeDataStore = {};
     
+    function updateStatistics() {
+        $.ajax({
+            url: "ajax/get_statistics.ajax.php",
+            method: "GET",
+            dataType: "json",
+            success: function(response) {
+                if (response.success) {
+                    $('#currentlyOccupiedCount').text(response.currently_occupied);
+                }
+            }
+        });
+    }
+    
     function closeModal(modalId) {
         $('#' + modalId).modal('hide');
         setTimeout(function() {
@@ -973,7 +986,6 @@ $(document).ready(function() {
         $('body').removeClass('modal-open');
     });
     
-    // Toggle expand/collapse for center rows
     $('.center-row').on('click', function(e) {
         if ($(e.target).closest('button, .btn, a').length) {
             return;
@@ -1020,10 +1032,12 @@ $(document).ready(function() {
                     displayEvacuees(centerId, response.evacuees);
                     var activeCount = response.evacuees.filter(function(e) { return e.evacuee_status === 'Active'; }).length;
                     $('.occupancy-display-' + centerId).text(activeCount);
+                    updateStatistics();
                 } else {
                     $('#evacuee-list-' + centerId).html('<div class="text-muted text-center p-3">No evacuees found</div>');
                     evacueeDataStore[centerId] = [];
                     $('.occupancy-display-' + centerId).text('0');
+                    updateStatistics();
                 }
             },
             error: function() {
@@ -1061,7 +1075,7 @@ $(document).ready(function() {
                     statusClass = 'bg-success';
                     statusColor = 'active-status';
                 } else if (evacuee.evacuee_status === 'Departed') {
-                    statusClass = 'bg-warning';
+                    statusClass = 'bg-secondary';
                     statusColor = 'inactive-status';
                 } else if (evacuee.evacuee_status === 'Transferred') {
                     statusClass = 'bg-warning text-dark';
@@ -1368,6 +1382,7 @@ $(document).ready(function() {
                                 closeModal('editEvacueeModal');
                                 loadEvacuees(centerId);
                                 loadHistory(centerId);
+                                updateStatistics();
                             });
                         } else {
                             Swal.fire('Error', response.message, 'error');
@@ -1400,7 +1415,6 @@ $(document).ready(function() {
         }
     });
     
-    // Dropdown button handlers
     $('.add-evacuee-dropdown').on('click', function(e) {
         e.stopPropagation();
         var centerId = $(this).data('center-id');
@@ -1586,8 +1600,7 @@ $(document).ready(function() {
                             loadEvacuees($('#evac_center_id').val());
                             Swal.fire('Success!', 'Evacuee registered successfully!', 'success');
                             closeModal('addEvacueeModal');
-                            var newOccupants = currentOccupants + 1;
-                            $('.occupancy-display-' + $('#evac_center_id').val()).text(newOccupants);
+                            updateStatistics();
                         } else {
                             Swal.fire('Error', 'Failed to register evacuee', 'error');
                         }

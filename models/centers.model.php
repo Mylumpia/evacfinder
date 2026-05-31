@@ -103,20 +103,36 @@ class ModelCenters{
     }
 
     static public function mdlGetCenterSummary() {
-        $db = new Connection();
-        $pdo = $db->connect();
+    $db = new Connection();
+    $pdo = $db->connect();
 
-        $stmt = $pdo->prepare(
-            "SELECT 
-                COUNT(*) AS total_centers,
-                COALESCE(SUM(capacity), 0) AS total_capacity,
-                COALESCE(SUM(current_occupants), 0) AS currently_occupied,
-                COALESCE(SUM(CASE WHEN status = 'Active' THEN 1 ELSE 0 END), 0) AS active_centers
-            FROM centers"
-        );
-        $stmt->execute();
-        return $stmt->fetch(PDO::FETCH_ASSOC);
-    }
+    // Get total centers
+    $stmt = $pdo->prepare("SELECT COUNT(*) AS total_centers FROM centers");
+    $stmt->execute();
+    $totalCenters = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    // Get total capacity (sum of capacity column)
+    $stmt = $pdo->prepare("SELECT COALESCE(SUM(capacity), 0) AS total_capacity FROM centers");
+    $stmt->execute();
+    $totalCapacity = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    // Get currently occupied (count active evacuees across all centers)
+    $stmt = $pdo->prepare("SELECT COUNT(*) AS currently_occupied FROM evacuees WHERE evacuee_status = 'Active'");
+    $stmt->execute();
+    $currentlyOccupied = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    // Get active centers count
+    $stmt = $pdo->prepare("SELECT COUNT(*) AS active_centers FROM centers WHERE status = 'Active'");
+    $stmt->execute();
+    $activeCenters = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    return array(
+        'total_centers' => $totalCenters['total_centers'],
+        'total_capacity' => $totalCapacity['total_capacity'],
+        'currently_occupied' => $currentlyOccupied['currently_occupied'],
+        'active_centers' => $activeCenters['active_centers']
+    );
+}
 
     static public function mdlGetActiveCenters() {
         $db = new Connection();
