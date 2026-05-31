@@ -91,7 +91,7 @@ $allCenters = ModelCenters::mdlGetAllCenters();
                                     <th>Capacity</th>
                                     <th>Current Occupancy</th>
                                     <th>Status</th>
-                                    <th>Actions</th>
+                                    <th>Print</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -117,7 +117,7 @@ $allCenters = ModelCenters::mdlGetAllCenters();
                                         $stmt->execute();
                                         $fullCenter = $stmt->fetch(PDO::FETCH_ASSOC);
                                         
-                                        // Get actual active evacuee count (not stored in current_occupants)
+                                        // Get actual active evacuee count
                                         $stmtCount = $pdo->prepare("SELECT COUNT(*) as active_count FROM evacuees WHERE evacuation_center_id = :center_id AND evacuee_status = 'Active'");
                                         $stmtCount->bindParam(":center_id", $center['center_id']);
                                         $stmtCount->execute();
@@ -152,49 +152,57 @@ $allCenters = ModelCenters::mdlGetAllCenters();
                                             <span class="badge <?php echo $badgeClass; ?> status-badge-<?php echo $center['center_id']; ?>"><?php echo $statusText; ?></span>
                                         </td>
                                         <td>
-                                            <button type="button" class="btn btn-sm btn-success add-evacuee me-1" 
-                                                    data-center-id="<?php echo htmlspecialchars($center['center_id']); ?>"
-                                                    data-center-name="<?php echo htmlspecialchars($center['center_name']); ?>"
-                                                    data-current-occupants="<?php echo $actualOccupancy; ?>"
-                                                    data-capacity="<?php echo $center['capacity']; ?>">
-                                                <i class="fa fa-user-plus"></i> Add Evacuee
-                                            </button>
-                                            <button type="button" class="btn btn-sm btn-primary edit-center me-1" 
-                                                    data-center-id="<?php echo htmlspecialchars($center['center_id']); ?>"
-                                                    data-center-name="<?php echo htmlspecialchars($center['center_name']); ?>"
-                                                    data-category="<?php echo htmlspecialchars($center['category']); ?>"
-                                                    data-status="<?php echo htmlspecialchars($statusText); ?>"
-                                                    data-barangay="<?php echo htmlspecialchars($center['barangay']); ?>"
-                                                    data-city="<?php echo htmlspecialchars($center['city']); ?>"
-                                                    data-province="<?php echo htmlspecialchars($center['province']); ?>"
-                                                    data-address="<?php echo htmlspecialchars($fullCenter['address']); ?>"
-                                                    data-capacity="<?php echo $center['capacity']; ?>"
-                                                    data-current-occupants="<?php echo $actualOccupancy; ?>"
-                                                    data-contact-number="<?php echo htmlspecialchars($fullCenter['contact_number']); ?>"
-                                                    data-contact-person="<?php echo htmlspecialchars($fullCenter['contact_person']); ?>"
-                                                    data-latitude="<?php echo $fullCenter['latitude']; ?>"
-                                                    data-longitude="<?php echo $fullCenter['longitude']; ?>"
-                                                    data-estimated-capacity="<?php echo $fullCenter['estimated_capacity']; ?>"
-                                                    data-accessibility="<?php echo htmlspecialchars($fullCenter['accessibility']); ?>"
-                                                    data-available-facilities="<?php echo htmlspecialchars($fullCenter['available_facilities']); ?>"
-                                                    data-remarks="<?php echo htmlspecialchars($fullCenter['remarks']); ?>">
-                                                <i class="fa fa-edit"></i> Edit
-                                            </button>
-                                            <button type="button" class="btn btn-sm btn-info assign-lgu me-1" 
-                                                    data-center-id="<?php echo htmlspecialchars($center['center_id']); ?>"
-                                                    data-center-name="<?php echo htmlspecialchars($center['center_name']); ?>">
-                                                <i class="fa fa-user-md"></i> Assign LGU
-                                            </button>
                                             <button type="button" class="btn btn-sm btn-secondary print-report" 
                                                     data-center-id="<?php echo htmlspecialchars($center['center_id']); ?>">
-                                                <i class="fa fa-print"></i> Print Report
+                                                <i class="fa fa-print"></i> Print
                                             </button>
                                         </td>
                                     </tr>
-                                    <!-- Expanded details row -->
+                                    <!-- Expanded details row with buttons inside -->
                                     <tr class="details-row-<?php echo $center['center_id']; ?> details-row" style="display: none;">
                                         <td colspan="8" class="p-0">
                                             <div class="card-body bg-light p-3">
+                                                <!-- Action Buttons Row at top of dropdown -->
+                                                <div class="row mb-3">
+                                                    <div class="col-12">
+                                                        <div class="btn-group" role="group">
+                                                            <button type="button" class="btn btn-sm btn-success add-evacuee-dropdown" 
+                                                                    data-center-id="<?php echo htmlspecialchars($center['center_id']); ?>"
+                                                                    data-center-name="<?php echo htmlspecialchars($center['center_name']); ?>"
+                                                                    data-current-occupants="<?php echo $actualOccupancy; ?>"
+                                                                    data-capacity="<?php echo $center['capacity']; ?>">
+                                                                <i class="fa fa-user-plus"></i> Add Evacuee
+                                                            </button>
+                                                            <button type="button" class="btn btn-sm btn-primary edit-center-dropdown" 
+                                                                    data-center-id="<?php echo htmlspecialchars($center['center_id']); ?>"
+                                                                    data-center-name="<?php echo htmlspecialchars($center['center_name']); ?>"
+                                                                    data-category="<?php echo htmlspecialchars($center['category']); ?>"
+                                                                    data-status="<?php echo htmlspecialchars($statusText); ?>"
+                                                                    data-barangay="<?php echo htmlspecialchars($center['barangay']); ?>"
+                                                                    data-city="<?php echo htmlspecialchars($center['city']); ?>"
+                                                                    data-province="<?php echo htmlspecialchars($center['province']); ?>"
+                                                                    data-address="<?php echo htmlspecialchars($fullCenter['address']); ?>"
+                                                                    data-capacity="<?php echo $center['capacity']; ?>"
+                                                                    data-current-occupants="<?php echo $actualOccupancy; ?>"
+                                                                    data-contact-number="<?php echo htmlspecialchars($fullCenter['contact_number']); ?>"
+                                                                    data-contact-person="<?php echo htmlspecialchars($fullCenter['contact_person']); ?>"
+                                                                    data-latitude="<?php echo $fullCenter['latitude']; ?>"
+                                                                    data-longitude="<?php echo $fullCenter['longitude']; ?>"
+                                                                    data-estimated-capacity="<?php echo $fullCenter['estimated_capacity']; ?>"
+                                                                    data-accessibility="<?php echo htmlspecialchars($fullCenter['accessibility']); ?>"
+                                                                    data-available-facilities="<?php echo htmlspecialchars($fullCenter['available_facilities']); ?>"
+                                                                    data-remarks="<?php echo htmlspecialchars($fullCenter['remarks']); ?>">
+                                                                <i class="fa fa-edit"></i> Edit Center
+                                                            </button>
+                                                            <button type="button" class="btn btn-sm btn-info assign-lgu-dropdown" 
+                                                                    data-center-id="<?php echo htmlspecialchars($center['center_id']); ?>"
+                                                                    data-center-name="<?php echo htmlspecialchars($center['center_name']); ?>">
+                                                                <i class="fa fa-user-md"></i> Assign LGU
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
                                                 <div class="row">
                                                     <!-- Center Information Panel -->
                                                     <div class="col-md-4">
@@ -691,7 +699,7 @@ $allCenters = ModelCenters::mdlGetAllCenters();
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label class="form-label text-primary fw-bold">Current Occupants <span class="text-danger">*</span></label>
-                            <input type="number" class="form-control" id="edit_current_occupants" name="current_occupants" min="0" required>
+                            <input type="number" class="form-control" id="edit_current_occupants" name="current_occupants" min="0" required readonly>
                             <small class="text-muted">Current number of people in this center (calculated from active evacuees)</small>
                         </div>
                         <div class="col-md-6">
@@ -932,6 +940,12 @@ $allCenters = ModelCenters::mdlGetAllCenters();
 .evacuee-search-input {
     border-radius: 4px 0 0 4px;
 }
+
+.btn-group {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
 </style>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -1004,7 +1018,6 @@ $(document).ready(function() {
                 if (response.success && response.evacuees) {
                     evacueeDataStore[centerId] = response.evacuees;
                     displayEvacuees(centerId, response.evacuees);
-                    // Update the occupancy count in the table
                     var activeCount = response.evacuees.filter(function(e) { return e.evacuee_status === 'Active'; }).length;
                     $('.occupancy-display-' + centerId).text(activeCount);
                 } else {
@@ -1048,7 +1061,7 @@ $(document).ready(function() {
                     statusClass = 'bg-success';
                     statusColor = 'active-status';
                 } else if (evacuee.evacuee_status === 'Departed') {
-                    statusClass = 'bg-secondary';
+                    statusClass = 'bg-warning';
                     statusColor = 'inactive-status';
                 } else if (evacuee.evacuee_status === 'Transferred') {
                     statusClass = 'bg-warning text-dark';
@@ -1387,14 +1400,14 @@ $(document).ready(function() {
         }
     });
     
-    $('.add-evacuee').on('click', function(e) {
+    // Dropdown button handlers
+    $('.add-evacuee-dropdown').on('click', function(e) {
         e.stopPropagation();
         var centerId = $(this).data('center-id');
         var centerName = $(this).data('center-name');
         var currentOccupants = $(this).data('current-occupants');
         var capacity = $(this).data('capacity');
         
-        // Check if center is Active before adding evacuee
         var centerStatus = $('.status-badge-' + centerId).text().trim();
         if (centerStatus !== 'Active') {
             Swal.fire({
@@ -1418,6 +1431,61 @@ $(document).ready(function() {
         $('#evac_evacuee_status').val('Active');
         
         $('#addEvacueeModal').modal('show');
+    });
+    
+    $('.edit-center-dropdown').on('click', function(e) {
+        e.stopPropagation();
+        var centerId = $(this).data('center-id');
+        var centerName = $(this).data('center-name');
+        var category = $(this).data('category');
+        var status = $(this).data('status');
+        var barangay = $(this).data('barangay');
+        var city = $(this).data('city');
+        var province = $(this).data('province');
+        var address = $(this).data('address');
+        var capacity = $(this).data('capacity');
+        var currentOccupants = $(this).data('current-occupants');
+        var contactNumber = $(this).data('contact-number');
+        var contactPerson = $(this).data('contact-person');
+        var latitude = $(this).data('latitude');
+        var longitude = $(this).data('longitude');
+        var estimatedCapacity = $(this).data('estimated-capacity');
+        var accessibility = $(this).data('accessibility');
+        var availableFacilities = $(this).data('available-facilities');
+        var remarks = $(this).data('remarks');
+        
+        $('#edit_center_id').val(centerId);
+        $('#edit_center_name').val(centerName);
+        $('#edit_category').val(category);
+        $('#edit_status').val(status);
+        $('#edit_barangay').val(barangay || '');
+        $('#edit_city').val(city || '');
+        $('#edit_province').val(province || 'Negros Occidental');
+        $('#edit_address').val(address || '');
+        $('#edit_capacity').val(capacity);
+        $('#edit_current_occupants').val(currentOccupants);
+        $('#edit_contact_number').val(contactNumber || '');
+        $('#edit_contact_person').val(contactPerson || '');
+        $('#edit_latitude').val(latitude || '');
+        $('#edit_longitude').val(longitude || '');
+        $('#edit_estimated_capacity').val(estimatedCapacity || capacity);
+        $('#edit_accessibility').val(accessibility || '');
+        $('#edit_available_facilities').val(availableFacilities || '');
+        $('#edit_remarks').val(remarks || '');
+        
+        $('#editCenterModal').modal('show');
+    });
+    
+    $('.assign-lgu-dropdown, .assign-lgu-quick').on('click', function(e) {
+        e.stopPropagation();
+        var centerId = $(this).data('center-id');
+        var centerName = $(this).data('center-name');
+        
+        $('#assign_center_id').val(centerId);
+        $('#assign_center_name').val(centerName);
+        $('#lgu_user_id').val('');
+        
+        $('#assignLGMModal').modal('show');
     });
     
     $('#confirmAddEvacuee').on('click', function() {
@@ -1518,7 +1586,6 @@ $(document).ready(function() {
                             loadEvacuees($('#evac_center_id').val());
                             Swal.fire('Success!', 'Evacuee registered successfully!', 'success');
                             closeModal('addEvacueeModal');
-                            // Refresh the occupancy display
                             var newOccupants = currentOccupants + 1;
                             $('.occupancy-display-' + $('#evac_center_id').val()).text(newOccupants);
                         } else {
@@ -1533,56 +1600,12 @@ $(document).ready(function() {
         });
     });
     
-    $('.edit-center').on('click', function(e) {
-        e.stopPropagation();
-        var centerId = $(this).data('center-id');
-        var centerName = $(this).data('center-name');
-        var category = $(this).data('category');
-        var currentStatus = $(this).data('status');
-        var barangay = $(this).data('barangay');
-        var city = $(this).data('city');
-        var province = $(this).data('province');
-        var address = $(this).data('address');
-        var capacity = $(this).data('capacity');
-        var currentOccupants = $(this).data('current-occupants');
-        var contactNumber = $(this).data('contact-number');
-        var contactPerson = $(this).data('contact-person');
-        var latitude = $(this).data('latitude');
-        var longitude = $(this).data('longitude');
-        var estimatedCapacity = $(this).data('estimated-capacity');
-        var accessibility = $(this).data('accessibility');
-        var availableFacilities = $(this).data('available-facilities');
-        var remarks = $(this).data('remarks');
-        
-        $('#edit_center_id').val(centerId);
-        $('#edit_center_name').val(centerName);
-        $('#edit_category').val(category);
-        $('#edit_status').val(currentStatus);
-        $('#edit_barangay').val(barangay || '');
-        $('#edit_city').val(city || '');
-        $('#edit_province').val(province || 'Negros Occidental');
-        $('#edit_address').val(address || '');
-        $('#edit_capacity').val(capacity);
-        $('#edit_current_occupants').val(currentOccupants);
-        $('#edit_contact_number').val(contactNumber || '');
-        $('#edit_contact_person').val(contactPerson || '');
-        $('#edit_latitude').val(latitude || '');
-        $('#edit_longitude').val(longitude || '');
-        $('#edit_estimated_capacity').val(estimatedCapacity || capacity);
-        $('#edit_accessibility').val(accessibility || '');
-        $('#edit_available_facilities').val(availableFacilities || '');
-        $('#edit_remarks').val(remarks || '');
-        
-        $('#editCenterModal').modal('show');
-    });
-    
     $('#confirmUpdateCenter').on('click', function() {
         var newStatus = $('#edit_status').val();
         var centerId = $('#edit_center_id').val();
         var oldStatus = $('.status-badge-' + centerId).text().trim();
         var currentOccupants = parseInt($('#edit_current_occupants').val());
         
-        // Check if trying to change to Inactive and there are active evacuees
         if (newStatus === 'Inactive' && oldStatus !== 'Inactive' && currentOccupants > 0) {
             Swal.fire({
                 title: 'Warning: Center Has Active Evacuees!',
@@ -1603,7 +1626,6 @@ $(document).ready(function() {
             return;
         }
         
-        // Normal update without evacuee removal
         var formData = {
             center_id: centerId,
             center_name: $('#edit_center_name').val(),
@@ -1713,18 +1735,6 @@ $(document).ready(function() {
             }
         });
     }
-    
-    $('.assign-lgu, .assign-lgu-quick').on('click', function(e) {
-        e.stopPropagation();
-        var centerId = $(this).data('center-id');
-        var centerName = $(this).data('center-name');
-        
-        $('#assign_center_id').val(centerId);
-        $('#assign_center_name').val(centerName);
-        $('#lgu_user_id').val('');
-        
-        $('#assignLGMModal').modal('show');
-    });
     
     $('#confirmAssignLGU').on('click', function() {
         var centerId = $('#assign_center_id').val();
