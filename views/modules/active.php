@@ -81,9 +81,10 @@ $allCenters = ModelCenters::mdlGetAllCenters();
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
-                        <table class="table table-hover mb-0">
+                        <table class="table table-hover mb-0" id="centersTable">
                             <thead class="table-light">
                                 <tr>
+                                    <th style="width: 30px;"></th>
                                     <th>Center Name</th>
                                     <th>Type</th>
                                     <th>Location</th>
@@ -102,22 +103,42 @@ $allCenters = ModelCenters::mdlGetAllCenters();
                                         if ($statusText === 'Active') {
                                             $badgeClass = 'bg-success';
                                         } elseif ($statusText === 'Inactive') {
-                                            $badgeClass = 'bg-secondary';
+                                            $badgeClass = 'bg-warning';
                                         } elseif ($statusText === 'Full') {
                                             $badgeClass = 'bg-warning text-dark';
                                         } elseif ($statusText === 'Under Maintenance') {
                                             $badgeClass = 'bg-danger';
                                         }
                                         
-                                        // Get full center details for display
                                         $db = new Connection();
                                         $pdo = $db->connect();
                                         $stmt = $pdo->prepare("SELECT * FROM centers WHERE center_id = :center_id");
                                         $stmt->bindParam(":center_id", $center['center_id']);
                                         $stmt->execute();
                                         $fullCenter = $stmt->fetch(PDO::FETCH_ASSOC);
+                                        
+                                        // Get actual active evacuee count (not stored in current_occupants)
+                                        $stmtCount = $pdo->prepare("SELECT COUNT(*) as active_count FROM evacuees WHERE evacuation_center_id = :center_id AND evacuee_status = 'Active'");
+                                        $stmtCount->bindParam(":center_id", $center['center_id']);
+                                        $stmtCount->execute();
+                                        $activeCount = $stmtCount->fetch(PDO::FETCH_ASSOC);
+                                        $actualOccupancy = $activeCount['active_count'];
+                                        
+                                        $stmtLGU = $pdo->prepare("SELECT u.first_name, u.last_name, u.position_role, u.phone_number FROM lgu_users u 
+                                                                   JOIN userrights ur ON u.office_email_address = ur.email
+                                                                   WHERE ur.userid = :userid");
+                                        if($fullCenter['assigned_lgu_user_id']) {
+                                            $stmtLGU->bindParam(":userid", $fullCenter['assigned_lgu_user_id']);
+                                            $stmtLGU->execute();
+                                            $assignedLGU = $stmtLGU->fetch(PDO::FETCH_ASSOC);
+                                        } else {
+                                            $assignedLGU = null;
+                                        }
                                     ?>
-                                    <tr>
+                                    <tr class="center-row" data-center-id="<?php echo $center['center_id']; ?>" style="cursor: pointer;">
+                                        <td class="expand-icon text-center">
+                                            <i class="fa fa-chevron-right"></i>
+                                        </td>
                                         <td><?php echo htmlspecialchars($center['center_name']); ?></td>
                                         <td><?php echo htmlspecialchars($center['category']); ?></td>
                                         <td><?php echo htmlspecialchars(trim($center['barangay'] . ', ' . $center['city'] . ', ' . $center['province'])); ?></td>
@@ -125,16 +146,16 @@ $allCenters = ModelCenters::mdlGetAllCenters();
                                             <span class="capacity-display-<?php echo $center['center_id']; ?>"><?php echo number_format($center['capacity']); ?></span>
                                         </td>
                                         <td class="occupancy-cell">
-                                            <span class="occupancy-display-<?php echo $center['center_id']; ?>"><?php echo number_format($center['current_occupants']); ?></span>
+                                            <span class="occupancy-display-<?php echo $center['center_id']; ?>"><?php echo number_format($actualOccupancy); ?></span>
                                         </td>
                                         <td>
-                                            <span class="badge <?php echo $badgeClass; ?>"><?php echo $statusText; ?></span>
+                                            <span class="badge <?php echo $badgeClass; ?> status-badge-<?php echo $center['center_id']; ?>"><?php echo $statusText; ?></span>
                                         </td>
                                         <td>
                                             <button type="button" class="btn btn-sm btn-success add-evacuee me-1" 
                                                     data-center-id="<?php echo htmlspecialchars($center['center_id']); ?>"
                                                     data-center-name="<?php echo htmlspecialchars($center['center_name']); ?>"
-                                                    data-current-occupants="<?php echo $center['current_occupants']; ?>"
+                                                    data-current-occupants="<?php echo $actualOccupancy; ?>"
                                                     data-capacity="<?php echo $center['capacity']; ?>">
                                                 <i class="fa fa-user-plus"></i> Add Evacuee
                                             </button>
@@ -148,7 +169,7 @@ $allCenters = ModelCenters::mdlGetAllCenters();
                                                     data-province="<?php echo htmlspecialchars($center['province']); ?>"
                                                     data-address="<?php echo htmlspecialchars($fullCenter['address']); ?>"
                                                     data-capacity="<?php echo $center['capacity']; ?>"
-                                                    data-current-occupants="<?php echo $center['current_occupants']; ?>"
+                                                    data-current-occupants="<?php echo $actualOccupancy; ?>"
                                                     data-contact-number="<?php echo htmlspecialchars($fullCenter['contact_number']); ?>"
                                                     data-contact-person="<?php echo htmlspecialchars($fullCenter['contact_person']); ?>"
                                                     data-latitude="<?php echo $fullCenter['latitude']; ?>"
@@ -170,10 +191,116 @@ $allCenters = ModelCenters::mdlGetAllCenters();
                                             </button>
                                         </td>
                                     </tr>
+                                    <!-- Expanded details row -->
+                                    <tr class="details-row-<?php echo $center['center_id']; ?> details-row" style="display: none;">
+                                        <td colspan="8" class="p-0">
+                                            <div class="card-body bg-light p-3">
+                                                <div class="row">
+                                                    <!-- Center Information Panel -->
+                                                    <div class="col-md-4">
+                                                        <div class="card mb-3">
+                                                            <div class="card-header bg-primary text-white">
+                                                                <h6 class="mb-0">CENTER INFORMATION</h6>
+                                                            </div>
+                                                            <div class="card-body">
+                                                                <table class="table table-sm table-borderless mb-3">
+                                                                    <tr><td width="40%"><strong>Center ID:</strong></td><td><?php echo htmlspecialchars($center['center_id']); ?></td></tr>
+                                                                    <tr><td><strong>Category:</strong></td><td><?php echo htmlspecialchars($center['category']); ?></td></tr>
+                                                                    <tr><td><strong>Location:</strong></td><td><?php echo htmlspecialchars(trim($center['barangay'] . ', ' . $center['city'])); ?></td></tr>
+                                                                    <tr><td><strong>Province:</strong></td><td><?php echo htmlspecialchars($center['province']); ?></td></tr>
+                                                                    <tr><td><strong>Capacity:</strong></td><td><?php echo number_format($center['capacity']); ?> persons</td></tr>
+                                                                    <tr><td><strong>Current Occupants:</strong></td><td><?php echo number_format($actualOccupancy); ?> / <?php echo number_format($center['capacity']); ?></td></tr>
+                                                                    <?php if($fullCenter['address']): ?>
+                                                                    <tr><td><strong>Address:</strong></td><td><?php echo htmlspecialchars($fullCenter['address']); ?></td></tr>
+                                                                    <?php endif; ?>
+                                                                </table>
+                                                                
+                                                                <hr>
+                                                                <h6 class="fw-bold mb-2">PERSON IN-CHARGE</h6>
+                                                                <div id="person-incharge-<?php echo $center['center_id']; ?>">
+                                                                    <?php if($assignedLGU): ?>
+                                                                        <p class="mb-0"><?php echo htmlspecialchars($assignedLGU['first_name'] . ' ' . $assignedLGU['last_name']); ?></p>
+                                                                        <small class="text-muted"><?php echo htmlspecialchars($assignedLGU['position_role']); ?></small><br>
+                                                                        <small><?php echo htmlspecialchars($assignedLGU['phone_number']); ?></small>
+                                                                    <?php else: ?>
+                                                                        <p class="text-muted mb-1">No LGU assigned yet</p>
+                                                                        <button type="button" class="btn btn-sm btn-outline-info assign-lgu-quick mt-2" data-center-id="<?php echo $center['center_id']; ?>" data-center-name="<?php echo htmlspecialchars($center['center_name']); ?>">
+                                                                            Assign LGU
+                                                                        </button>
+                                                                    <?php endif; ?>
+                                                                </div>
+                                                                
+                                                                <hr>
+                                                                <h6 class="fw-bold mb-2">CONTACT INFORMATION</h6>
+                                                                <p class="mb-0"><?php echo htmlspecialchars($fullCenter['contact_number'] ?: 'N/A'); ?></p>
+                                                                <p><?php echo htmlspecialchars($fullCenter['contact_person'] ?: 'N/A'); ?></p>
+                                                                
+                                                                <?php if($fullCenter['remarks']): ?>
+                                                                <hr>
+                                                                <h6 class="fw-bold mb-2">REMARKS</h6>
+                                                                <p class="mb-0 small text-muted"><?php echo nl2br(htmlspecialchars($fullCenter['remarks'])); ?></p>
+                                                                <?php endif; ?>
+                                                                
+                                                                <hr>
+                                                                <h6 class="fw-bold mb-2">STATUS HISTORY</h6>
+                                                                <div id="status-history-<?php echo $center['center_id']; ?>" style="max-height: 150px; overflow-y: auto; font-size: 0.8rem;">
+                                                                    <div class="text-muted">Loading...</div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <!-- Evacuee List Panel with Search -->
+                                                    <div class="col-md-4">
+                                                        <div class="card mb-3">
+                                                            <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                                                                <h6 class="mb-0">EVACUEES</h6>
+                                                                <button class="btn btn-sm btn-light refresh-evacuees" data-center-id="<?php echo $center['center_id']; ?>">
+                                                                    Refresh
+                                                                </button>
+                                                            </div>
+                                                            <div class="card-body">
+                                                                <div class="mb-2">
+                                                                    <div class="input-group input-group-sm">
+                                                                        <input type="text" class="form-control evacuee-search-input" data-center-id="<?php echo $center['center_id']; ?>" placeholder="Search by name, contact, or status...">
+                                                                        <button class="btn btn-outline-secondary clear-search" data-center-id="<?php echo $center['center_id']; ?>" type="button">Clear</button>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="evacuee-list-container" style="max-height: 400px; overflow-y: auto;">
+                                                                    <div id="evacuee-list-<?php echo $center['center_id']; ?>">
+                                                                        <div class="text-muted text-center p-3">Click to load evacuees...</div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <!-- Activity History Panel -->
+                                                    <div class="col-md-4">
+                                                        <div class="card mb-3">
+                                                            <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                                                                <h6 class="mb-0">ACTIVITY HISTORY</h6>
+                                                                <button class="btn btn-sm btn-light refresh-history" data-center-id="<?php echo $center['center_id']; ?>">
+                                                                    Refresh
+                                                                </button>
+                                                            </div>
+                                                            <div class="card-body">
+                                                                <div class="history-container" style="max-height: 450px; overflow-y: auto;">
+                                                                    <div id="history-list-<?php echo $center['center_id']; ?>">
+                                                                        <div class="text-muted text-center p-3">Click to load history...</div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
                                     <?php endforeach; ?>
                                 <?php else: ?>
                                     <tr>
-                                        <td colspan="7" class="text-center py-4">
+                                        <td colspan="8" class="text-center py-4">
                                             No evacuation centers found. 
                                             <a href="?route=centers" class="btn btn-primary btn-sm ms-2">
                                                 <i class="fa fa-plus"></i> Add Your First Center
@@ -197,7 +324,9 @@ $allCenters = ModelCenters::mdlGetAllCenters();
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Register New Evacuee</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="close-modal-btn" data-modal="addEvacueeModal">
+                    <i class="fa fa-times-circle"></i>
+                </button>
             </div>
             <div class="modal-body">
                 <form id="addEvacueeForm">
@@ -205,7 +334,6 @@ $allCenters = ModelCenters::mdlGetAllCenters();
                     <input type="hidden" id="evac_center_name_display" name="center_name_display">
                     <input type="hidden" id="evac_encodedby" name="encodedby" value="<?php echo $_SESSION['userid']; ?>">
                     
-                    <!-- Center Info Display -->
                     <div class="alert alert-info mb-3">
                         <strong>Evacuation Center:</strong> <span id="selectedCenterName"></span>
                         <br>
@@ -402,8 +530,65 @@ $allCenters = ModelCenters::mdlGetAllCenters();
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-secondary cancel-modal" data-modal="addEvacueeModal">Cancel</button>
                 <button type="button" class="btn btn-success" id="confirmAddEvacuee">Register Evacuee</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Evacuee Status Modal -->
+<div class="modal fade" id="editEvacueeModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Evacuee Status</h5>
+                <button type="button" class="close-modal-btn" data-modal="editEvacueeModal">
+                    <i class="fa fa-times-circle"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="editEvacueeForm">
+                    <input type="hidden" id="edit_evacuee_id" name="evacuee_id">
+                    <input type="hidden" id="edit_center_id" name="center_id">
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Evacuee Name</label>
+                        <input type="text" class="form-control" id="edit_evacuee_name" readonly>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Status <span class="text-danger">*</span></label>
+                        <select class="form-control" id="edit_evacuee_status" name="evacuee_status" required>
+                            <option value="Active">Active</option>
+                            <option value="Departed">Departed</option>
+                            <option value="Transferred">Transferred</option>
+                            <option value="Missing">Missing</option>
+                            <option value="Deceased">Deceased</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3" id="departure_date_group" style="display: none;">
+                        <label class="form-label">Departure Date</label>
+                        <input type="date" class="form-control" id="edit_departure_date" name="departure_date">
+                    </div>
+                    
+                    <div class="mb-3" id="transfer_center_group" style="display: none;">
+                        <label class="form-label">Transfer To Center</label>
+                        <select class="form-control" id="edit_transfer_center" name="transfer_center_id">
+                            <option value="">Select Center</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Remarks</label>
+                        <textarea class="form-control" id="edit_remarks" name="remarks" rows="2" placeholder="Optional remarks"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary cancel-modal" data-modal="editEvacueeModal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirmUpdateEvacuee">Update Status</button>
             </div>
         </div>
     </div>
@@ -415,7 +600,9 @@ $allCenters = ModelCenters::mdlGetAllCenters();
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Edit Evacuation Center</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="close-modal-btn" data-modal="editCenterModal">
+                    <i class="fa fa-times-circle"></i>
+                </button>
             </div>
             <div class="modal-body">
                 <form id="editCenterForm">
@@ -505,7 +692,7 @@ $allCenters = ModelCenters::mdlGetAllCenters();
                         <div class="col-md-6">
                             <label class="form-label text-primary fw-bold">Current Occupants <span class="text-danger">*</span></label>
                             <input type="number" class="form-control" id="edit_current_occupants" name="current_occupants" min="0" required>
-                            <small class="text-muted">Current number of people in this center</small>
+                            <small class="text-muted">Current number of people in this center (calculated from active evacuees)</small>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label text-primary fw-bold">Maximum Capacity <span class="text-danger">*</span></label>
@@ -534,7 +721,7 @@ $allCenters = ModelCenters::mdlGetAllCenters();
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-secondary cancel-modal" data-modal="editCenterModal">Cancel</button>
                 <button type="button" class="btn btn-primary" id="confirmUpdateCenter">Update Center</button>
             </div>
         </div>
@@ -547,7 +734,9 @@ $allCenters = ModelCenters::mdlGetAllCenters();
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Assign LGU User to Center</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="close-modal-btn" data-modal="assignLGMModal">
+                    <i class="fa fa-times-circle"></i>
+                </button>
             </div>
             <div class="modal-body">
                 <form id="assignLGUForm">
@@ -575,28 +764,614 @@ $allCenters = ModelCenters::mdlGetAllCenters();
                     </div>
                     
                     <div class="alert alert-info">
-                        <i class="fa fa-info-circle"></i> Assigned LGU users will be able to manage this evacuation center and view its reports.
+                        Assigned LGU users will be able to manage this evacuation center and view its reports.
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-secondary cancel-modal" data-modal="assignLGMModal">Cancel</button>
                 <button type="button" class="btn btn-primary" id="confirmAssignLGU">Assign LGU User</button>
             </div>
         </div>
     </div>
 </div>
 
+<style>
+.close-modal-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #dc3545;
+    cursor: pointer;
+    padding: 0;
+    margin: 0;
+    line-height: 1;
+    transition: all 0.2s ease;
+}
+
+.close-modal-btn:hover {
+    color: #bb2d3b;
+    transform: scale(1.1);
+}
+
+.close-modal-btn:focus {
+    outline: none;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.center-row {
+    transition: background-color 0.2s ease;
+}
+
+.center-row:hover {
+    background-color: #f8f9fa;
+}
+
+.expand-icon i {
+    transition: transform 0.2s ease;
+    display: inline-block;
+}
+
+.details-row {
+    background-color: #f8f9fa;
+}
+
+.evacuee-item {
+    border-left: 3px solid #28a745;
+    margin-bottom: 10px;
+    padding: 10px;
+    background: white;
+    border-radius: 5px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.evacuee-item.departed,
+.evacuee-item.inactive-status {
+    border-left-color: #dc3545;
+    background: #fff5f5;
+}
+
+.evacuee-item.transferred {
+    border-left-color: #ffc107;
+    background: #fffbeb;
+}
+
+.evacuee-item.missing {
+    border-left-color: #6c757d;
+    background: #f8f9fa;
+}
+
+.history-item {
+    border-bottom: 1px solid #e9ecef;
+    padding: 10px 0;
+    font-size: 0.8rem;
+}
+
+.history-item:last-child {
+    border-bottom: none;
+}
+
+.history-badge {
+    font-size: 0.7rem;
+    padding: 3px 8px;
+    border-radius: 20px;
+    font-weight: 500;
+}
+
+.history-badge.status-change {
+    background-color: #17a2b8 !important;
+    color: white !important;
+}
+
+.history-badge.evacuee-added {
+    background-color: #28a745 !important;
+    color: white !important;
+}
+
+.history-badge.evacuee-departed {
+    background-color: #dc3545 !important;
+    color: white !important;
+}
+
+.history-badge.evacuee-transferred {
+    background-color: #ffc107 !important;
+    color: #333 !important;
+}
+
+.history-badge.center-updated {
+    background-color: #6c757d !important;
+    color: white !important;
+}
+
+.status-history-item {
+    padding: 5px 0;
+    border-bottom: 1px dashed #dee2e6;
+    font-size: 0.75rem;
+}
+
+.status-history-item:last-child {
+    border-bottom: none;
+}
+
+.status-badge-active {
+    background-color: #28a745;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+}
+
+.status-badge-inactive {
+    background-color: #6c757d;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+}
+
+.status-badge-full {
+    background-color: #ffc107;
+    color: #333;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+}
+
+.no-results {
+    text-align: center;
+    padding: 20px;
+    color: #6c757d;
+    font-style: italic;
+}
+
+.evacuee-search-input {
+    border-radius: 4px 0 0 4px;
+}
+</style>
+
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 $(document).ready(function() {
-    // Set default dates
+    var evacueeDataStore = {};
+    
+    function closeModal(modalId) {
+        $('#' + modalId).modal('hide');
+        setTimeout(function() {
+            $('.modal-backdrop').remove();
+            $('body').removeClass('modal-open');
+            $('body').css('overflow', '');
+        }, 150);
+    }
+    
+    $('.close-modal-btn, .cancel-modal').on('click', function() {
+        var modalId = $(this).data('modal');
+        closeModal(modalId);
+    });
+    
+    $('.modal').on('hidden.bs.modal', function() {
+        $('.modal-backdrop').remove();
+        $('body').removeClass('modal-open');
+    });
+    
+    // Toggle expand/collapse for center rows
+    $('.center-row').on('click', function(e) {
+        if ($(e.target).closest('button, .btn, a').length) {
+            return;
+        }
+        
+        var centerId = $(this).data('center-id');
+        var detailsRow = $('.details-row-' + centerId);
+        var expandIcon = $(this).find('.expand-icon i');
+        
+        if (detailsRow.is(':visible')) {
+            detailsRow.slideUp(300);
+            expandIcon.removeClass('fa-chevron-down').addClass('fa-chevron-right');
+        } else {
+            $('.details-row:visible').slideUp(300);
+            $('.expand-icon i').removeClass('fa-chevron-down').addClass('fa-chevron-right');
+            
+            detailsRow.slideDown(300);
+            expandIcon.removeClass('fa-chevron-right').addClass('fa-chevron-down');
+            
+            if (detailsRow.find('.evacuee-list-container').data('loaded') !== true) {
+                loadCenterDetails(centerId);
+                detailsRow.find('.evacuee-list-container').data('loaded', true);
+            }
+        }
+    });
+    
+    function loadCenterDetails(centerId) {
+        loadEvacuees(centerId);
+        loadHistory(centerId);
+        loadStatusHistory(centerId);
+    }
+    
+    function loadEvacuees(centerId) {
+        $('#evacuee-list-' + centerId).html('<div class="text-muted text-center p-3">Loading evacuees...</div>');
+        
+        $.ajax({
+            url: "ajax/get_center_evacuees.ajax.php",
+            method: "POST",
+            data: { center_id: centerId },
+            dataType: "json",
+            success: function(response) {
+                if (response.success && response.evacuees) {
+                    evacueeDataStore[centerId] = response.evacuees;
+                    displayEvacuees(centerId, response.evacuees);
+                    // Update the occupancy count in the table
+                    var activeCount = response.evacuees.filter(function(e) { return e.evacuee_status === 'Active'; }).length;
+                    $('.occupancy-display-' + centerId).text(activeCount);
+                } else {
+                    $('#evacuee-list-' + centerId).html('<div class="text-muted text-center p-3">No evacuees found</div>');
+                    evacueeDataStore[centerId] = [];
+                    $('.occupancy-display-' + centerId).text('0');
+                }
+            },
+            error: function() {
+                $('#evacuee-list-' + centerId).html('<div class="text-danger text-center p-3">Error loading evacuees</div>');
+            }
+        });
+    }
+    
+    function displayEvacuees(centerId, evacuees, searchTerm) {
+        var html = '';
+        var filteredEvacuees = evacuees;
+        
+        if (searchTerm && searchTerm.trim() !== '') {
+            var term = searchTerm.toLowerCase();
+            filteredEvacuees = evacuees.filter(function(evacuee) {
+                return (evacuee.first_name && evacuee.first_name.toLowerCase().includes(term)) ||
+                       (evacuee.last_name && evacuee.last_name.toLowerCase().includes(term)) ||
+                       (evacuee.contact_number && evacuee.contact_number.toLowerCase().includes(term)) ||
+                       (evacuee.evacuee_status && evacuee.evacuee_status.toLowerCase().includes(term));
+            });
+        }
+        
+        if (filteredEvacuees.length === 0) {
+            if (searchTerm && searchTerm.trim() !== '') {
+                html = '<div class="no-results">No matching evacuees found</div>';
+            } else {
+                html = '<div class="text-muted text-center p-3">No evacuees in this center</div>';
+            }
+        } else {
+            filteredEvacuees.forEach(function(evacuee) {
+                var statusClass = '';
+                var statusColor = '';
+                
+                if (evacuee.evacuee_status === 'Active') {
+                    statusClass = 'bg-success';
+                    statusColor = 'active-status';
+                } else if (evacuee.evacuee_status === 'Departed') {
+                    statusClass = 'bg-secondary';
+                    statusColor = 'inactive-status';
+                } else if (evacuee.evacuee_status === 'Transferred') {
+                    statusClass = 'bg-warning text-dark';
+                    statusColor = 'transferred';
+                } else if (evacuee.evacuee_status === 'Missing') {
+                    statusClass = 'bg-dark';
+                    statusColor = 'missing';
+                } else if (evacuee.evacuee_status === 'Deceased') {
+                    statusClass = 'bg-danger';
+                    statusColor = 'inactive-status';
+                } else {
+                    statusClass = 'bg-secondary';
+                    statusColor = 'inactive-status';
+                }
+                
+                html += `
+                    <div class="evacuee-item ${statusColor}">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="flex-grow-1">
+                                <strong>${escapeHtml(evacuee.last_name)}, ${escapeHtml(evacuee.first_name)}</strong>
+                                <div class="mt-1">
+                                    <span class="badge ${statusClass}">${evacuee.evacuee_status}</span>
+                                    <span class="text-muted ms-2">Arrival: ${evacuee.arrival_date || 'N/A'}</span>
+                                </div>
+                                <div class="mt-1 text-muted small">
+                                    ${evacuee.sex || 'N/A'} | Age: ${evacuee.age || 'N/A'}
+                                </div>
+                                <div class="mt-1 small">
+                                    Contact: ${evacuee.contact_number || 'N/A'}
+                                    ${evacuee.condition_elderly || evacuee.condition_pwd || evacuee.condition_pregnant ? '<br><span class="text-warning">Special needs: ' + 
+                                        (evacuee.condition_elderly ? 'Elderly ' : '') +
+                                        (evacuee.condition_pwd ? 'PWD ' : '') +
+                                        (evacuee.condition_pregnant ? 'Pregnant ' : '') +
+                                        (evacuee.condition_lactating ? 'Lactating ' : '') + '</span>' : ''}
+                                </div>
+                            </div>
+                            <button class="btn btn-sm btn-outline-primary edit-evic-status" 
+                                    data-evic-id="${evacuee.evacuee_id}"
+                                    data-name="${escapeHtml(evacuee.first_name)} ${escapeHtml(evacuee.last_name)}"
+                                    data-status="${evacuee.evacuee_status}"
+                                    data-center-id="${centerId}">
+                                Edit
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+        $('#evacuee-list-' + centerId).html(html);
+    }
+    
+    $(document).on('input', '.evacuee-search-input', function() {
+        var centerId = $(this).data('center-id');
+        var searchTerm = $(this).val();
+        var evacuees = evacueeDataStore[centerId] || [];
+        displayEvacuees(centerId, evacuees, searchTerm);
+    });
+    
+    $(document).on('click', '.clear-search', function() {
+        var centerId = $(this).data('center-id');
+        var searchInput = $('.evacuee-search-input[data-center-id="' + centerId + '"]');
+        searchInput.val('');
+        var evacuees = evacueeDataStore[centerId] || [];
+        displayEvacuees(centerId, evacuees, '');
+    });
+    
+    function loadHistory(centerId) {
+        $('#history-list-' + centerId).html('<div class="text-muted text-center p-3">Loading history...</div>');
+        
+        $.ajax({
+            url: "ajax/get_center_history.ajax.php",
+            method: "POST",
+            data: { center_id: centerId },
+            dataType: "json",
+            success: function(response) {
+                if (response.success && response.history) {
+                    displayHistory(centerId, response.history);
+                } else {
+                    $('#history-list-' + centerId).html('<div class="text-muted text-center p-3">No history records</div>');
+                }
+            },
+            error: function() {
+                $('#history-list-' + centerId).html('<div class="text-danger text-center p-3">Error loading history</div>');
+            }
+        });
+    }
+    
+    function displayHistory(centerId, history) {
+        var html = '';
+        var uniqueHistory = [];
+        var seenKeys = new Set();
+        
+        history.forEach(function(record) {
+            var key = record.action_type + '_' + record.description + '_' + record.created_at;
+            if (!seenKeys.has(key)) {
+                seenKeys.add(key);
+                uniqueHistory.push(record);
+            }
+        });
+        
+        if (uniqueHistory.length === 0) {
+            html = '<div class="text-muted text-center p-3">No activity records found</div>';
+        } else {
+            uniqueHistory.forEach(function(record) {
+                var badgeClass = '';
+                var actionDisplay = record.action_type ? record.action_type.replace(/_/g, ' ') : 'Activity';
+                
+                if (record.action_type === 'EVACUEE_ADDED') {
+                    badgeClass = 'evacuee-added';
+                } else if (record.action_type === 'EVACUEE_STATUS_CHANGE') {
+                    badgeClass = 'status-change';
+                } else if (record.action_type === 'EVACUEE_DEPARTED') {
+                    badgeClass = 'evacuee-departed';
+                } else if (record.action_type === 'EVACUEE_TRANSFERRED') {
+                    badgeClass = 'evacuee-transferred';
+                } else if (record.action_type === 'CENTER_UPDATED') {
+                    badgeClass = 'center-updated';
+                } else {
+                    badgeClass = 'bg-secondary';
+                }
+                
+                html += `
+                    <div class="history-item">
+                        <div class="mb-1">
+                            <span class="badge history-badge ${badgeClass}">${actionDisplay}</span>
+                        </div>
+                        <div class="mt-1 small">${record.description || 'No description'}</div>
+                        <div class="mt-1">
+                            <small class="text-muted">
+                                By: ${record.performed_by || 'System'} | ${formatDate(record.created_at)}
+                            </small>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+        $('#history-list-' + centerId).html(html);
+    }
+    
+    function formatDate(dateString) {
+        if (!dateString) return 'N/A';
+        var date = new Date(dateString);
+        return date.toLocaleString();
+    }
+    
+    function loadStatusHistory(centerId) {
+        $('#status-history-' + centerId).html('<div class="text-muted">Loading...</div>');
+        
+        $.ajax({
+            url: "ajax/get_center_status_history.ajax.php",
+            method: "POST",
+            data: { center_id: centerId },
+            dataType: "json",
+            success: function(response) {
+                if (response.success && response.history) {
+                    displayStatusHistory(centerId, response.history);
+                } else {
+                    $('#status-history-' + centerId).html('<div class="text-muted">No status change history</div>');
+                }
+            },
+            error: function() {
+                $('#status-history-' + centerId).html('<div class="text-danger">Error loading status history</div>');
+            }
+        });
+    }
+    
+    function displayStatusHistory(centerId, history) {
+        var html = '';
+        if (history.length === 0) {
+            html = '<div class="text-muted">No status changes recorded</div>';
+        } else {
+            history.forEach(function(record) {
+                var oldStatusClass = record.old_status === 'Active' ? 'status-badge-active' : 'status-badge-inactive';
+                var newStatusClass = record.new_status === 'Active' ? 'status-badge-active' : (record.new_status === 'Full' ? 'status-badge-full' : 'status-badge-inactive');
+                
+                html += `
+                    <div class="status-history-item">
+                        <span class="badge ${oldStatusClass}">${record.old_status || 'Unknown'}</span>
+                        <span> → </span>
+                        <span class="badge ${newStatusClass}">${record.new_status}</span>
+                        <br>
+                        <small class="text-muted">
+                            By: ${record.changed_by || 'System'} | ${record.changed_at ? formatDate(record.changed_at) : ''}
+                        </small>
+                    </div>
+                `;
+            });
+        }
+        $('#status-history-' + centerId).html(html);
+    }
+    
+    $('.refresh-evacuees').on('click', function(e) {
+        e.stopPropagation();
+        var centerId = $(this).data('center-id');
+        loadEvacuees(centerId);
+    });
+    
+    $('.refresh-history').on('click', function(e) {
+        e.stopPropagation();
+        var centerId = $(this).data('center-id');
+        loadHistory(centerId);
+    });
+    
+    $(document).on('click', '.edit-evic-status', function(e) {
+        e.stopPropagation();
+        var evacueeId = $(this).data('evic-id');
+        var name = $(this).data('name');
+        var status = $(this).data('status');
+        var centerId = $(this).data('center-id');
+        
+        $('#edit_evacuee_id').val(evacueeId);
+        $('#edit_evacuee_name').val(name);
+        $('#edit_evacuee_status').val(status);
+        $('#edit_center_id').val(centerId);
+        $('#edit_remarks').val('');
+        
+        if (status === 'Departed') {
+            $('#departure_date_group').show();
+            $('#edit_departure_date').val(new Date().toISOString().split('T')[0]);
+        } else {
+            $('#departure_date_group').hide();
+        }
+        
+        if (status === 'Transferred') {
+            $('#transfer_center_group').show();
+            loadTransferCenters(centerId);
+        } else {
+            $('#transfer_center_group').hide();
+        }
+        
+        $('#editEvacueeModal').modal('show');
+    });
+    
+    function loadTransferCenters(currentCenterId) {
+        $.ajax({
+            url: "ajax/get_available_centers.ajax.php",
+            method: "POST",
+            data: { exclude_center_id: currentCenterId },
+            dataType: "json",
+            success: function(response) {
+                if (response.success && response.centers) {
+                    var options = '<option value="">Select Center</option>';
+                    response.centers.forEach(function(center) {
+                        options += `<option value="${center.center_id}">${escapeHtml(center.center_name)} (${center.current_occupants}/${center.capacity})</option>`;
+                    });
+                    $('#edit_transfer_center').html(options);
+                }
+            }
+        });
+    }
+    
+    $('#edit_evacuee_status').on('change', function() {
+        var status = $(this).val();
+        if (status === 'Departed') {
+            $('#departure_date_group').slideDown();
+            $('#edit_departure_date').val(new Date().toISOString().split('T')[0]);
+            $('#transfer_center_group').slideUp();
+        } else if (status === 'Transferred') {
+            $('#transfer_center_group').slideDown();
+            $('#departure_date_group').slideUp();
+        } else {
+            $('#departure_date_group').slideUp();
+            $('#transfer_center_group').slideUp();
+        }
+    });
+    
+    $('#confirmUpdateEvacuee').on('click', function() {
+        var evacueeId = $('#edit_evacuee_id').val();
+        var newStatus = $('#edit_evacuee_status').val();
+        var centerId = $('#edit_center_id').val();
+        var departureDate = $('#edit_departure_date').val();
+        var transferCenterId = $('#edit_transfer_center').val();
+        var remarks = $('#edit_remarks').val();
+        
+        if (newStatus === 'Transferred' && !transferCenterId) {
+            Swal.fire('Error', 'Please select a center to transfer to', 'warning');
+            return;
+        }
+        
+        Swal.fire({
+            title: 'Update Evacuee Status?',
+            text: 'Are you sure you want to change this evacuee\'s status?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, update',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: "ajax/update_evacuee_status.ajax.php",
+                    method: "POST",
+                    data: {
+                        evacuee_id: evacueeId,
+                        status: newStatus,
+                        center_id: centerId,
+                        departure_date: departureDate,
+                        transfer_center_id: transferCenterId,
+                        remarks: remarks
+                    },
+                    dataType: "json",
+                    success: function(response) {
+                        if (response.success) {
+                            Swal.fire('Success!', response.message, 'success').then(() => {
+                                closeModal('editEvacueeModal');
+                                loadEvacuees(centerId);
+                                loadHistory(centerId);
+                            });
+                        } else {
+                            Swal.fire('Error', response.message, 'error');
+                        }
+                    },
+                    error: function() {
+                        Swal.fire('Error', 'Failed to update evacuee status', 'error');
+                    }
+                });
+            }
+        });
+    });
+    
     var today = new Date().toISOString().split('T')[0];
     $('#evac_registration_date').val(today);
     $('#evac_arrival_date').val(today);
     
-    // Auto-calculate age from birth date
     $('#evac_birth_date').on('change', function() {
         var birthDate = new Date($(this).val());
         var today = new Date();
@@ -612,19 +1387,30 @@ $(document).ready(function() {
         }
     });
     
-    // Add Evacuee button click
-    $('.add-evacuee').on('click', function() {
+    $('.add-evacuee').on('click', function(e) {
+        e.stopPropagation();
         var centerId = $(this).data('center-id');
         var centerName = $(this).data('center-name');
         var currentOccupants = $(this).data('current-occupants');
         var capacity = $(this).data('capacity');
+        
+        // Check if center is Active before adding evacuee
+        var centerStatus = $('.status-badge-' + centerId).text().trim();
+        if (centerStatus !== 'Active') {
+            Swal.fire({
+                title: 'Center Not Active',
+                text: 'You can only add evacuees to Active centers. Please change the center status to Active first.',
+                icon: 'warning',
+                confirmButtonText: 'OK'
+            });
+            return;
+        }
         
         $('#evac_center_id').val(centerId);
         $('#selectedCenterName').text(centerName);
         $('#selectedCenterOccupancy').text(currentOccupants);
         $('#selectedCenterCapacity').text(capacity);
         
-        // Reset form fields
         $('#addEvacueeForm')[0].reset();
         $('#evac_registration_date').val(today);
         $('#evac_arrival_date').val(today);
@@ -634,9 +1420,7 @@ $(document).ready(function() {
         $('#addEvacueeModal').modal('show');
     });
     
-    // Confirm Add Evacuee
     $('#confirmAddEvacuee').on('click', function() {
-        // Validate required fields
         var requiredFields = [
             { id: '#evac_last_name', label: 'Last Name' },
             { id: '#evac_first_name', label: 'First Name' },
@@ -660,7 +1444,6 @@ $(document).ready(function() {
             return;
         }
         
-        // Check if center has capacity
         var currentOccupants = parseInt($('#selectedCenterOccupancy').text());
         var capacity = parseInt($('#selectedCenterCapacity').text());
         
@@ -691,7 +1474,6 @@ $(document).ready(function() {
                     }
                 });
                 
-                // Collect form data
                 var formData = {
                     trans_type: 'New',
                     encodedby: $('#evac_encodedby').val(),
@@ -726,79 +1508,37 @@ $(document).ready(function() {
                     evacuee_status: $('#evac_evacuee_status').val()
                 };
                 
-                // Send AJAX request
                 $.ajax({
                     url: "ajax/evacuees_save.ajax.php",
                     method: "POST",
                     data: formData,
                     dataType: "text",
                     success: function(response) {
-                        console.log("Response:", response);
-                        
                         if (response && response.trim() !== 'error' && response.trim() !== '') {
-                            // Now update the center's occupancy count
+                            loadEvacuees($('#evac_center_id').val());
+                            Swal.fire('Success!', 'Evacuee registered successfully!', 'success');
+                            closeModal('addEvacueeModal');
+                            // Refresh the occupancy display
                             var newOccupants = currentOccupants + 1;
-                            $.ajax({
-                                url: "ajax/update_center_occupancy.ajax.php",
-                                method: "POST",
-                                data: {
-                                    center_id: $('#evac_center_id').val(),
-                                    current_occupants: newOccupants
-                                },
-                                dataType: "json",
-                                success: function(updateResponse) {
-                                    if (updateResponse.success) {
-                                        Swal.fire({
-                                            title: 'Success!',
-                                            text: 'Evacuee registered successfully and center occupancy updated!',
-                                            icon: 'success',
-                                            confirmButtonText: 'OK'
-                                        }).then(() => {
-                                            location.reload();
-                                        });
-                                    } else {
-                                        Swal.fire({
-                                            title: 'Partial Success',
-                                            text: 'Evacuee registered but occupancy update failed. Please refresh.',
-                                            icon: 'warning',
-                                            confirmButtonText: 'OK'
-                                        }).then(() => {
-                                            location.reload();
-                                        });
-                                    }
-                                },
-                                error: function(xhr, status, error) {
-                                    console.error("Update error:", error);
-                                    Swal.fire({
-                                        title: 'Partial Success',
-                                        text: 'Evacuee registered but occupancy update may have failed. Please refresh.',
-                                        icon: 'warning',
-                                        confirmButtonText: 'OK'
-                                    }).then(() => {
-                                        location.reload();
-                                    });
-                                }
-                            });
+                            $('.occupancy-display-' + $('#evac_center_id').val()).text(newOccupants);
                         } else {
-                            Swal.fire('Error', 'Failed to register evacuee. Response: ' + response, 'error');
+                            Swal.fire('Error', 'Failed to register evacuee', 'error');
                         }
                     },
-                    error: function(xhr, status, error) {
-                        console.error('Error:', error);
-                        console.log('Response text:', xhr.responseText);
-                        Swal.fire('Error', 'An error occurred: ' + error, 'error');
+                    error: function() {
+                        Swal.fire('Error', 'An error occurred', 'error');
                     }
                 });
             }
         });
     });
     
-    // Edit button click - Populate modal with center data
-    $('.edit-center').on('click', function() {
+    $('.edit-center').on('click', function(e) {
+        e.stopPropagation();
         var centerId = $(this).data('center-id');
         var centerName = $(this).data('center-name');
         var category = $(this).data('category');
-        var status = $(this).data('status');
+        var currentStatus = $(this).data('status');
         var barangay = $(this).data('barangay');
         var city = $(this).data('city');
         var province = $(this).data('province');
@@ -817,7 +1557,7 @@ $(document).ready(function() {
         $('#edit_center_id').val(centerId);
         $('#edit_center_name').val(centerName);
         $('#edit_category').val(category);
-        $('#edit_status').val(status);
+        $('#edit_status').val(currentStatus);
         $('#edit_barangay').val(barangay || '');
         $('#edit_city').val(city || '');
         $('#edit_province').val(province || 'Negros Occidental');
@@ -836,20 +1576,46 @@ $(document).ready(function() {
         $('#editCenterModal').modal('show');
     });
     
-    // Update center button click
     $('#confirmUpdateCenter').on('click', function() {
+        var newStatus = $('#edit_status').val();
+        var centerId = $('#edit_center_id').val();
+        var oldStatus = $('.status-badge-' + centerId).text().trim();
+        var currentOccupants = parseInt($('#edit_current_occupants').val());
+        
+        // Check if trying to change to Inactive and there are active evacuees
+        if (newStatus === 'Inactive' && oldStatus !== 'Inactive' && currentOccupants > 0) {
+            Swal.fire({
+                title: 'Warning: Center Has Active Evacuees!',
+                html: `<p>This center currently has <strong>${currentOccupants}</strong> active evacuee(s).</p>
+                       <p>Setting the center to INACTIVE will automatically change all active evacuees to DEPARTED status.</p>
+                       <p>This action cannot be undone.</p>`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, deactivate center and remove evacuees',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    updateCenterWithEvacueeRemoval(centerId, newStatus);
+                }
+            });
+            return;
+        }
+        
+        // Normal update without evacuee removal
         var formData = {
-            center_id: $('#edit_center_id').val(),
+            center_id: centerId,
             center_name: $('#edit_center_name').val(),
             category: $('#edit_category').val(),
-            status: $('#edit_status').val(),
+            status: newStatus,
             address: $('#edit_address').val(),
             barangay: $('#edit_barangay').val(),
             city: $('#edit_city').val(),
             province: $('#edit_province').val(),
             capacity: $('#edit_capacity').val(),
             estimated_capacity: $('#edit_estimated_capacity').val(),
-            current_occupants: $('#edit_current_occupants').val(),
+            current_occupants: currentOccupants,
             contact_number: $('#edit_contact_number').val(),
             contact_person: $('#edit_contact_person').val(),
             latitude: $('#edit_latitude').val(),
@@ -865,10 +1631,6 @@ $(document).ready(function() {
         if (!formData.status) errors.push('Status is required');
         if (!formData.province) errors.push('Province is required');
         if (!formData.capacity || formData.capacity < 0) errors.push('Valid Capacity is required');
-        if (!formData.current_occupants || formData.current_occupants < 0) errors.push('Valid Current Occupants is required');
-        if (parseInt(formData.current_occupants) > parseInt(formData.capacity)) {
-            errors.push('Current Occupants cannot exceed Maximum Capacity');
-        }
         
         if (errors.length > 0) {
             Swal.fire({
@@ -904,29 +1666,56 @@ $(document).ready(function() {
                     dataType: "json",
                     success: function(response) {
                         if (response.success) {
-                            Swal.fire({
-                                title: 'Success!',
-                                text: 'Center updated successfully',
-                                icon: 'success',
-                                confirmButtonText: 'OK'
-                            }).then(() => {
+                            Swal.fire('Success!', 'Center updated successfully', 'success').then(() => {
                                 location.reload();
                             });
                         } else {
                             Swal.fire('Error', response.message || 'Failed to update center', 'error');
                         }
                     },
-                    error: function(xhr, status, error) {
-                        console.error('Update error:', error);
-                        Swal.fire('Error', 'An error occurred while updating. Please try again.', 'error');
+                    error: function() {
+                        Swal.fire('Error', 'An error occurred while updating', 'error');
                     }
                 });
             }
         });
     });
     
-    // Assign LGU button click
-    $('.assign-lgu').on('click', function() {
+    function updateCenterWithEvacueeRemoval(centerId, newStatus) {
+        Swal.fire({
+            title: 'Processing...',
+            text: 'Removing evacuees and updating center status',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+        
+        $.ajax({
+            url: "ajax/deactivate_center_with_evacuees.ajax.php",
+            method: "POST",
+            data: {
+                center_id: centerId,
+                new_status: newStatus
+            },
+            dataType: "json",
+            success: function(response) {
+                if (response.success) {
+                    Swal.fire('Success!', response.message, 'success').then(() => {
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire('Error', response.message, 'error');
+                }
+            },
+            error: function() {
+                Swal.fire('Error', 'Failed to process request', 'error');
+            }
+        });
+    }
+    
+    $('.assign-lgu, .assign-lgu-quick').on('click', function(e) {
+        e.stopPropagation();
         var centerId = $(this).data('center-id');
         var centerName = $(this).data('center-name');
         
@@ -937,7 +1726,6 @@ $(document).ready(function() {
         $('#assignLGMModal').modal('show');
     });
     
-    // Confirm Assign LGU
     $('#confirmAssignLGU').on('click', function() {
         var centerId = $('#assign_center_id').val();
         var lguUserId = $('#lgu_user_id').val();
@@ -989,10 +1777,20 @@ $(document).ready(function() {
         });
     });
     
-    // Print Report button click
-    $('.print-report').on('click', function() {
+    $('.print-report').on('click', function(e) {
+        e.stopPropagation();
         var centerId = $(this).data('center-id');
         window.open('reports/center_report.php?center_id=' + centerId, '_blank');
     });
+    
+    function escapeHtml(text) {
+        if (!text) return '';
+        return text.toString()
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
 });
 </script>
