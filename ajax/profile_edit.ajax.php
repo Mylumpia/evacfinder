@@ -1,0 +1,65 @@
+<?php
+header('Content-Type: application/json; charset=utf-8');
+require_once __DIR__ . '/../models/userrights.model.php';
+session_start();
+
+$response = ['success' => false, 'message' => 'Invalid request'];
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['loggedIn']) && $_SESSION['loggedIn'] === 'ok') {
+    $userid = $_SESSION['userid'] ?? '';
+    $firstName = trim($_POST['firstName'] ?? '');
+    $lastName = trim($_POST['lastName'] ?? '');
+    $email = trim($_POST['email'] ?? '');
+    $contact = trim($_POST['contact'] ?? '');
+    $newPassword = trim($_POST['newPassword'] ?? '');
+
+    if ($userid === '') {
+        $response['message'] = 'Unable to identify user session.';
+        echo json_encode($response);
+        exit;
+    }
+
+    if ($firstName === '' || $lastName === '' || $email === '') {
+        $response['message'] = 'Please provide name and email.';
+        echo json_encode($response);
+        exit;
+    }
+
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $response['message'] = 'Please enter a valid email address.';
+        echo json_encode($response);
+        exit;
+    }
+
+    // Check for email uniqueness
+    $existing = ModelUserRights::mdlGetUserCredentials('userrights', 'email', $email);
+    if (!empty($existing) && isset($existing['userid']) && $existing['userid'] !== $userid) {
+        $response['message'] = 'That email address is already in use by another account.';
+        echo json_encode($response);
+        exit;
+    }
+
+    $passwordToSave = ($newPassword !== '') ? $newPassword : null;
+    $updated = ModelUserRights::mdlUpdateUserProfile($userid, $email, $firstName, $lastName, $contact, $passwordToSave);
+
+    if ($updated) {
+        // Return the updated values so the client can update UI without reload
+        $response = [
+            'success' => true,
+            'message' => 'Profile updated successfully.',
+            'data' => [
+                'name' => trim($firstName . ' ' . $lastName),
+                'email' => $email,
+                'contact' => $contact
+            ]
+        ];
+        // Also update session values server-side
+        $_SESSION['email'] = $email;
+        $_SESSION['username'] = trim($firstName . ' ' . $lastName);
+    } else {
+        $msg = ModelUserRights::$lastError ?? '';
+        $response['message'] = 'Unable to update profile.' . (!empty($msg) ? ' Error: ' . $msg : '');
+    }
+}
+
+echo json_encode($response);

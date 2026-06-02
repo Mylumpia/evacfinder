@@ -2,6 +2,7 @@
 require_once "connection.php";
 
 class ModelUserRights {
+    public static $lastError = '';
     static public function mdlGetUserCredentials($table, $item, $value) {
         $stmt = (new Connection)->connect()->prepare(
             "SELECT * FROM $table WHERE $item = :item"
@@ -137,8 +138,10 @@ class ModelUserRights {
         try {
             $db->beginTransaction();
 
+            // Hash the password before saving
+            $hashed = password_hash($password, PASSWORD_DEFAULT);
             $stmt = $db->prepare("UPDATE userrights SET password = :password WHERE userid = :userid");
-            $stmt->bindParam(":password", $password, PDO::PARAM_STR);
+            $stmt->bindParam(":password", $hashed, PDO::PARAM_STR);
             $stmt->bindParam(":userid", $userid, PDO::PARAM_STR);
             $stmt->execute();
 
@@ -146,12 +149,12 @@ class ModelUserRights {
             if (!empty($userData) && isset($userData['Type'])) {
                 if ($userData['Type'] === 'lgu') {
                     $stmtLgu = $db->prepare("UPDATE lgu_users SET password = :password WHERE office_email_address = :email");
-                    $stmtLgu->bindParam(":password", $password, PDO::PARAM_STR);
+                    $stmtLgu->bindParam(":password", $hashed, PDO::PARAM_STR);
                     $stmtLgu->bindParam(":email", $email, PDO::PARAM_STR);
                     $stmtLgu->execute();
                 } elseif ($userData['Type'] === 'public') {
                     $stmtPersonal = $db->prepare("UPDATE personal_users SET password = :password WHERE email_address = :email");
-                    $stmtPersonal->bindParam(":password", $password, PDO::PARAM_STR);
+                    $stmtPersonal->bindParam(":password", $hashed, PDO::PARAM_STR);
                     $stmtPersonal->bindParam(":email", $email, PDO::PARAM_STR);
                     $stmtPersonal->execute();
                 }
@@ -161,6 +164,83 @@ class ModelUserRights {
             return true;
         } catch (PDOException $e) {
             $db->rollBack();
+            error_log("mdlUpdatePassword error: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    static public function mdlUpdateUserProfile($userid, $email, $firstName, $lastName, $phoneNumber, $password = null) {
+        $db = (new Connection)->connect();
+
+        try {
+            $db->beginTransaction();
+
+            // Prepare hashed password if provided
+            $hashed = null;
+            if ($password !== null && $password !== '') {
+                $hashed = password_hash($password, PASSWORD_DEFAULT);
+            }
+
+            // Update type-specific profile tables first to avoid FK/email constraint issues
+            $userData = self::mdlGetUserCredentials('userrights', 'userid', $userid);
+            if (!empty($userData) && isset($userData['Type'])) {
+                if ($userData['Type'] === 'lgu') {
+                    // Update LGU user record
+                    $stmtLgu = $db->prepare("UPDATE lgu_users SET first_name = :first_name, last_name = :last_name, phone_number = :phone_number, office_email_address = :office_email WHERE lgu_id = :userid OR office_email_address = :email_check");
+                    $stmtLgu->bindParam(":first_name", $firstName, PDO::PARAM_STR);
+                    $stmtLgu->bindParam(":last_name", $lastName, PDO::PARAM_STR);
+                    $stmtLgu->bindParam(":phone_number", $phoneNumber, PDO::PARAM_STR);
+                    $stmtLgu->bindParam(":office_email", $email, PDO::PARAM_STR);
+                    $stmtLgu->bindParam(":userid", $userid, PDO::PARAM_STR);
+                    $stmtLgu->bindParam(":email_check", $email, PDO::PARAM_STR);
+                    $stmtLgu->execute();
+
+                    // If password provided, update LGU password column too
+                    if (!empty($hashed)) {
+                        $stmtLguPwd = $db->prepare("UPDATE lgu_users SET password = :password WHERE lgu_id = :userid OR office_email_address = :email_check");
+                        $stmtLguPwd->bindParam(":password", $hashed, PDO::PARAM_STR);
+                        $stmtLguPwd->bindParam(":userid", $userid, PDO::PARAM_STR);
+                        $stmtLguPwd->bindParam(":email_check", $email, PDO::PARAM_STR);
+                        $stmtLguPwd->execute();
+                    }
+                } elseif ($userData['Type'] === 'public') {
+                    // Update personal user record
+                    $stmtPersonal = $db->prepare("UPDATE personal_users SET first_name = :first_name, last_name = :last_name, phone_number = :phone_number, email_address = :email WHERE user_id = :userid OR email_address = :email_check");
+                    $stmtPersonal->bindParam(":first_name", $firstName, PDO::PARAM_STR);
+                    $stmtPersonal->bindParam(":last_name", $lastName, PDO::PARAM_STR);
+                    $stmtPersonal->bindParam(":phone_number", $phoneNumber, PDO::PARAM_STR);
+                    $stmtPersonal->bindParam(":email", $email, PDO::PARAM_STR);
+                    $stmtPersonal->bindParam(":userid", $userid, PDO::PARAM_STR);
+                    $stmtPersonal->bindParam(":email_check", $email, PDO::PARAM_STR);
+                    $stmtPersonal->execute();
+
+                    if (!empty($hashed)) {
+                        $stmtPersonalPwd = $db->prepare("UPDATE personal_users SET password = :password WHERE user_id = :userid OR email_address = :email_check");
+                        $stmtPersonalPwd->bindParam(":password", $hashed, PDO::PARAM_STR);
+                        $stmtPersonalPwd->bindParam(":userid", $userid, PDO::PARAM_STR);
+                        $stmtPersonalPwd->bindParam(":email_check", $email, PDO::PARAM_STR);
+                        $stmtPersonalPwd->execute();
+                    }
+                }
+            }
+
+            // Finally update userrights email and optionally password
+            if ($hashed !== null) {
+                $stmt = $db->prepare("UPDATE userrights SET email = :email, password = :password WHERE userid = :userid");
+                $stmt->bindParam(":password", $hashed, PDO::PARAM_STR);
+            } else {
+                $stmt = $db->prepare("UPDATE userrights SET email = :email WHERE userid = :userid");
+            }
+            $stmt->bindParam(":email", $email, PDO::PARAM_STR);
+            $stmt->bindParam(":userid", $userid, PDO::PARAM_STR);
+            $stmt->execute();
+
+            $db->commit();
+            return true;
+        } catch (PDOException $e) {
+            $db->rollBack();
+            self::$lastError = $e->getMessage();
+            error_log("mdlUpdateUserProfile error: " . $e->getMessage());
             return false;
         }
     }

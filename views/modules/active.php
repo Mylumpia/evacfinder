@@ -103,7 +103,7 @@ $allCenters = ModelCenters::mdlGetAllCenters();
                                         if ($statusText === 'Active') {
                                             $badgeClass = 'bg-success';
                                         } elseif ($statusText === 'Inactive') {
-                                            $badgeClass = 'bg-secondary';
+                                            $badgeClass = 'bg-danger';
                                         } elseif ($statusText === 'Full') {
                                             $badgeClass = 'bg-warning text-dark';
                                         } elseif ($statusText === 'Under Maintenance') {
@@ -915,7 +915,7 @@ $allCenters = ModelCenters::mdlGetAllCenters();
 }
 
 .status-badge-inactive {
-    background-color: #6c757d;
+    background-color: #dc3545;
     color: white;
     padding: 2px 6px;
     border-radius: 4px;
