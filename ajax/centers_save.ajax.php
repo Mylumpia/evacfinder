@@ -63,12 +63,48 @@ class evacCenter{
         error_log("Data to save: " . print_r($data, true));
 
         if ($this->trans_type == "New") {
-            $answer = (new ControllerCenters)->ctrSaveCenters($data);
-            error_log("Answer from controller: " . $answer);
-            echo $answer;
-        } else {
-            echo "error: invalid trans_type";
+        $answer = (new ControllerCenters)->ctrSaveCenters($data);
+        error_log("Answer from controller: " . $answer);
+
+        // Save history snapshot on create
+        if ($answer !== 'error' && $answer !== 'existing') {
+            require_once "../controllers/history.controller.php";
+            require_once "../models/history.model.php";
+
+            $historyData = array(
+                "center_id"            => $answer,
+                "center_name"          => $this->center_name,
+                "category"             => $this->category,
+                "status"               => $this->status,
+                "barangay"             => $this->barangay,
+                "city"                 => $this->city,
+                "province"             => $this->province,
+                "address"              => $this->address,
+                "capacity"             => $this->capacity,
+                "max_persons"          => $this->max_persons,
+                "current_occupants"    => $this->current_occupants,
+                "contact_number"       => $this->contact_number,
+                "contact_person"       => $this->contact_person,
+                "date_established"     => $this->date_established,
+                "facilities"           => $this->facilities,
+                "remarks"              => $this->remarks,
+                "encodedby"            => $this->encodedby,
+                "latitude"             => $this->latitude,
+                "longitude"            => $this->longitude,
+                "estimated_capacity"   => $this->estimated_capacity,
+                "accessibility"        => $this->accessibility,
+                "available_facilities" => $this->available_facilities,
+                "assigned_lgu_user_id" => null,
+                "action_made"          => "Created"
+            );
+
+            ControllerHistory::ctrSaveHistory($historyData);
         }
+
+        echo $answer;
+    } else {
+        echo "error: invalid trans_type";
+    }
     }
 }
 
