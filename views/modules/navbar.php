@@ -464,19 +464,30 @@ body.theme-dark .dark-mode-btn:hover {
                   <strong id="profileDisplayContact"><?php echo profileDisplayValue($contactNum, 'N/A'); ?></strong>
                 </div>
                 <?php if (!empty($lguInfo) && is_array($lguInfo)): ?>
-                <div class="mb-3 d-flex justify-content-between">
-                  <span class="text-muted">Office / agency</span>
-                  <strong><?php echo profileDisplayValue($lguInfo['lgu_office_name'] ?? '', 'N/A'); ?></strong>
-                </div>
-                <div class="mb-3 d-flex justify-content-between">
-                  <span class="text-muted">Area assigned</span>
-                  <strong><?php echo profileDisplayValue($areaAssigned, 'N/A'); ?></strong>
+                <div id="lguDetailsSection" class="d-none">
+                  <div class="mb-3 d-flex justify-content-between">
+                    <span class="text-muted">Office / agency</span>
+                    <strong><?php echo profileDisplayValue($lguInfo['lgu_office_name'] ?? '', 'N/A'); ?></strong>
+                  </div>
+                  <div class="mb-3 d-flex justify-content-between">
+                    <span class="text-muted">Area assigned</span>
+                    <strong><?php echo profileDisplayValue($areaAssigned, 'N/A'); ?></strong>
+                  </div>
+                  <div class="mb-3 d-flex justify-content-between">
+                    <span class="text-muted">LGU office type</span>
+                    <strong><?php echo profileDisplayValue($lguInfo['office_type'] ?? '', 'N/A'); ?></strong>
+                  </div>
                 </div>
                 <?php endif; ?>
                 <div class="mb-3 d-flex justify-content-between">
                   <span class="text-muted">Role</span>
                   <strong><?php echo profileDisplayValue($lguInfo['position_role'] ?? '', strtoupper($profileRole)); ?></strong>
                 </div>
+                <?php if (!empty($lguInfo) && is_array($lguInfo)): ?>
+                <div class="mb-3">
+                  <button type="button" class="btn btn-sm btn-outline-primary" id="toggleLguDetailsBtn">Show LGU details</button>
+                </div>
+                <?php endif; ?>
               </div>
             </div>
           </div>
@@ -744,6 +755,20 @@ document.addEventListener('DOMContentLoaded', function () {
     backToProfileBtn.addEventListener('click', function () {
       $('#profileEditModal').modal('hide');
       $('#profileModal').modal('show');
+    });
+  }
+
+  var lguToggleBtn = document.getElementById('toggleLguDetailsBtn');
+  var lguDetails = document.getElementById('lguDetailsSection');
+  if (lguToggleBtn && lguDetails) {
+    lguToggleBtn.addEventListener('click', function () {
+      if (lguDetails.classList.contains('d-none')) {
+        lguDetails.classList.remove('d-none');
+        lguToggleBtn.textContent = 'Hide LGU details';
+      } else {
+        lguDetails.classList.add('d-none');
+        lguToggleBtn.textContent = 'Show LGU details';
+      }
     });
   }
 
