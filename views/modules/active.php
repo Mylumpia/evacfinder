@@ -103,7 +103,7 @@ $allCenters = ModelCenters::mdlGetAllCenters();
                                         if ($statusText === 'Active') {
                                             $badgeClass = 'bg-success';
                                         } elseif ($statusText === 'Inactive') {
-                                            $badgeClass = 'bg-secondary';
+                                            $badgeClass = 'bg-warning';
                                         } elseif ($statusText === 'Full') {
                                             $badgeClass = 'bg-warning text-dark';
                                         } elseif ($statusText === 'Under Maintenance') {
@@ -1075,7 +1075,7 @@ $(document).ready(function() {
                     statusClass = 'bg-success';
                     statusColor = 'active-status';
                 } else if (evacuee.evacuee_status === 'Departed') {
-                    statusClass = 'bg-secondary';
+                    statusClass = 'bg-warning';
                     statusColor = 'inactive-status';
                 } else if (evacuee.evacuee_status === 'Transferred') {
                     statusClass = 'bg-warning text-dark';
