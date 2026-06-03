@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: May 31, 2026 at 02:38 PM
+-- Generation Time: Jun 03, 2026 at 07:17 AM
 -- Server version: 8.4.3
 -- PHP Version: 8.3.30
 
@@ -95,8 +95,8 @@ CREATE TABLE `centers` (
 --
 
 INSERT INTO `centers` (`id`, `center_id`, `center_name`, `category`, `status`, `barangay`, `city`, `province`, `address`, `capacity`, `max_persons`, `current_occupants`, `contact_number`, `contact_person`, `alternate_contact`, `date_established`, `facilities`, `hazard_type`, `remarks`, `encodedby`, `latitude`, `longitude`, `estimated_capacity`, `accessibility`, `available_facilities`, `assigned_lgu_user_id`) VALUES
-(1, 'EvacC00001', 'Banago Elem', 'Secondary', 'Inactive', '', '', 'Negros Occidental', '', 300, 0, 0, '', '', '', NULL, '', '', '', 1, NULL, NULL, 300, '', '', NULL),
-(2, 'EvacC00002', 'Alijis Hall', 'Primary', 'Active', 'Alijis', 'Bacolod', 'Negros Occidental', 'Alijis bcd', 400, 400, -1, '', '', '', NULL, '', '', '', 6, 10.65656800, 122.96001400, 400, '', '', '00006');
+(1, 'EvacC00001', 'edit', 'Secondary', 'Inactive', '', '', 'Negros Occidental', '', 300, 0, 0, '', '', '', NULL, '', '', '', 1, NULL, NULL, 300, '', '', NULL),
+(2, 'EvacC00002', 'talaga?', 'Primary', 'Active', 'Alijis', 'Bacolod', 'Negros Occidental', 'Alijis bcd', 400, 400, 2, '', '', '', NULL, '', '', '', 6, 10.65656800, 122.96001400, 400, '', '', '00006');
 
 --
 -- Triggers `centers`
@@ -258,6 +258,68 @@ DELIMITER ;
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `history`
+--
+
+CREATE TABLE `history` (
+  `id` int NOT NULL,
+  `center_id` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `center_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `category` varchar(50) NOT NULL,
+  `status` varchar(50) NOT NULL,
+  `barangay` varchar(50) NOT NULL,
+  `city` varchar(50) NOT NULL,
+  `province` varchar(50) NOT NULL,
+  `address` varchar(200) NOT NULL,
+  `capacity` int NOT NULL,
+  `max_persons` int NOT NULL,
+  `current_occupants` int NOT NULL,
+  `contact_number` varchar(11) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `contact_person` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `date_established` date DEFAULT NULL,
+  `facilities` varchar(300) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `remarks` varchar(300) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `encodedby` int NOT NULL,
+  `latitude` decimal(10,8) DEFAULT NULL,
+  `longitude` decimal(11,8) DEFAULT NULL,
+  `estimated_capacity` int DEFAULT NULL,
+  `accessibility` varchar(300) DEFAULT NULL,
+  `available_facilities` varchar(300) DEFAULT NULL,
+  `history_date` datetime DEFAULT NULL,
+  `action_made` varchar(100) NOT NULL,
+  `assigned_lgu_user_id` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `history`
+--
+
+INSERT INTO `history` (`id`, `center_id`, `center_name`, `category`, `status`, `barangay`, `city`, `province`, `address`, `capacity`, `max_persons`, `current_occupants`, `contact_number`, `contact_person`, `date_established`, `facilities`, `remarks`, `encodedby`, `latitude`, `longitude`, `estimated_capacity`, `accessibility`, `available_facilities`, `history_date`, `action_made`, `assigned_lgu_user_id`) VALUES
+(1, 'EvacC00001', 'Banago Elem', 'Secondary', 'Inactive', '', '', 'Negros Occidental', '', 300, 0, 0, '', '', NULL, '', '', 1, NULL, NULL, 300, '', '', NULL, '0', NULL),
+(2, 'EvacC00002', 'Alijis', 'Primary', 'Active', 'Alijis', 'Bacolod', 'Negros Occidental', 'Alijis', 400, 400, 1, '', '', NULL, '', '', 6, 10.65656800, 122.96001400, 400, '', '', NULL, '0', '00006'),
+(3, 'EvacC00002', 'Alijis', 'Primary', 'Active', 'Alijis', 'Bacolod', 'Negros Occidental', '', 400, 400, 1, '', '', NULL, '', 'hmm', 6, NULL, NULL, 400, '', '', '2026-05-31 11:31:00', 'Updated', '00006'),
+(4, 'EvacC00002', 'Alijis Hall weh??', 'Primary', 'Active', 'Alijis', 'Bacolod', 'Negros Occidental', 'Alijis bcd', 400, 400, 2, '', '', NULL, '', '', 6, 10.65656800, 122.96001400, 400, '', '', '2026-06-02 22:14:13', 'Updated', '00006'),
+(5, 'EvacC00002', 'Alijis Hall wah', 'Primary', 'Active', 'Alijis', 'Bacolod', 'Negros Occidental', 'Alijis bcd', 400, 400, 2, '', '', NULL, '', '', 6, 10.65656800, 122.96001400, 400, '', '', '2026-06-02 22:14:45', 'Updated', '00006'),
+(6, 'EvacC00002', 'Alijis Hall sure na?', 'Primary', 'Active', 'Alijis', 'Bacolod', 'Negros Occidental', 'Alijis bcd', 400, 400, 2, '', '', NULL, '', '', 6, 10.65656800, 122.96001400, 400, '', '', '2026-06-02 22:22:03', 'Updated', '00006'),
+(7, 'EvacC00002', 'Alijis Hall isa pa', 'Primary', 'Active', 'Alijis', 'Bacolod', 'Negros Occidental', 'Alijis bcd', 400, 400, 2, '', '', NULL, '', '', 6, 10.65656800, 122.96001400, 400, '', '', '2026-06-02 22:39:27', 'Updated', '00006'),
+(8, 'EvacC00002', 'Alijis Hall sige daw bi?', 'Primary', 'Active', 'Alijis', 'Bacolod', 'Negros Occidental', 'Alijis bcd', 400, 400, 2, '', '', NULL, '', '', 6, 10.65656800, 122.96001400, 400, '', '', '2026-06-02 23:03:07', 'Updated', '00006'),
+(9, 'EvacC00002', 'Alijis Hall change bi', 'Primary', 'Active', 'Alijis', 'Bacolod', 'Negros Occidental', 'Alijis bcd', 400, 400, 2, '', '', NULL, '', '', 6, 10.65656800, 122.96001400, 400, '', '', '2026-06-02 23:04:02', 'Updated', '00006'),
+(10, 'EvacC00002', 'Alijis Hall sige', 'Primary', 'Active', 'Alijis', 'Bacolod', 'Negros Occidental', 'Alijis bcd', 400, 400, 2, '', '', NULL, '', '', 3, 10.65656800, 122.96001400, 400, '', '', '2026-06-03 13:13:52', 'Updated', '00006'),
+(11, 'EvacC00002', 'Alijis Hall try', 'Primary', 'Active', 'Alijis', 'Bacolod', 'Negros Occidental', 'Alijis bcd', 400, 400, 2, '', '', NULL, '', '', 3, 10.65656800, 122.96001400, 400, '', '', '2026-06-03 14:03:01', 'Updated', '00006'),
+(12, 'EvacC00002', 'Alijis Hall try bi', 'Primary', 'Active', 'Alijis', 'Bacolod', 'Negros Occidental', 'Alijis bcd', 400, 400, 2, '', '', NULL, '', '', 3, 10.65656800, 122.96001400, 400, '', '', '2026-06-03 14:03:51', 'Updated', '00006'),
+(13, 'EvacC00002', 'Alijis Hall liwat na naman?', 'Primary', 'Active', 'Alijis', 'Bacolod', 'Negros Occidental', 'Alijis bcd', 400, 400, 2, '', '', NULL, '', '', 3, 10.65656800, 122.96001400, 400, '', '', '2026-06-03 14:08:39', 'Updated', '00006'),
+(14, 'EvacC00002', 'Alijis Hall allen', 'Primary', 'Active', 'Alijis', 'Bacolod', 'Negros Occidental', 'Alijis bcd', 400, 400, 2, '', '', NULL, '', '', 3, 10.65656800, 122.96001400, 400, '', '', '2026-06-03 14:14:34', 'Updated', '00006'),
+(15, 'EvacC00002', 'Alijis Hall patya nlng ko bi?', 'Primary', 'Active', 'Alijis', 'Bacolod', 'Negros Occidental', 'Alijis bcd', 400, 400, 2, '', '', NULL, '', '', 3, 10.65656800, 122.96001400, 400, '', '', '2026-06-03 14:39:58', 'Updated', '00006'),
+(16, 'EvacC00002', 'Alijis Hall talaka', 'Primary', 'Active', 'Alijis', 'Bacolod', 'Negros Occidental', 'Alijis bcd', 400, 400, 2, '', '', NULL, '', '', 3, 10.65656800, 122.96001400, 400, '', '', '2026-06-03 14:41:31', 'Updated', '00006'),
+(17, 'EvacC00002', 'wow', 'Primary', 'Active', 'Alijis', 'Bacolod', 'Negros Occidental', 'Alijis bcd', 400, 400, 2, '', '', NULL, '', '', 6, 10.65656800, 122.96001400, 400, '', '', '2026-06-03 14:42:24', 'Updated', '00006'),
+(18, 'EvacC00002', 'Alijis Hall ', 'Primary', 'Active', 'Alijis', 'Bacolod', 'Negros Occidental', 'Alijis bcd', 400, 400, 2, '', '', NULL, '', '', 6, 10.65656800, 122.96001400, 400, '', '', '2026-06-03 14:43:04', 'Updated', '00006'),
+(19, 'EvacC00002', 'wow', 'Primary', 'Active', 'Alijis', 'Bacolod', 'Negros Occidental', 'Alijis bcd', 400, 400, 2, '', '', NULL, '', '', 6, 10.65656800, 122.96001400, 400, '', '', '2026-06-03 14:43:23', 'Updated', '00006'),
+(20, 'EvacC00001', 'edit', 'Secondary', 'Inactive', '', '', 'Negros Occidental', '', 300, 0, 0, '', '', NULL, '', '', 6, NULL, NULL, 300, '', '', '2026-06-03 14:43:35', 'Updated', NULL),
+(21, 'EvacC00002', 'talaga?', 'Primary', 'Active', 'Alijis', 'Bacolod', 'Negros Occidental', 'Alijis bcd', 400, 400, 2, '', '', NULL, '', '', 6, 10.65656800, 122.96001400, 400, '', '', '2026-06-03 14:44:07', 'Updated', '00006');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `lgu_center_assignments`
 --
 
@@ -362,10 +424,10 @@ CREATE TABLE `userrights` (
 
 INSERT INTO `userrights` (`id`, `userid`, `email`, `password`, `Type`, `last_login`, `status`) VALUES
 (1, '00001', 'sample@gmail.com', 'user', '', '2026-05-26 08:41:12', 'Active'),
-(7, '00003', 'allen@gmail.com', 'me', 'lgu', '2026-05-26 07:46:10', 'Active'),
+(7, '00003', 'allen@gmail.com', 'me', 'lgu', '2026-06-03 06:08:11', 'Active'),
 (8, '00004', 'lancesarmiento40@gmail.com', '123', 'public', '2026-05-26 07:39:47', 'Active'),
-(9, '00005', 'capkeith43@gmail.com', '123', 'public', '2026-05-26 08:42:00', 'Active'),
-(10, '00006', '123@gmail.com', '123', 'lgu', '2026-05-31 07:36:29', 'Active');
+(9, '00005', 'capkeith43@gmail.com', '123', 'public', '2026-06-02 14:58:50', 'Active'),
+(10, '00006', '123@gmail.com', '123', 'lgu', '2026-06-03 06:42:09', 'Active');
 
 --
 -- Indexes for dumped tables
@@ -409,6 +471,13 @@ ALTER TABLE `evacuees`
   ADD UNIQUE KEY `evacuee_id` (`evacuee_id`),
   ADD KEY `evacuation_center_id` (`evacuation_center_id`),
   ADD KEY `fk_evacuees_registered_by` (`registered_by_lgu_id`);
+
+--
+-- Indexes for table `history`
+--
+ALTER TABLE `history`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_centers_assigned_lgu` (`assigned_lgu_user_id`);
 
 --
 -- Indexes for table `lgu_center_assignments`
@@ -474,6 +543,12 @@ ALTER TABLE `center_status_history`
 --
 ALTER TABLE `evacuees`
   MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT for table `history`
+--
+ALTER TABLE `history`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
 -- AUTO_INCREMENT for table `lgu_center_assignments`

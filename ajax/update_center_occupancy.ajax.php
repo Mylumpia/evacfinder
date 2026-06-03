@@ -1,4 +1,5 @@
 <?php
+session_start();
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 require_once "../models/connection.php";
@@ -42,6 +43,44 @@ if(isset($_POST["center_id"]) && isset($_POST["current_occupants"])) {
         }
         
         $pdo->commit();
+        // Save history snapshot
+        require_once "../controllers/history.controller.php";
+        require_once "../models/history.model.php";
+        require_once "../models/centers.model.php";
+
+        $center = ModelCenters::mdlGetCenterById($center_id);
+
+        if($center) {
+            $historyData = array(
+                "center_id"            => $center["center_id"],
+                "center_name"          => $center["center_name"],
+                "category"             => $center["category"],
+                "status"               => $center["status"],
+                "barangay"             => $center["barangay"],
+                "city"                 => $center["city"],
+                "province"             => $center["province"],
+                "address"              => $center["address"],
+                "capacity"             => $center["capacity"],
+                "max_persons"          => $center["max_persons"],
+                "current_occupants"    => $center["current_occupants"],
+                "contact_number"       => $center["contact_number"],
+                "contact_person"       => $center["contact_person"],
+                "date_established"     => $center["date_established"],
+                "facilities"           => $center["facilities"],
+                "remarks"              => $center["remarks"],
+                "encodedby"            => $_SESSION['userid'],
+                "latitude"             => $center["latitude"],
+                "longitude"            => $center["longitude"],
+                "estimated_capacity"   => $center["estimated_capacity"],
+                "accessibility"        => $center["accessibility"],
+                "available_facilities" => $center["available_facilities"],
+                "assigned_lgu_user_id" => $center["assigned_lgu_user_id"],
+                "action_made"          => "Occupancy Updated"
+            );
+
+            ControllerHistory::ctrSaveHistory($historyData);
+        }
+
         echo json_encode(["success" => true, "message" => "Occupancy updated successfully"]);
         
     } catch (PDOException $e) {

@@ -168,7 +168,8 @@
         'login'   => ['login.js'],
         'centers' => ['centers.js'],
         'evacuees' => ['evacuees.js'],
-        'announcement' => ['announcement.js']
+        'announcement' => ['announcement.js'],
+        'active' => ['active.js']
         
       ];
       if(array_key_exists($route, $routeScripts)){

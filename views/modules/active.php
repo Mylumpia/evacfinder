@@ -166,13 +166,6 @@ $allCenters = ModelCenters::mdlGetAllCenters();
                                                 <div class="row mb-3">
                                                     <div class="col-12">
                                                         <div class="btn-group" role="group">
-                                                            <button type="button" class="btn btn-sm btn-success add-evacuee-dropdown" 
-                                                                    data-center-id="<?php echo htmlspecialchars($center['center_id']); ?>"
-                                                                    data-center-name="<?php echo htmlspecialchars($center['center_name']); ?>"
-                                                                    data-current-occupants="<?php echo $actualOccupancy; ?>"
-                                                                    data-capacity="<?php echo $center['capacity']; ?>">
-                                                                <i class="fa fa-user-plus"></i> Add Evacuee
-                                                            </button>
                                                             <button type="button" class="btn btn-sm btn-primary edit-center-dropdown" 
                                                                     data-center-id="<?php echo htmlspecialchars($center['center_id']); ?>"
                                                                     data-center-name="<?php echo htmlspecialchars($center['center_name']); ?>"
@@ -194,6 +187,13 @@ $allCenters = ModelCenters::mdlGetAllCenters();
                                                                     data-remarks="<?php echo htmlspecialchars($fullCenter['remarks']); ?>">
                                                                 <i class="fa fa-edit"></i> Edit Center
                                                             </button>
+                                                            <button type="button" class="btn btn-sm btn-success add-evacuee-dropdown" 
+                                                                    data-center-id="<?php echo htmlspecialchars($center['center_id']); ?>"
+                                                                    data-center-name="<?php echo htmlspecialchars($center['center_name']); ?>"
+                                                                    data-current-occupants="<?php echo $actualOccupancy; ?>"
+                                                                    data-capacity="<?php echo $center['capacity']; ?>">
+                                                                <i class="fa fa-user-plus"></i> Add Evacuee
+                                                            </button>                                                            
                                                             <button type="button" class="btn btn-sm btn-info assign-lgu-dropdown" 
                                                                     data-center-id="<?php echo htmlspecialchars($center['center_id']); ?>"
                                                                     data-center-name="<?php echo htmlspecialchars($center['center_name']); ?>">
@@ -209,6 +209,10 @@ $allCenters = ModelCenters::mdlGetAllCenters();
                                                         <div class="card mb-3">
                                                             <div class="card-header bg-primary text-white">
                                                                 <h6 class="mb-0">CENTER INFORMATION</h6>
+                                                                <button type="button" class="btn btn-sm btn-warning view-history" 
+                                                                    data-center-id="<?php echo htmlspecialchars($center['center_id']); ?>"
+                                                                    data-center-name="<?php echo htmlspecialchars($center['center_name']); ?>">
+                                                                <i class="fa fa-history"></i> History</button>
                                                             </div>
                                                             <div class="card-body">
                                                                 <table class="table table-sm table-borderless mb-3">
@@ -779,6 +783,43 @@ $allCenters = ModelCenters::mdlGetAllCenters();
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary cancel-modal" data-modal="assignLGMModal">Cancel</button>
                 <button type="button" class="btn btn-primary" id="confirmAssignLGU">Assign LGU User</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- History Modal -->
+<div class="modal fade" id="historyModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fa fa-history"></i> Center History - <span id="history_center_name"></span></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered table-hover" id="historyTable">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Date & Time</th>
+                                <th>Action</th>
+                                <th>Changes Made</th>
+                                <th>Remarks</th>
+                                <th>Changed By</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-tbody">
+                            <tr>
+                                <td colspan="7" class="text-center">Loading...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
