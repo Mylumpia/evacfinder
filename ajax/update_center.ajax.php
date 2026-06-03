@@ -1,6 +1,5 @@
-
-
 <?php
+session_start();
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 require_once __DIR__ . "/../controllers/centers.controller.php";
@@ -59,7 +58,7 @@ if(isset($_POST["center_id"]) && isset($_POST["center_name"])) {
                 "date_established"     => $center["date_established"],
                 "facilities"           => $center["facilities"],
                 "remarks"              => $center["remarks"],
-                "encodedby"            => $center["encodedby"],
+                "encodedby"            => $_SESSION['userid'],
                 "latitude"             => $center["latitude"],
                 "longitude"            => $center["longitude"],
                 "estimated_capacity"   => $center["estimated_capacity"],

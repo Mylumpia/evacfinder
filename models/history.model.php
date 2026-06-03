@@ -91,7 +91,7 @@ static public function mdlGetHistory($center_id) {
                     ) as changed_by_name
                 FROM history h
                 -- 1. Match '00006' from history directly to '00006' in userrights
-                LEFT JOIN userrights u ON h.assigned_lgu_user_id = u.userid
+                LEFT JOIN userrights u ON LPAD(h.encodedby, 5, '0') = u.userid
                 -- 2. Link using the exact schema column names
                 LEFT JOIN lgu_users l ON u.email = l.office_email_address
                 LEFT JOIN personal_users p ON u.email = p.email_address
