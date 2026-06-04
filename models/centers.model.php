@@ -1,6 +1,8 @@
 <?php
 require_once "connection.php";
+
 class ModelCenters{
+    
     static public function mdlSaveCenters($data){
         $db = new Connection();
         $pdo = $db->connect();
@@ -103,36 +105,36 @@ class ModelCenters{
     }
 
     static public function mdlGetCenterSummary() {
-    $db = new Connection();
-    $pdo = $db->connect();
+        $db = new Connection();
+        $pdo = $db->connect();
 
-    // Get total centers
-    $stmt = $pdo->prepare("SELECT COUNT(*) AS total_centers FROM centers");
-    $stmt->execute();
-    $totalCenters = $stmt->fetch(PDO::FETCH_ASSOC);
-    
-    // Get total capacity (sum of capacity column)
-    $stmt = $pdo->prepare("SELECT COALESCE(SUM(capacity), 0) AS total_capacity FROM centers");
-    $stmt->execute();
-    $totalCapacity = $stmt->fetch(PDO::FETCH_ASSOC);
-    
-    // Get currently occupied (count active evacuees across all centers)
-    $stmt = $pdo->prepare("SELECT COUNT(*) AS currently_occupied FROM evacuees WHERE evacuee_status = 'Active'");
-    $stmt->execute();
-    $currentlyOccupied = $stmt->fetch(PDO::FETCH_ASSOC);
-    
-    // Get active centers count
-    $stmt = $pdo->prepare("SELECT COUNT(*) AS active_centers FROM centers WHERE status = 'Active'");
-    $stmt->execute();
-    $activeCenters = $stmt->fetch(PDO::FETCH_ASSOC);
-    
-    return array(
-        'total_centers' => $totalCenters['total_centers'],
-        'total_capacity' => $totalCapacity['total_capacity'],
-        'currently_occupied' => $currentlyOccupied['currently_occupied'],
-        'active_centers' => $activeCenters['active_centers']
-    );
-}
+        // Get total centers
+        $stmt = $pdo->prepare("SELECT COUNT(*) AS total_centers FROM centers");
+        $stmt->execute();
+        $totalCenters = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        // Get total capacity (sum of capacity column)
+        $stmt = $pdo->prepare("SELECT COALESCE(SUM(capacity), 0) AS total_capacity FROM centers");
+        $stmt->execute();
+        $totalCapacity = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        // Get currently occupied (count active evacuees across all centers)
+        $stmt = $pdo->prepare("SELECT COUNT(*) AS currently_occupied FROM evacuees WHERE evacuee_status = 'Active'");
+        $stmt->execute();
+        $currentlyOccupied = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        // Get active centers count
+        $stmt = $pdo->prepare("SELECT COUNT(*) AS active_centers FROM centers WHERE status = 'Active'");
+        $stmt->execute();
+        $activeCenters = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        return array(
+            'total_centers' => $totalCenters['total_centers'],
+            'total_capacity' => $totalCapacity['total_capacity'],
+            'currently_occupied' => $currentlyOccupied['currently_occupied'],
+            'active_centers' => $activeCenters['active_centers']
+        );
+    }
 
     static public function mdlGetActiveCenters() {
         $db = new Connection();
@@ -251,7 +253,7 @@ class ModelCenters{
         }
     }
 
-    // NEW: Get centers with assigned LGU user info
+    // Get centers with assigned LGU user info
     static public function mdlGetCentersWithLGU() {
         $db = new Connection();
         $pdo = $db->connect();
@@ -270,7 +272,7 @@ class ModelCenters{
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // NEW: Get available LGU users (not assigned to any center)
+    // Get available LGU users (not assigned to any center)
     static public function mdlGetAvailableLGUUsers() {
         $db = new Connection();
         $pdo = $db->connect();
@@ -288,7 +290,7 @@ class ModelCenters{
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // NEW: Assign LGU user to center
+    // Assign LGU user to center
     static public function mdlAssignLGUToCenter($center_id, $lgu_user_id, $assigned_by = null) {
         $db = new Connection();
         $pdo = $db->connect();
@@ -323,16 +325,17 @@ class ModelCenters{
         }
     }
 
-    // NEW: Get center report with evacuees
+    // Get center report with evacuees (FIXED - removed created_at)
     static public function mdlGetCenterReport($center_id) {
         $db = new Connection();
         $pdo = $db->connect();
         
-        // Get center details
+        // Get center details (only use columns that exist)
         $stmt = $pdo->prepare("
             SELECT c.*, 
                    u.email as assigned_lgu_email,
-                   CONCAT(l.first_name, ' ', l.last_name) as assigned_lgu_name
+                   CONCAT(l.first_name, ' ', l.last_name) as assigned_lgu_name,
+                   l.phone_number as assigned_lgu_phone
             FROM centers c
             LEFT JOIN userrights u ON c.assigned_lgu_user_id = u.userid
             LEFT JOIN lgu_users l ON u.email = l.office_email_address
@@ -342,22 +345,38 @@ class ModelCenters{
         $stmt->execute();
         $center = $stmt->fetch(PDO::FETCH_ASSOC);
         
-        // Get evacuees in this center
+        // Get ACTIVE evacuees only
         $stmt2 = $pdo->prepare("
             SELECT e.*, 
                    CONCAT(l.first_name, ' ', l.last_name) as encoded_by_name
             FROM evacuees e
-            LEFT JOIN lgu_users l ON e.encodedby = l.id
-            WHERE e.evacuation_center_id = :center_id AND e.evacuee_status = 'Active'
+            LEFT JOIN lgu_users l ON e.encodedby = l.lgu_id
+            WHERE e.evacuation_center_id = :center_id 
+            AND e.evacuee_status = 'Active'
             ORDER BY e.arrival_date DESC, e.last_name, e.first_name
         ");
         $stmt2->bindParam(":center_id", $center_id);
         $stmt2->execute();
         $evacuees = $stmt2->fetchAll(PDO::FETCH_ASSOC);
         
-        // Get statistics
+        // Get DEPARTED evacuees (Departed, Transferred, Missing, Deceased)
+        $stmt3 = $pdo->prepare("
+            SELECT e.*, 
+                CONCAT(l.first_name, ' ', l.last_name) as encoded_by_name
+            FROM evacuees e
+            LEFT JOIN lgu_users l ON e.encodedby = l.lgu_id
+            WHERE e.evacuation_center_id = :center_id 
+            AND e.evacuee_status IN ('Departed', 'Transferred', 'Missing', 'Deceased')
+            ORDER BY e.departure_date DESC, e.last_name, e.first_name
+        ");
+        $stmt3->bindParam(":center_id", $center_id);
+        $stmt3->execute();
+        $departedEvacuees = $stmt3->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Get statistics from active evacuees only
         $stats = [
             'total_evacuees' => count($evacuees),
+            'total_departed' => count($departedEvacuees),
             'male' => 0,
             'female' => 0,
             'pwd' => 0,
@@ -377,7 +396,12 @@ class ModelCenters{
             if ($evacuee['age'] && $evacuee['age'] < 18) $stats['children']++;
         }
         
-        return ['center' => $center, 'evacuees' => $evacuees, 'statistics' => $stats];
+        return [
+            'center' => $center, 
+            'evacuees' => $evacuees, 
+            'departed_evacuees' => $departedEvacuees,
+            'statistics' => $stats
+        ];
     }
 }
 ?>
