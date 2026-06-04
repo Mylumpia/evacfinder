@@ -66,18 +66,29 @@ $(function(){
         });
     }
     
+    // Back button handler
     $("#btn-back").click(function (e) {
         e.preventDefault();
         
-        if (confirm('Are you sure you want to leave the page?')) {
-            if (form) form.reset();
-            
-            document.querySelectorAll('.is-invalid').forEach(field => {
-                field.classList.remove('is-invalid');
-            });
-            
-            hideError();
-            window.location.href = '?route=login';
+        // Check URL to determine which page we're on
+        if (window.location.href.indexOf('registration_lgu') > -1) {
+            // LGU page - go back to user registration
+            if (confirm('Are you sure you want to go back? Your LGU details will be lost, but your personal info will be preserved.')) {
+                window.location.href = '?route=registration';
+            }
+        } else {
+            // User registration page - go back to login
+            if (confirm('Are you sure you want to leave the page?')) {
+                const form = document.querySelector('.registration-form');
+                if (form) form.reset();
+                
+                document.querySelectorAll('.is-invalid').forEach(field => {
+                    field.classList.remove('is-invalid');
+                });
+                
+                hideError();
+                window.location.href = '?route=login';
+            }
         }
     });
 

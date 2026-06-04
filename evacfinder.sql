@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Jun 04, 2026 at 01:16 PM
+-- Generation Time: Jun 04, 2026 at 04:50 PM
 -- Server version: 8.4.3
 -- PHP Version: 8.3.30
 
@@ -426,7 +426,8 @@ CREATE TABLE `lgu_users` (
 
 INSERT INTO `lgu_users` (`id`, `lgu_id`, `lgu_office_name`, `office_email_address`, `office_type`, `province`, `region`, `position_role`, `first_name`, `last_name`, `office_number`, `contact_number`, `password`, `registration_date`, `status`) VALUES
 (2, 'LGU00001', 'based', 'allen@gmail.com', 'municipal', 'negros-occidental', 'region-vi', 'pretty', 'allen', 'sarmiento', '09491744739', NULL, 'me', '2026-05-26 04:54:08', 'Pending'),
-(3, 'LGU00003', 'Bacolod', '123@gmail.com', 'city', 'negros-occidental', 'region-vi', 'Okay', 'john', 'Garcia', '12312321', NULL, '123', '2026-05-26 08:42:47', 'Pending');
+(3, 'LGU00003', 'Bacolod', '123@gmail.com', 'city', 'negros-occidental', 'region-vi', 'Okay', 'john', 'Garcia', '12312321', NULL, '123', '2026-05-26 08:42:47', 'Pending'),
+(4, '00007', 'asd', 'asdfgh@gmail.com', 'municipal', 'negros-occidental', 'region-vi', 'Center Manager', 'QWER', 'ASDF', '12', '12', '$2y$10$jpBgeZuW7e/qb0lbEyQZUu1fbRljsOAPSbiM/nJWPVwh69NMhLKny', '2026-06-04 16:46:18', 'Pending');
 
 -- --------------------------------------------------------
 
@@ -470,7 +471,7 @@ CREATE TABLE `userrights` (
   `id` int NOT NULL,
   `userid` varchar(5) NOT NULL,
   `email` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
-  `password` varchar(20) NOT NULL,
+  `password` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `Type` varchar(10) NOT NULL,
   `last_login` datetime DEFAULT NULL,
   `status` varchar(20) DEFAULT 'Active'
@@ -485,7 +486,8 @@ INSERT INTO `userrights` (`id`, `userid`, `email`, `password`, `Type`, `last_log
 (7, '00003', 'allen@gmail.com', 'me', 'lgu', '2026-06-04 11:29:59', 'Active'),
 (8, '00004', 'lancesarmiento40@gmail.com', '123', 'public', '2026-05-26 07:39:47', 'Active'),
 (9, '00005', 'capkeith43@gmail.com', '123', 'public', '2026-06-04 11:29:35', 'Active'),
-(10, '00006', '123@gmail.com', '123', 'lgu', '2026-06-04 13:15:27', 'Active');
+(10, '00006', '123@gmail.com', '123', 'lgu', '2026-06-04 13:15:27', 'Active'),
+(11, '00007', '1arveehayahay25@gmail.com', '$2y$10$jpBgeZuW7e/qb0lbEyQZUu1fbRljsOAPSbiM/nJWPVwh69NMhLKny', 'lgu', NULL, 'Active');
 
 -- --------------------------------------------------------
 
@@ -649,7 +651,7 @@ ALTER TABLE `lgu_center_assignments`
 -- AUTO_INCREMENT for table `lgu_users`
 --
 ALTER TABLE `lgu_users`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `personal_users`
@@ -661,7 +663,7 @@ ALTER TABLE `personal_users`
 -- AUTO_INCREMENT for table `userrights`
 --
 ALTER TABLE `userrights`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- Constraints for dumped tables

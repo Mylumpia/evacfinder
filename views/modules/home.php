@@ -141,7 +141,7 @@
                           <div class="spinner-border text-primary" role="status">
                             <span class="visually-hidden">Loading...</span>
                           </div>
-                         </span>
+                         </td>
                       </tr>
                     </tbody>
                   </table>
@@ -151,7 +151,7 @@
           </div>
         </div>
 
-        <!-- Recent Activity & Quick Actions -->
+        <!-- Recent Activity & Enhanced Quick Actions -->
         <div class="row g-4">
           <div class="col-xl-6">
             <div class="card shadow-sm">
@@ -169,6 +169,8 @@
               </div>
             </div>
           </div>
+          
+          <!-- ENHANCED Quick Actions Panel -->
           <div class="col-xl-6">
             <div class="card shadow-sm">
               <div class="card-header bg-white">
@@ -176,25 +178,53 @@
               </div>
               <div class="card-body">
                 <div class="row g-3">
+                  <!-- Register Evacuee -->
                   <div class="col-6">
-                    <a href="?route=centers" class="btn btn-outline-primary w-100 py-2">
-                      <i class="fa fa-plus-circle me-2"></i> Add Center
+                    <a href="?route=evacuees" class="text-decoration-none">
+                      <div class="evac-quick-action-card text-center p-3 rounded-3 border bg-light h-100">
+                        <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 50px; height: 50px; background: rgba(40, 167, 69, 0.1);">
+                          <i class="fa fa-user-plus fa-2x text-success"></i>
+                        </div>
+                        <h6 class="mb-1 fw-bold">Register Evacuee</h6>
+                        <small class="text-muted d-block">Add new evacuee record</small>
+                      </div>
                     </a>
                   </div>
+                  <!-- Add Center -->
                   <div class="col-6">
-                    <a href="?route=active" class="btn btn-outline-success w-100 py-2">
-                      <i class="fa fa-users me-2"></i> View Centers
+                    <a href="?route=centers" class="text-decoration-none">
+                      <div class="evac-quick-action-card text-center p-3 rounded-3 border bg-light h-100">
+                        <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 50px; height: 50px; background: rgba(0, 123, 255, 0.1);">
+                          <i class="fa fa-plus-circle fa-2x text-primary"></i>
+                        </div>
+                        <h6 class="mb-1 fw-bold">Add Center</h6>
+                        <small class="text-muted d-block">Create new evacuation center</small>
+                      </div>
                     </a>
                   </div>
+                  <!-- Post Announcement -->
                   <div class="col-6">
-                    <button class="btn btn-outline-info w-100 py-2" onclick="showAnnouncementModal()">
-                      <i class="fa fa-bullhorn me-2"></i> Post Announcement
-                    </button>
+                    <div onclick="showAnnouncementModal()" style="cursor: pointer;">
+                      <div class="evac-quick-action-card text-center p-3 rounded-3 border bg-light h-100">
+                        <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 50px; height: 50px; background: rgba(255, 193, 7, 0.1);">
+                          <i class="fa fa-bullhorn fa-2x text-warning"></i>
+                        </div>
+                        <h6 class="mb-1 fw-bold">Post Announcement</h6>
+                        <small class="text-muted d-block">Send alert or update</small>
+                      </div>
+                    </div>
                   </div>
+                  <!-- Generate Report -->
                   <div class="col-6">
-                    <button class="btn btn-outline-secondary w-100 py-2" onclick="refreshDashboard()">
-                      <i class="fa fa-refresh me-2"></i> Refresh Data
-                    </button>
+                    <div onclick="refreshDashboard()" style="cursor: pointer;">
+                      <div class="evac-quick-action-card text-center p-3 rounded-3 border bg-light h-100">
+                        <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 50px; height: 50px; background: rgba(23, 162, 184, 0.1);">
+                          <i class="fa fa-file-text-o fa-2x text-info"></i>
+                        </div>
+                        <h6 class="mb-1 fw-bold">Generate Report</h6>
+                        <small class="text-muted d-block">Export occupancy summary</small>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -299,6 +329,24 @@ canvas {
 .card-header {
     border-bottom: 1px solid #e9ecef;
     padding: 1rem 1.25rem;
+}
+
+/* Enhanced Quick Action Cards - No conflict with existing styles */
+.evac-quick-action-card {
+  transition: all 0.25s ease;
+  background: #ffffff;
+  border-color: #e9ecef !important;
+  cursor: pointer;
+}
+
+.evac-quick-action-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+  border-color: transparent !important;
+}
+
+.evac-quick-action-card:active {
+  transform: translateY(-2px);
 }
 </style>
 
@@ -439,7 +487,7 @@ function fetchCentersList() {
         },
         error: function(xhr, status, error) {
             console.log('Failed to fetch centers:', error);
-            $('#centersTableBody').html('<tr><td colspan="6" class="text-center py-4 text-danger">Failed to load centers</span></tr>');
+            $('#centersTableBody').html('<tr><td colspan="6" class="text-center py-4 text-danger">Failed to load centers</td></tr>');
         }
     });
 }
@@ -447,7 +495,7 @@ function fetchCentersList() {
 function displayCentersTable(centers) {
     let html = '';
     if (centers.length === 0) {
-        html = '<tr><td colspan="6" class="text-center py-4">No evacuation centers found</span></tr>';
+        html = '<tr><td colspan="6" class="text-center py-4">No evacuation centers found</td></tr>';
     } else {
         centers.forEach(function(center) {
             let statusClass = '';
@@ -467,21 +515,21 @@ function displayCentersTable(centers) {
             
             html += `
                 <tr>
-                    <td><strong>${escapeHtml(center.center_name)}</strong>${center.category ? '<br><small class="text-muted">' + escapeHtml(center.category) + '</small>' : ''}</span>
-                    <td>${escapeHtml(center.barangay || '')}${center.barangay ? ', ' : ''}${escapeHtml(center.city || '')}</span>
-                    <td><span class="badge ${statusClass}">${statusText}</span></span>
-                    <td>${occupancy} / ${capacity}</span>
+                    <td><strong>${escapeHtml(center.center_name)}</strong>${center.category ? '<br><small class="text-muted">' + escapeHtml(center.category) + '</small>' : ''}</td>
+                    <td>${escapeHtml(center.barangay || '')}${center.barangay ? ', ' : ''}${escapeHtml(center.city || '')}</td>
+                    <td><span class="badge ${statusClass}">${statusText}</span></td>
+                    <td>${occupancy} / ${capacity}</td>
                     <td>
                         <div class="progress" style="height: 8px;">
                             <div class="progress-bar ${progressClass}" style="width: ${percent}%"></div>
                         </div>
                         <small class="text-muted">${percent}% full</small>
-                     </span>
+                    </td>
                     <td>
                         <button class="btn btn-sm btn-outline-primary view-center" data-center-id="${center.center_id}">
                             <i class="fa fa-eye"></i> View
                         </button>
-                     </span>
+                    </td>
                 </tr>
             `;
         });
