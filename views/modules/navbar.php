@@ -33,9 +33,16 @@ if (isset($_SESSION["loggedIn"]) && $_SESSION["loggedIn"] == "ok") {
         if (!empty($profileInfo)) {
             $profileRole = strtoupper($profileInfo['Type'] ?? 'user');
         }
-        if (!empty($profileInfo) && isset($profileInfo['Type']) && $profileInfo['Type'] === 'lgu') {
-            $lguInfo = ModelUserRights::mdlGetUserCredentials('lgu_users', 'office_email_address', $userEmail);
-        } elseif (!empty($profileInfo) && isset($profileInfo['Type']) && $profileInfo['Type'] === 'public') {
+        $profileType = strtolower($profileInfo['Type'] ?? $profileInfo['type'] ?? '');
+        if (!empty($profileInfo) && $profileType === 'lgu') {
+            $currentUserId = $_SESSION['userid'] ?? null;
+            if ($currentUserId) {
+                $lguInfo = ModelUserRights::mdlGetUserCredentials('lgu_users', 'lgu_id', $currentUserId);
+            }
+            if (empty($lguInfo)) {
+                $lguInfo = ModelUserRights::mdlGetUserCredentials('lgu_users', 'office_email_address', $userEmail);
+            }
+        } elseif (!empty($profileInfo) && $profileType === 'public') {
             $publicInfo = ModelUserRights::mdlGetUserCredentials('personal_users', 'email_address', $userEmail);
         }
         if (!empty($lguInfo)) {
@@ -48,36 +55,65 @@ if (isset($_SESSION["loggedIn"]) && $_SESSION["loggedIn"] == "ok") {
     }
 }
 
-$passwordResetMessage = '';
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['passwordResetSubmit']) && isset($_SESSION['loggedIn']) && $_SESSION['loggedIn'] === 'ok') {
-    $newPassword = trim($_POST['newPassword'] ?? '');
-    $confirmPassword = trim($_POST['confirmPassword'] ?? '');
-    if ($newPassword === '' || $confirmPassword === '') {
-        $passwordResetMessage = 'Please enter both password fields.';
-    } elseif ($newPassword !== $confirmPassword) {
-        $passwordResetMessage = 'Passwords do not match.';
-    } elseif (strlen($newPassword) < 8) {
-        $passwordResetMessage = 'Password must be at least 8 characters.';
-    } elseif (!preg_match('/[0-9]/', $newPassword)) {
-        $passwordResetMessage = 'Password must include at least one number.';
-    } elseif (!preg_match('/[A-Z]/', $newPassword)) {
-        $passwordResetMessage = 'Password must include at least one uppercase letter.';
-    } elseif (!preg_match('/[\W_]/', $newPassword)) {
-        $passwordResetMessage = 'Password must include at least one symbol.';
-    } else {
-        $currentUserId = $_SESSION['userid'] ?? '';
-        $currentEmail = $_SESSION['email'] ?? '';
-        if ($currentUserId && $currentEmail) {
-            $updated = ModelUserRights::mdlUpdatePassword($currentUserId, $newPassword, $currentEmail);
-            if ($updated) {
-                $passwordResetMessage = 'Password updated successfully.';
-            } else {
-                $passwordResetMessage = 'Unable to update password. Please try again.';
-            }
+$profileEditMessage = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['profileEditSubmit']) && isset($_SESSION['loggedIn']) && $_SESSION['loggedIn'] === 'ok') {
+  $firstName = trim($_POST['firstName'] ?? '');
+  $lastName = trim($_POST['lastName'] ?? '');
+  $email = trim($_POST['email'] ?? '');
+  $officeEmail = trim($_POST['officeEmail'] ?? '');
+  $contact = trim($_POST['contact'] ?? '');
+  $newPassword = trim($_POST['newPassword'] ?? '');
+  $confirmPassword = trim($_POST['confirmPassword'] ?? '');
+
+  if ($firstName === '' || $lastName === '' || $email === '') {
+    $profileEditMessage = 'Please enter your full name and email.';
+  } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    $profileEditMessage = 'Please enter a valid account email address.';
+  } elseif (!empty($officeEmail) && !filter_var($officeEmail, FILTER_VALIDATE_EMAIL)) {
+    $profileEditMessage = 'Please enter a valid office email address.';
+  } elseif (!empty($officeEmail) && strtolower($officeEmail) === strtolower($email)) {
+    $profileEditMessage = 'Office email must be different from account email.';
+  } elseif (isset($profileInfo['Type']) && $profileInfo['Type'] === 'lgu' && empty($officeEmail)) {
+    $profileEditMessage = 'Please provide an office email address.';
+  } elseif (($newPassword !== '' || $confirmPassword !== '') && ($newPassword === '' || $confirmPassword === '')) {
+    $profileEditMessage = 'Please fill both password fields to change your password.';
+  } elseif ($newPassword !== '' && $newPassword !== $confirmPassword) {
+    $profileEditMessage = 'Passwords do not match.';
+  } elseif ($newPassword !== '' && strlen($newPassword) < 8) {
+    $profileEditMessage = 'Password must be at least 8 characters.';
+  } elseif ($newPassword !== '' && !preg_match('/[0-9]/', $newPassword)) {
+    $profileEditMessage = 'Password must include at least one number.';
+  } elseif ($newPassword !== '' && !preg_match('/[A-Z]/', $newPassword)) {
+    $profileEditMessage = 'Password must include at least one uppercase letter.';
+  } elseif ($newPassword !== '' && !preg_match('/[\W_]/', $newPassword)) {
+    $profileEditMessage = 'Password must include at least one symbol.';
+  } else {
+    $currentUserId = $_SESSION['userid'] ?? '';
+    if ($currentUserId) {
+      if (!empty($email)) {
+        $existing = ModelUserRights::mdlGetUserCredentials('userrights', 'email', $email);
+        if (!empty($existing) && isset($existing['userid']) && $existing['userid'] !== $currentUserId) {
+          $profileEditMessage = 'That email address is already in use by another account.';
         } else {
-            $passwordResetMessage = 'Unable to identify your account.';
+          $passwordToSave = ($newPassword !== '') ? $newPassword : null;
+          $officeEmailToSave = (!empty($officeEmail) && isset($profileInfo['Type']) && $profileInfo['Type'] === 'lgu') ? $officeEmail : null;
+          $updated = ModelUserRights::mdlUpdateUserProfile($currentUserId, $email, $firstName, $lastName, $contact, $officeEmailToSave, $passwordToSave);
+          if ($updated) {
+            $profileEditMessage = 'Profile updated successfully.';
+            $_SESSION['email'] = $email;
+            $_SESSION['username'] = trim($firstName . ' ' . $lastName);
+          } else {
+            $debug = ModelUserRights::$lastError ?? '';
+            $profileEditMessage = 'Unable to update profile. Please try again.' . (!empty($debug) ? ' Error: ' . htmlspecialchars($debug, ENT_QUOTES, 'UTF-8') : '');
+          }
         }
+      } else {
+        $profileEditMessage = 'Please provide an email address.';
+      }
+    } else {
+      $profileEditMessage = 'Unable to identify your account.';
     }
+  }
 }
 
 function profileDisplayValue($value, $default = 'N/A') {
@@ -85,6 +121,65 @@ function profileDisplayValue($value, $default = 'N/A') {
 }
 ?>
 <style>
+#profileEditModal .modal-body {
+  padding: 1.25rem 1.25rem 0.9rem 1.25rem !important;
+}
+#profileEditModal .text-center {
+  margin-bottom: 1rem !important;
+}
+#profileEditModal .text-center h5 {
+  margin-top: 0.75rem !important;
+  margin-bottom: 0.5rem !important;
+  font-size: 1.25rem;
+}
+#profileEditModal .text-center p {
+  margin-bottom: 0 !important;
+  font-size: 0.9rem;
+}
+#profileEditModal .form-label {
+  margin-bottom: 0.4rem !important;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+#profileEditModal .form-control {
+  padding: 0.5rem 0.875rem !important;
+  font-size: 0.95rem;
+}
+#profileEditModal .row > div {
+  margin-bottom: 0.75rem !important;
+}
+#profileEditModal .mb-3 {
+  margin-bottom: 0.75rem !important;
+}
+#profileEditModal hr {
+  margin: 0.75rem 0 !important;
+}
+#profileEditModal .alert {
+  margin-bottom: 1rem !important;
+  padding: 0.5rem 0.75rem !important;
+  font-size: 0.9rem;
+}
+#profileEditModal .modal-footer {
+  padding: 0.75rem 1.5rem !important;
+  gap: 0.5rem;
+}
+
+/* Constrain dialog size and enable internal scrolling to shorten overall modal */
+#profileEditModal .modal-dialog {
+  max-width: 540px; /* narrower dialog */
+  margin: 1.5rem auto;
+}
+#profileEditModal .modal-content {
+  max-height: 80vh; /* limit total modal height */
+  overflow: hidden;
+}
+#profileEditModal .modal-body {
+  /* leave room for header/footer height (approx 120px) */
+  max-height: calc(80vh - 120px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 body.theme-dark {
   background-color: #0f172a;
   color: #e2e8f0;
@@ -95,8 +190,15 @@ body.theme-dark .header .header-content {
   color: #e2e8f0 !important;
 }
 body.theme-dark .nav-header {
-  background-color: #1565c0 !important;
+  background-color: #102040 !important;
   box-shadow: none;
+}
+body.theme-dark .deznav {
+  background-color: #102040 !important;
+  box-shadow: 0px 0px 40px 0px rgba(0, 0, 0, 0.24) !important;
+}
+body.theme-dark .deznav .metismenu a {
+  color: #e2e8f0 !important;
 }
 body.theme-dark .nav-header .brand-logo img {
   opacity: 1;
@@ -105,6 +207,26 @@ body.theme-dark .navbar-nav .nav-link,
 body.theme-dark .navbar-nav .dropdown-item,
 body.theme-dark .search_bar .search_icon {
   color: #e2e8f0 !important;
+}
+body.theme-dark .header-left .search_bar .search_icon {
+  background-color: #144a8d !important;
+  border-color: #1b5db8 !important;
+}
+body.theme-dark .header-left .search_bar .search_icon i {
+  color: #e2e8f0 !important;
+}
+body.theme-dark .header-left .search_bar .dropdown-menu,
+body.theme-dark .header-left .search_bar .dropdown-menu.show {
+  background-color: rgba(16, 32, 64, 0.95) !important;
+  border: 1px solid rgba(52, 114, 204, 0.5);
+}
+body.theme-dark .header-left .search_bar .dropdown-menu .form-control {
+  background-color: #0f1f3c !important;
+  border-color: #1f4f8f !important;
+  color: #e2e8f0 !important;
+}
+body.theme-dark .header-left .search_bar .dropdown-menu .form-control::placeholder {
+  color: #94a3b8 !important;
 }
 body.theme-dark .card,
 body.theme-dark .modal-content,
@@ -203,6 +325,14 @@ body.theme-dark .btn-primary:hover {
 body.theme-dark .badge.bg-light {
   background: #144a8d !important;
   color: #e2e8f0 !important;
+}
+body.theme-dark .bg-light,
+body.theme-dark .bg-white,
+body.theme-dark .card-body.bg-light,
+body.theme-dark .card-body.bg-white {
+  background-color: #12243b !important;
+  color: #e2e8f0 !important;
+  border-color: #1f2a44 !important;
 }
 body.theme-dark .modal-body {
   color: #e2e8f0;
@@ -326,26 +456,28 @@ body.theme-dark .dark-mode-btn:hover {
           <span class="badge bg-light text-primary py-2 px-3" style="font-size:.85rem; letter-spacing:.04em; position:absolute; right:24px; top:20px;"><?php echo htmlspecialchars($profileRole, ENT_QUOTES, 'UTF-8'); ?></span>
         </div>
       </div>
-      <div class="modal-body p-4">
-        <div class="row gy-4">
+        <div class="modal-body p-3">
+        <div class="row gy-3">
           <div class="col-lg-6">
             <div class="card border-0 shadow-sm">
               <div class="card-body">
                 <h6 class="mb-4 text-uppercase text-muted">Account Information</h6>
                 <div class="mb-3 d-flex justify-content-between">
                   <span class="text-muted">Full name</span>
-                  <strong><?php echo profileDisplayValue($profileUserName); ?></strong>
+                  <strong id="profileDisplayName"><?php echo profileDisplayValue($profileUserName); ?></strong>
                 </div>
                 <div class="mb-3 d-flex justify-content-between">
                   <span class="text-muted">Email address</span>
-                  <strong><?php echo profileDisplayValue($profileEmail); ?></strong>
+                  <strong id="profileDisplayEmail"><?php echo profileDisplayValue($profileEmail); ?></strong>
                 </div>
                 <?php
                   $contactNum = '';
-                  if (is_array($lguInfo)) {
-                    $contactNum = $lguInfo['num'] ?? $lguInfo['phone_number'] ?? '';
-                  } elseif (is_array($publicInfo)) {
+                  $officeNum = '';
+                  if (is_array($publicInfo)) {
                     $contactNum = $publicInfo['phone_number'] ?? '';
+                  } elseif (is_array($lguInfo)) {
+                    $contactNum = $lguInfo['contact_number'] ?? '';
+                    $officeNum = $lguInfo['office_number'] ?? '';
                   }
 
                   $areaAssigned = '';
@@ -360,23 +492,42 @@ body.theme-dark .dark-mode-btn:hover {
                   }
                 ?>
                 <div class="mb-3 d-flex justify-content-between">
-                  <span class="text-muted">Contact number</span>
-                  <strong><?php echo profileDisplayValue($contactNum, 'N/A'); ?></strong>
+                  <span class="text-muted">Number</span>
+                  <strong id="profileDisplayContact"><?php echo profileDisplayValue($contactNum ?: ($officeNum ?: 'N/A')); ?></strong>
                 </div>
                 <?php if (!empty($lguInfo) && is_array($lguInfo)): ?>
-                <div class="mb-3 d-flex justify-content-between">
-                  <span class="text-muted">Office / agency</span>
-                  <strong><?php echo profileDisplayValue($lguInfo['lgu_office_name'] ?? '', 'N/A'); ?></strong>
-                </div>
-                <div class="mb-3 d-flex justify-content-between">
-                  <span class="text-muted">Area assigned</span>
-                  <strong><?php echo profileDisplayValue($areaAssigned, 'N/A'); ?></strong>
+                <div id="lguDetailsSection" class="d-none">
+                  <div class="mb-3 d-flex justify-content-between">
+                    <span class="text-muted">LGU email address</span>
+                    <strong id="profileDisplayOfficeEmail"><?php echo profileDisplayValue($lguInfo['office_email_address'] ?? '', 'N/A'); ?></strong>
+                  </div>
+                  <div class="mb-3 d-flex justify-content-between">
+                    <span class="text-muted">Office number</span>
+                    <strong id="profileDisplayLguOfficeNumber"><?php echo profileDisplayValue($officeNum, 'N/A'); ?></strong>
+                  </div>
+                  <div class="mb-3 d-flex justify-content-between">
+                    <span class="text-muted">Office / agency</span>
+                    <strong><?php echo profileDisplayValue($lguInfo['lgu_office_name'] ?? '', 'N/A'); ?></strong>
+                  </div>
+                  <div class="mb-3 d-flex justify-content-between">
+                    <span class="text-muted">Area assigned</span>
+                    <strong><?php echo profileDisplayValue($areaAssigned, 'N/A'); ?></strong>
+                  </div>
+                  <div class="mb-3 d-flex justify-content-between">
+                    <span class="text-muted">LGU office type</span>
+                    <strong><?php echo profileDisplayValue($lguInfo['office_type'] ?? '', 'N/A'); ?></strong>
+                  </div>
                 </div>
                 <?php endif; ?>
                 <div class="mb-3 d-flex justify-content-between">
                   <span class="text-muted">Role</span>
                   <strong><?php echo profileDisplayValue($lguInfo['position_role'] ?? '', strtoupper($profileRole)); ?></strong>
                 </div>
+                <?php if (!empty($lguInfo) && is_array($lguInfo)): ?>
+                <div class="mb-3">
+                  <button type="button" class="btn btn-sm btn-outline-primary" id="toggleLguDetailsBtn">Show LGU details</button>
+                </div>
+                <?php endif; ?>
               </div>
             </div>
           </div>
@@ -424,7 +575,7 @@ body.theme-dark .dark-mode-btn:hover {
       </div>
       <div class="modal-footer border-0">
         <div class="d-flex justify-content-between align-items-center w-100">
-          <button type="button" class="btn btn-outline-secondary" id="resetPasswordBtn">Reset Password</button>
+          <button type="button" class="btn btn-outline-secondary" id="editProfileBtn">Edit</button>
           <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Close</button>
         </div>
       </div>
@@ -432,50 +583,73 @@ body.theme-dark .dark-mode-btn:hover {
   </div>
 </div>
 
-<!-- Password Reset Popup -->
-<div class="modal fade" id="passwordResetModal" tabindex="-1" role="dialog" aria-labelledby="passwordResetModalLabel" aria-hidden="true">
+<!-- Edit Profile Popup -->
+<div class="modal fade" id="profileEditModal" tabindex="-1" role="dialog" aria-labelledby="profileEditModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content bg-white border-0 rounded-4 shadow-lg">
-      <div class="modal-body p-4">
-        <div class="text-center mb-4">
-          <div class="rounded-circle bg-primary d-inline-flex align-items-center justify-content-center" style="width:60px; height:60px;">
-            <i class="fa fa-lock text-white" style="font-size:1.3rem;"></i>
+      <div class="modal-body p-3">
+        <div class="text-center" style="padding: 0.25rem 0; margin-bottom: 0.5rem;">
+          <div class="rounded-circle bg-primary d-inline-flex align-items-center justify-content-center" style="width:35px; height:35px;">
+            <i class="fa fa-user-edit text-white" style="font-size:0.8rem;"></i>
           </div>
-          <h5 class="mt-3 mb-2 text-dark">Set new password</h5>
-          <p class="text-muted mb-0">Must be at least 8 characters and include a number and symbol.</p>
+          <h6 class="mt-0 mb-0 text-dark" style="font-size:0.95rem;">Edit Profile</h6>
         </div>
-        <form id="passwordResetForm" method="post" action="">
-          <input type="hidden" name="passwordResetSubmit" value="1">
-          <?php if (!empty($passwordResetMessage)): ?>
-            <div class="alert alert-<?php echo strpos($passwordResetMessage, 'successfully') !== false ? 'success' : 'danger'; ?> py-2">
-              <?php echo htmlspecialchars($passwordResetMessage, ENT_QUOTES, 'UTF-8'); ?>
+        <form id="profileEditForm" method="post" action="">
+          <input type="hidden" name="profileEditSubmit" value="1">
+          <?php if (!empty($profileEditMessage)): ?>
+            <div class="alert alert-<?php echo strpos($profileEditMessage, 'successfully') !== false ? 'success' : 'danger'; ?> py-2">
+              <?php echo htmlspecialchars($profileEditMessage, ENT_QUOTES, 'UTF-8'); ?>
             </div>
           <?php endif; ?>
-          <div class="mb-3 position-relative">
-            <label class="form-label text-dark" for="popupNewPassword">New password</label>
-            <input type="password" id="popupNewPassword" name="newPassword" class="form-control rounded-pill border bg-light text-dark py-3 pe-5" placeholder="Enter new password" required>
-            <span class="position-absolute" style="right: 18px; top: 50%; transform: translateY(-50%); cursor: pointer;">
-              <i class="fa fa-eye text-secondary" id="popupToggleNew"></i>
+          <div class="row" style="margin-bottom:0.4rem;">
+            <div class="col-6" style="margin-bottom:0.35rem;">
+              <label class="form-label text-dark" for="firstName" style="font-size:0.8rem; margin-bottom:0.15rem;">First name</label>
+              <input type="text" id="firstName" name="firstName" class="form-control rounded-pill border bg-light text-dark" style="font-size:0.85rem; padding:0.35rem 0.75rem;" placeholder="First name" value="<?php echo htmlspecialchars($lguInfo['first_name'] ?? $publicInfo['first_name'] ?? ($_SESSION['firstname'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>" required>
+            </div>
+            <div class="col-6" style="margin-bottom:0.35rem;">
+              <label class="form-label text-dark" for="lastName" style="font-size:0.8rem; margin-bottom:0.15rem;">Last name</label>
+              <input type="text" id="lastName" name="lastName" class="form-control rounded-pill border bg-light text-dark" style="font-size:0.85rem; padding:0.35rem 0.75rem;" placeholder="Last name" value="<?php echo htmlspecialchars($lguInfo['last_name'] ?? $publicInfo['last_name'] ?? ($_SESSION['lastname'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>" required>
+            </div>
+          </div>
+          <div style="margin-bottom:0.35rem;">
+            <label class="form-label text-dark" for="email" style="font-size:0.8rem; margin-bottom:0.15rem;">Account email</label>
+            <input type="email" id="email" name="email" class="form-control rounded-pill border bg-light text-dark" style="font-size:0.85rem; padding:0.35rem 0.75rem;" placeholder="Account email" value="<?php echo htmlspecialchars($profileEmail, ENT_QUOTES, 'UTF-8'); ?>" required>
+          </div>
+          <div style="margin-bottom:0.35rem;">
+            <label class="form-label text-dark" for="contact" style="font-size:0.8rem; margin-bottom:0.15rem;"><?php echo (!empty($lguInfo) && is_array($lguInfo)) ? 'Public contact #' : 'Contact #'; ?></label>
+            <input type="text" id="contact" name="contact" class="form-control rounded-pill border bg-light text-dark" style="font-size:0.85rem; padding:0.35rem 0.75rem;" placeholder="Contact number" value="<?php echo htmlspecialchars($lguInfo['contact_number'] ?? $publicInfo['phone_number'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
+          </div>
+          <?php if (!empty($lguInfo) && is_array($lguInfo)): ?>
+          <div style="margin-bottom:0.35rem;">
+            <label class="form-label text-dark" for="officeEmail" style="font-size:0.8rem; margin-bottom:0.15rem;">Office email</label>
+            <input type="email" id="officeEmail" name="officeEmail" class="form-control rounded-pill border bg-light text-dark" style="font-size:0.85rem; padding:0.35rem 0.75rem;" placeholder="Office email" value="<?php echo htmlspecialchars($lguInfo['office_email_address'] ?? '', ENT_QUOTES, 'UTF-8'); ?>" required>
+            <small class="form-text text-muted" style="font-size:0.65rem; display:block; margin-top:0.1rem;">Must differ from account email</small>
+          </div>
+          <div style="margin-bottom:0.35rem;">
+            <label class="form-label text-dark" for="officeNumber" style="font-size:0.8rem; margin-bottom:0.15rem;">Office #</label>
+            <input type="text" id="officeNumber" name="officeNumber" class="form-control rounded-pill border bg-light text-dark" style="font-size:0.85rem; padding:0.35rem 0.75rem;" placeholder="Office number" value="<?php echo htmlspecialchars($lguInfo['office_number'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
+          </div>
+          <?php endif; ?>
+          <hr style="margin: 0.3rem 0;">
+          <div style="margin-bottom:0.35rem; position:relative;">
+            <label class="form-label text-dark" for="newPassword" style="font-size:0.8rem; margin-bottom:0.15rem;">New password</label>
+            <input type="password" id="newPassword" name="newPassword" class="form-control rounded-pill border bg-light text-dark pe-5" style="font-size:0.85rem; padding:0.35rem 0.75rem;" placeholder="Leave blank to keep current">
+            <span class="position-absolute" style="right: 10px; top: 38%; transform: translateY(-50%); cursor: pointer;">
+              <i class="fa fa-eye text-secondary" id="toggleNewPwd" style="font-size:0.8rem;"></i>
             </span>
           </div>
-          <div class="mb-3 position-relative">
-            <label class="form-label text-dark" for="popupConfirmPassword">Confirm password</label>
-            <input type="password" id="popupConfirmPassword" name="confirmPassword" class="form-control rounded-pill border bg-light text-dark py-3 pe-5" placeholder="Re-enter new password" required>
-            <span class="position-absolute" style="right: 18px; top: 50%; transform: translateY(-50%); cursor: pointer;">
-              <i class="fa fa-eye text-secondary" id="popupToggleConfirm"></i>
+          <div style="margin-bottom:0.2rem; position:relative;">
+            <label class="form-label text-dark" for="confirmPassword" style="font-size:0.8rem; margin-bottom:0.15rem;">Confirm password</label>
+            <input type="password" id="confirmPassword" name="confirmPassword" class="form-control rounded-pill border bg-light text-dark pe-5" style="font-size:0.85rem; padding:0.35rem 0.75rem;" placeholder="Re-enter password">
+            <span class="position-absolute" style="right: 10px; top: 38%; transform: translateY(-50%); cursor: pointer;">
+              <i class="fa fa-eye text-secondary" id="toggleConfirmPwd" style="font-size:0.8rem;"></i>
             </span>
-          </div>
-          <ul class="list-unstyled text-dark small mb-4">
-            <li class="d-flex align-items-start mb-2"><span class="badge rounded-circle bg-secondary mt-1 me-2" style="width:8px; height:8px;"></span><span>At least 8 characters</span></li>
-            <li class="d-flex align-items-start mb-2"><span class="badge rounded-circle bg-secondary mt-1 me-2" style="width:8px; height:8px;"></span><span>Contains a number</span></li>
-            <li class="d-flex align-items-start mb-2"><span class="badge rounded-circle bg-secondary mt-1 me-2" style="width:8px; height:8px;"></span><span>Contains a symbol</span></li>
-            <li class="d-flex align-items-start"><span class="badge rounded-circle bg-secondary mt-1 me-2" style="width:8px; height:8px;"></span><span>Contains an uppercase letter</span></li>
-          </ul>
-          <button type="submit" class="btn btn-primary w-100 py-2">Reset password</button>
-          <div class="text-center mt-3">
-            <button type="button" class="btn btn-link text-primary p-0" id="backToProfileBtn">&larr; Back to profile</button>
           </div>
         </form>
+      </div>
+      <div class="modal-footer border-0" style="justify-content:center; padding:10px 15px; gap: 8px;">
+        <button type="button" id="profileEditSaveBtn" class="btn btn-primary" style="min-width:140px; padding: 0.4rem 1rem; font-size: 0.95rem;">Save changes</button>
+        <button type="button" class="btn btn-link text-primary" id="backToProfileBtn" style="padding: 0.4rem 0.75rem; font-size: 0.95rem;">&larr; Back to profile</button>
       </div>
     </div>
   </div>
@@ -483,6 +657,21 @@ body.theme-dark .dark-mode-btn:hover {
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+  // If page somehow left body overflow hidden but no modal is open, restore scrolling
+  try {
+    if (document.body && document.body.style && document.body.style.overflow === 'hidden') {
+      if (typeof jQuery !== 'undefined') {
+        if (jQuery('.modal.show').length === 0) {
+          document.body.style.overflow = '';
+        }
+      } else {
+        // no jQuery: check for any element with class 'modal show'
+        if (document.querySelectorAll('.modal.show').length === 0) {
+          document.body.style.overflow = '';
+        }
+      }
+    }
+  } catch (e) {}
   var el = document.getElementById('lastLoginValue');
   if (el) {
     var raw = el.getAttribute('data-last-login');
@@ -504,11 +693,11 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
-  var resetButton = document.getElementById('resetPasswordBtn');
+  var resetButton = document.getElementById('editProfileBtn');
   if (resetButton) {
     resetButton.addEventListener('click', function () {
       $('#profileModal').modal('hide');
-      $('#passwordResetModal').modal('show');
+      $('#profileEditModal').modal('show');
     });
   }
 
@@ -529,21 +718,126 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  togglePasswordField('popupToggleNew', 'popupNewPassword');
-  togglePasswordField('popupToggleConfirm', 'popupConfirmPassword');
+  togglePasswordField('toggleNewPwd', 'newPassword');
+  togglePasswordField('toggleConfirmPwd', 'confirmPassword');
 
-  var resetForm = document.getElementById('passwordResetForm');
+  var resetForm = document.getElementById('profileEditForm');
+  var saveBtn = document.getElementById('profileEditSaveBtn');
+  if (saveBtn && resetForm) {
+    saveBtn.addEventListener('click', function () {
+      if (typeof resetForm.requestSubmit === 'function') {
+        resetForm.requestSubmit();
+      } else {
+        resetForm.submit();
+      }
+    });
+  }
   if (resetForm) {
     resetForm.addEventListener('submit', function (event) {
-      // allow normal form submission so backend can update the DB and show feedback
+      event.preventDefault();
+      var form = event.currentTarget;
+      // prepare message container
+      var msgDiv = form.querySelector('.alert');
+      if (!msgDiv) {
+        msgDiv = document.createElement('div');
+        msgDiv.className = 'alert py-2';
+        form.insertBefore(msgDiv, form.firstChild);
+      }
+      msgDiv.classList.remove('alert-success', 'alert-danger');
+      msgDiv.textContent = '';
+
+      var submitBtn = form.querySelector('button[type="submit"]');
+      var passwordChanged = form.querySelector('#newPassword') && form.querySelector('#newPassword').value.trim() !== '';
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        var origText = submitBtn.innerHTML;
+        submitBtn.innerHTML = 'Saving...';
+      }
+
+      var data = new FormData(form);
+
+      fetch('ajax/profile_edit.ajax.php', {
+        method: 'POST',
+        credentials: 'same-origin',
+        body: data
+      }).then(function (res) { return res.json(); }).then(function (json) {
+        if (json && json.success) {
+          msgDiv.classList.add('alert-success');
+          msgDiv.textContent = (json.message || 'Saved') + (passwordChanged ? ' Your entered password was saved securely.' : '');
+          // Auto-hide success message after 2.5 seconds
+          setTimeout(function () {
+            msgDiv.classList.remove('alert-success', 'alert-danger');
+            msgDiv.textContent = '';
+          }, 2500);
+          // update displayed profile values
+          if (json.data) {
+            if (json.data.name) {
+              var nameEl = document.getElementById('profileDisplayName');
+              if (nameEl) nameEl.textContent = json.data.name;
+              // also update header name if present
+              var headerNameEls = document.querySelectorAll('.header .brand-logo + div h5, .nav-header .brand-logo');
+              // best-effort: update username displays that exist
+            }
+            if (json.data.email) {
+              var emailEl = document.getElementById('profileDisplayEmail');
+              if (emailEl) emailEl.textContent = json.data.email;
+            }
+            if (json.data.officeEmail) {
+              var officeEmailEl = document.getElementById('profileDisplayOfficeEmail');
+              if (officeEmailEl) officeEmailEl.textContent = json.data.officeEmail;
+            }
+            if (json.data.officeNumber) {
+              var officeNumberEl = document.getElementById('profileDisplayLguOfficeNumber');
+              if (officeNumberEl) officeNumberEl.textContent = json.data.officeNumber || 'N/A';
+            }
+            if (json.data.contact) {
+              var contactEl = document.getElementById('profileDisplayContact');
+              if (contactEl) contactEl.textContent = json.data.contact || 'N/A';
+            }
+          }
+          // clear password fields
+          var np = document.getElementById('newPassword'); if (np) np.value = '';
+          var cp = document.getElementById('confirmPassword'); if (cp) cp.value = '';
+          setTimeout(function () {
+            $('#profileEditModal').modal('hide');
+            // show profile modal to reflect changes
+            $('#profileModal').modal('show');
+          }, 700);
+        } else {
+          msgDiv.classList.add('alert-danger');
+          msgDiv.textContent = json && json.message ? json.message : 'Error saving profile';
+        }
+      }).catch(function (err) {
+        msgDiv.classList.add('alert-danger');
+        msgDiv.textContent = 'Server error';
+      }).finally(function () {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = origText || 'Save changes';
+        }
+      });
     });
   }
 
   var backToProfileBtn = document.getElementById('backToProfileBtn');
   if (backToProfileBtn) {
     backToProfileBtn.addEventListener('click', function () {
-      $('#passwordResetModal').modal('hide');
+      $('#profileEditModal').modal('hide');
       $('#profileModal').modal('show');
+    });
+  }
+
+  var lguToggleBtn = document.getElementById('toggleLguDetailsBtn');
+  var lguDetails = document.getElementById('lguDetailsSection');
+  if (lguToggleBtn && lguDetails) {
+    lguToggleBtn.addEventListener('click', function () {
+      if (lguDetails.classList.contains('d-none')) {
+        lguDetails.classList.remove('d-none');
+        lguToggleBtn.textContent = 'Hide LGU details';
+      } else {
+        lguDetails.classList.add('d-none');
+        lguToggleBtn.textContent = 'Show LGU details';
+      }
     });
   }
 
@@ -636,8 +930,8 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  <?php if (!empty($passwordResetMessage)): ?>
-    $('#passwordResetModal').modal('show');
+  <?php if (!empty($profileEditMessage)): ?>
+    $('#profileEditModal').modal('show');
   <?php endif; ?>
 });
 </script>

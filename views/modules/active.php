@@ -124,7 +124,7 @@ $allCenters = ModelCenters::mdlGetAllCenters();
                                         $activeCount = $stmtCount->fetch(PDO::FETCH_ASSOC);
                                         $actualOccupancy = $activeCount['active_count'];
                                         
-                                        $stmtLGU = $pdo->prepare("SELECT u.first_name, u.last_name, u.position_role, u.phone_number FROM lgu_users u 
+                                        $stmtLGU = $pdo->prepare("SELECT u.first_name, u.last_name, u.position_role, u.office_number FROM lgu_users u 
                                                                    JOIN userrights ur ON u.office_email_address = ur.email
                                                                    WHERE ur.userid = :userid");
                                         if($fullCenter['assigned_lgu_user_id']) {
@@ -144,19 +144,24 @@ $allCenters = ModelCenters::mdlGetAllCenters();
                                         <td><?php echo htmlspecialchars(trim($center['barangay'] . ', ' . $center['city'] . ', ' . $center['province'])); ?></td>
                                         <td class="capacity-cell">
                                             <span class="capacity-display-<?php echo $center['center_id']; ?>"><?php echo number_format($center['capacity']); ?></span>
-                                        </td>
+                                        </span>
                                         <td class="occupancy-cell">
                                             <span class="occupancy-display-<?php echo $center['center_id']; ?>"><?php echo number_format($actualOccupancy); ?></span>
-                                        </td>
+                                        </span>
                                         <td>
-                                            <span class="badge <?php echo $badgeClass; ?> status-badge-<?php echo $center['center_id']; ?>"><?php echo $statusText; ?></span>
-                                        </td>
+                                            <span class="badge <?php echo $badgeClass; ?> status-badge-<?php echo $center['center_id']; ?> status-clickable" 
+                                                  onclick="openChangeStatusModal('<?php echo $center['center_id']; ?>', '<?php echo htmlspecialchars($center['center_name']); ?>', '<?php echo $statusText; ?>')"
+                                                  style="cursor: pointer;">
+                                                <?php echo $statusText; ?>
+                                                <i class="fa fa-pencil" style="font-size: 8px; margin-left: 4px;"></i>
+                                            </span>
+                                        </span>
                                         <td>
                                             <button type="button" class="btn btn-sm btn-secondary print-report" 
                                                     data-center-id="<?php echo htmlspecialchars($center['center_id']); ?>">
                                                 <i class="fa fa-print"></i> Print
                                             </button>
-                                        </td>
+                                        </span>
                                     </tr>
                                     <!-- Expanded details row -->
                                     <tr class="details-row-<?php echo $center['center_id']; ?> details-row" style="display: none;">
@@ -216,14 +221,14 @@ $allCenters = ModelCenters::mdlGetAllCenters();
                                                             </div>
                                                             <div class="card-body">
                                                                 <table class="table table-sm table-borderless mb-3">
-                                                                    <tr><td width="40%"><strong>Center ID:</strong></td><td><?php echo htmlspecialchars($center['center_id']); ?></td></tr>
-                                                                    <tr><td><strong>Category:</strong></td><td><?php echo htmlspecialchars($center['category']); ?></td></tr>
-                                                                    <tr><td><strong>Location:</strong></td><td><?php echo htmlspecialchars(trim($center['barangay'] . ', ' . $center['city'])); ?></td></tr>
-                                                                    <tr><td><strong>Province:</strong></td><td><?php echo htmlspecialchars($center['province']); ?></td></tr>
-                                                                    <tr><td><strong>Capacity:</strong></td><td><?php echo number_format($center['capacity']); ?> persons</td></tr>
-                                                                    <tr><td><strong>Current Occupants:</strong></td><td><?php echo number_format($actualOccupancy); ?> / <?php echo number_format($center['capacity']); ?></td></tr>
+                                                                    <tr><td width="40%"><strong>Center ID:</strong></td><td><?php echo htmlspecialchars($center['center_id']); ?></span></td>
+                                                                    <tr><td><strong>Category:</strong></td><td><?php echo htmlspecialchars($center['category']); ?></span></td>
+                                                                    <tr><td><strong>Location:</strong></td><td><?php echo htmlspecialchars(trim($center['barangay'] . ', ' . $center['city'])); ?></span></td>
+                                                                    <tr><td><strong>Province:</strong></span><td><?php echo htmlspecialchars($center['province']); ?></span></td>
+                                                                    <tr><td><strong>Capacity:</strong></span><td><?php echo number_format($center['capacity']); ?> persons</span></span></td>
+                                                                    <tr><td><strong>Current Occupants:</strong></span><td><?php echo number_format($actualOccupancy); ?> / <?php echo number_format($center['capacity']); ?></span></span></td>
                                                                     <?php if($fullCenter['address']): ?>
-                                                                    <tr><td><strong>Address:</strong></td><td><?php echo htmlspecialchars($fullCenter['address']); ?></td></tr>
+                                                                    <tr><td><strong>Address:</strong></span><td><?php echo htmlspecialchars($fullCenter['address']); ?></span></span></td>
                                                                     <?php endif; ?>
                                                                 </table>
                                                                 
@@ -233,7 +238,7 @@ $allCenters = ModelCenters::mdlGetAllCenters();
                                                                     <?php if($assignedLGU): ?>
                                                                         <p class="mb-0"><?php echo htmlspecialchars($assignedLGU['first_name'] . ' ' . $assignedLGU['last_name']); ?></p>
                                                                         <small class="text-muted"><?php echo htmlspecialchars($assignedLGU['position_role']); ?></small><br>
-                                                                        <small><?php echo htmlspecialchars($assignedLGU['phone_number']); ?></small>
+                                                                        <small><?php echo htmlspecialchars($assignedLGU['office_number']); ?></small>
                                                                     <?php else: ?>
                                                                         <p class="text-muted mb-1">No LGU assigned yet</p>
                                                                         <button type="button" class="btn btn-sm btn-outline-info assign-lgu-quick mt-2" data-center-id="<?php echo $center['center_id']; ?>" data-center-name="<?php echo htmlspecialchars($center['center_name']); ?>">
@@ -307,7 +312,7 @@ $allCenters = ModelCenters::mdlGetAllCenters();
                                                     </div>
                                                 </div>
                                             </div>
-                                        </td>
+                                        </span>
                                     </tr>
                                     <?php endforeach; ?>
                                 <?php else: ?>
@@ -317,7 +322,7 @@ $allCenters = ModelCenters::mdlGetAllCenters();
                                             <a href="?route=centers" class="btn btn-primary btn-sm ms-2">
                                                 <i class="fa fa-plus"></i> Add Your First Center
                                             </a>
-                                        </td>
+                                        </span>
                                     </tr>
                                 <?php endif; ?>
                             </tbody>
@@ -328,6 +333,74 @@ $allCenters = ModelCenters::mdlGetAllCenters();
         </div>
     </div>
 </div>
+</div>
+
+<!-- Change Status Modal -->
+<div class="modal fade" id="changeStatusModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Change Center Status</h5>
+                <button type="button" class="close-modal-btn" data-modal="changeStatusModal">
+                    <i class="fa fa-times-circle"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="changeStatusForm">
+                    <input type="hidden" id="change_status_center_id" name="center_id">
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Evacuation Center:</label>
+                        <input type="text" class="form-control" id="change_status_center_name" readonly>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Current Status:</label>
+                        <input type="text" class="form-control" id="change_status_current" readonly>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">New Status <span class="text-danger">*</span></label>
+                        <select class="form-control" id="change_status_new" name="new_status" required>
+                            <option value="Active">Active</option>
+                            <option value="Inactive">Inactive</option>
+                            <option value="Full">Full</option>
+                            <option value="Under Maintenance">Under Maintenance</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Reactivation Message - Clean slate -->
+                    <div class="mb-3" id="reactivate_message" style="display: none;">
+                        <div class="alert alert-success">
+                            <i class="fa fa-check-circle"></i> 
+                            <strong>Fresh Start!</strong> Reactivating this center will allow you to register new evacuees. 
+                            The center will be ready for new operations.
+                        </div>
+                    </div>
+                    
+                    <!-- Deactivation Warning -->
+                    <div class="mb-3" id="deactivate_warning" style="display: none;">
+                        <div class="alert alert-warning">
+                            <i class="fa fa-exclamation-triangle"></i> 
+                            <strong>Warning!</strong> Setting this center to INACTIVE will clear all evacuees from this center.
+                        </div>
+                    </div>
+                    
+                    <!-- Full Status Info -->
+                    <div class="mb-3" id="full_status_info" style="display: none;">
+                        <div class="alert alert-info">
+                            <i class="fa fa-info-circle"></i> 
+                            <strong>Center at Capacity.</strong> No more evacuees can be added until status changes.
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary cancel-modal" data-modal="changeStatusModal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirmChangeStatus">Change Status</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- Add Evacuee Modal -->
@@ -798,8 +871,8 @@ $allCenters = ModelCenters::mdlGetAllCenters();
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title"><i class="fa fa-history"></i> Center History - <span id="history_center_name"></span></h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
+                <button type="button" class="close-modal-btn" data-modal="historyModal">
+                    <i class="fa fa-times-circle"></i>
                 </button>
             </div>
             <div class="modal-body">
@@ -816,14 +889,14 @@ $allCenters = ModelCenters::mdlGetAllCenters();
                         </thead>
                         <tbody id="history-tbody">
                             <tr>
-                                <td colspan="7" class="text-center">Loading...</td>
+                                <td colspan="7" class="text-center">Loading...</span>
                             </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-secondary cancel-modal" data-modal="historyModal">Close</button>
             </div>
         </div>
     </div>
@@ -872,6 +945,16 @@ $allCenters = ModelCenters::mdlGetAllCenters();
 
 .details-row {
     background-color: #f8f9fa;
+}
+
+.status-clickable {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.status-clickable:hover {
+    opacity: 0.8;
+    transform: scale(1.02);
 }
 
 .evacuee-item {
@@ -960,7 +1043,7 @@ $allCenters = ModelCenters::mdlGetAllCenters();
 }
 
 .status-badge-inactive {
-    background-color: #6c757d;
+    background-color: #dc3545;
     color: white;
     padding: 2px 6px;
     border-radius: 4px;
@@ -1850,6 +1933,239 @@ $(document).ready(function() {
         var centerId = $(this).data('center-id');
         window.open('reports/center_report.php?center_id=' + centerId, '_blank');
     });
+    
+    // View History button click
+    $(document).on('click', '.view-history', function(e) {
+        e.stopPropagation();
+        var centerId = $(this).data('center-id');
+        var centerName = $(this).data('center-name');
+        
+        $('#history_center_name').text(centerName);
+        $('#history-tbody').html('<tr><td colspan="7" class="text-center">Loading history...</span></td>');
+        
+        $.ajax({
+            url: "ajax/get_center_full_history.ajax.php",
+            method: "POST",
+            data: { center_id: centerId },
+            dataType: "json",
+            success: function(response) {
+                if (response.success && response.history) {
+                    displayFullHistory(response.history);
+                } else {
+                    $('#history-tbody').html('<tr><td colspan="7" class="text-center">No history records found</span><tr>');
+                }
+            },
+            error: function() {
+                $('#history-tbody').html('<tr><td colspan="7" class="text-center text-danger">Error loading history</span><tr>');
+            }
+        });
+        
+        $('#historyModal').modal('show');
+    });
+    
+    function displayFullHistory(history) {
+        var html = '';
+        if (history.length === 0) {
+            html = '<tr><td colspan="7" class="text-center">No history records found</span></tr>';
+        } else {
+            history.forEach(function(record) {
+                var actionBadge = '';
+                if (record.action_type === 'EVACUEE_ADDED') {
+                    actionBadge = '<span class="badge bg-success">Evacuee Added</span>';
+                } else if (record.action_type === 'EVACUEE_STATUS_CHANGE') {
+                    actionBadge = '<span class="badge bg-info">Status Change</span>';
+                } else if (record.action_type === 'EVACUEE_DEPARTED') {
+                    actionBadge = '<span class="badge bg-warning">Departed</span>';
+                } else if (record.action_type === 'EVACUEE_TRANSFERRED') {
+                    actionBadge = '<span class="badge bg-primary">Transferred</span>';
+                } else if (record.action_type === 'CENTER_UPDATED') {
+                    actionBadge = '<span class="badge bg-secondary">Center Updated</span>';
+                } else {
+                    actionBadge = '<span class="badge bg-secondary">' + (record.action_type || 'Activity') + '</span>';
+                }
+                
+                html += `
+                    <tr>
+                        <td>${formatDate(record.created_at)}</span>
+                        <td>${actionBadge}</span>
+                        <td>${record.description || 'No description'}</span>
+                        <td>${record.remarks || '-'}</span>
+                        <td>${record.performed_by || 'System'}</span>
+                    </tr>
+                `;
+            });
+        }
+        $('#history-tbody').html(html);
+    }
+    
+    // Open Change Status Modal
+    window.openChangeStatusModal = function(centerId, centerName, currentStatus) {
+        $('#change_status_center_id').val(centerId);
+        $('#change_status_center_name').val(centerName);
+        $('#change_status_current').val(currentStatus);
+        $('#change_status_new').val(currentStatus);
+        
+        // Hide all messages first
+        $('#reactivate_message').hide();
+        $('#deactivate_warning').hide();
+        $('#full_status_info').hide();
+        
+        // Show appropriate message based on current status
+        if (currentStatus === 'Inactive') {
+            $('#reactivate_message').show();
+        } else if (currentStatus === 'Full') {
+            $('#full_status_info').show();
+        }
+        
+        $('#changeStatusModal').modal('show');
+    }
+    
+    // Handle status change detection
+    $('#change_status_new').on('change', function() {
+        var newStatus = $(this).val();
+        var currentStatus = $('#change_status_current').val();
+        
+        // Hide all messages
+        $('#reactivate_message').hide();
+        $('#deactivate_warning').hide();
+        $('#full_status_info').hide();
+        
+        if (newStatus === 'Active') {
+            if (currentStatus === 'Inactive') {
+                $('#reactivate_message').show();
+            }
+        } else if (newStatus === 'Inactive') {
+            var centerId = $('#change_status_center_id').val();
+            var activeCount = parseInt($('.occupancy-display-' + centerId).text()) || 0;
+            if (activeCount > 0) {
+                $('#deactivate_warning').show();
+            }
+        } else if (newStatus === 'Full') {
+            $('#full_status_info').show();
+        }
+    });
+    
+    // Confirm Status Change
+    $('#confirmChangeStatus').on('click', function() {
+        var centerId = $('#change_status_center_id').val();
+        var centerName = $('#change_status_center_name').val();
+        var newStatus = $('#change_status_new').val();
+        var currentStatus = $('#change_status_current').val();
+        var activeCount = parseInt($('.occupancy-display-' + centerId).text()) || 0;
+        
+        // Reactivation from Inactive - Fresh Start
+        if (newStatus === 'Active' && currentStatus === 'Inactive') {
+            Swal.fire({
+                title: 'Reactivate Center?',
+                html: `<p>You are about to reactivate <strong>${escapeHtml(centerName)}</strong>.</p>
+                       <p>This will:</p>
+                       <ul style="text-align: left;">
+                           <li>Set center status to <strong>ACTIVE</strong></li>
+                           <li>Allow new evacuee registrations</li>
+                           <li>Start a fresh operation cycle</li>
+                       </ul>
+                       <p>The center is ready for new evacuees.</p>`,
+                icon: 'info',
+                showCancelButton: true,
+                confirmButtonColor: '#28a745',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, reactivate center',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    changeCenterStatus(centerId, newStatus);
+                }
+            });
+            return;
+        }
+        
+        // Deactivation - Has active evacuees
+        if (newStatus === 'Inactive' && activeCount > 0) {
+            Swal.fire({
+                title: 'Deactivate Center?',
+                html: `<p>This center currently has <strong>${activeCount}</strong> active evacuee(s).</p>
+                       <p>Deactivating will mark all active evacuees as DEPARTED and clear them from this center.</p>
+                       <p>This action cannot be undone!</p>`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, deactivate and clear evacuees',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    changeCenterStatus(centerId, newStatus);
+                }
+            });
+            return;
+        }
+        
+        // Deactivation - No active evacuees
+        if (newStatus === 'Inactive' && activeCount === 0) {
+            Swal.fire({
+                title: 'Deactivate Center?',
+                html: `<p>Are you sure you want to deactivate <strong>${escapeHtml(centerName)}</strong>?</p>
+                       <p>No evacuees are currently in this center.</p>`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, deactivate',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    changeCenterStatus(centerId, newStatus);
+                }
+            });
+            return;
+        }
+        
+        // Simple status change (Full, Under Maintenance, etc.)
+        Swal.fire({
+            title: 'Change Status?',
+            text: `Are you sure you want to change ${centerName} status from ${currentStatus} to ${newStatus}?`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, change',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                changeCenterStatus(centerId, newStatus);
+            }
+        });
+    });
+    
+    function changeCenterStatus(centerId, newStatus) {
+        Swal.fire({
+            title: 'Processing...',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+        
+        $.ajax({
+            url: "ajax/change_center_status.ajax.php",
+            method: "POST",
+            data: {
+                center_id: centerId,
+                new_status: newStatus
+            },
+            dataType: "json",
+            success: function(response) {
+                if (response.success) {
+                    Swal.fire('Success!', response.message, 'success').then(() => {
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire('Error', response.message, 'error');
+                }
+            },
+            error: function() {
+                Swal.fire('Error', 'Failed to change center status', 'error');
+            }
+        });
+    }
     
     function escapeHtml(text) {
         if (!text) return '';

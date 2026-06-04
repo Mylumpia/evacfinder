@@ -5,43 +5,80 @@ class ControllerUserRights {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
-        
-        if (isset($_POST["loginEmail"]) && isset($_POST["loginPass"])) {
-            $email = trim($_POST["loginEmail"]);
-            $password = $_POST["loginPass"];
-            
-            $table = 'userrights';
-            $item = 'email';
-            $value = $email;
-            $answer = ModelUserRights::mdlGetUserCredentials($table, $item, $value);
 
-            if (!empty($answer) && 
-                $answer["email"] == $email && 
-                $answer["password"] == $password) {
+        if (!isset($_POST["loginEmail"]) || !isset($_POST["loginPass"])) {
+            return null;
+        }
 
-                $_SESSION["loggedIn"] = "ok";
-                $_SESSION["userid"]   = $answer["userid"];
-                $_SESSION["email"] = $answer["email"];
-                $_SESSION["username"] = $answer["email"];
+        $email = trim($_POST["loginEmail"]);
+        $password = $_POST["loginPass"];
 
-                // Record current login timestamp (UTC) in DB and session
-                $now = (new DateTime('now', new DateTimeZone('UTC')))->format('Y-m-d H:i:s');
-                try {
-                    ModelUserRights::mdlUpdateLastLogin($answer["userid"], $now);
-                    $_SESSION['last_login'] = $now;
-                } catch (Exception $e) {
-                    // non-fatal: continue without blocking login if update fails
-                }
+        $table = 'userrights';
+        $item = 'email';
+        $value = $email;
+        $answer = ModelUserRights::mdlGetUserCredentials($table, $item, $value);
 
-                // Redirect to home page after successful login
-                header("Location: ?route=home");
-                exit();
+        if (empty($answer) || ($answer["email"] ?? '') !== $email) {
+            return "Incorrect email or password.";
+        }
 
-            } else {
-                return "Incorrect email or password.";
+        $passwordMatches = false;
+        // Prefer hashed password verification, fall back to plain comparison for migration
+        if (!empty($answer["password"]) && password_verify($password, $answer["password"])) {
+            $passwordMatches = true;
+        } elseif (($answer["password"] ?? '') === $password) {
+            $passwordMatches = true;
+            // Re-hash the plain password into the DB for better security
+            try {
+                ModelUserRights::mdlUpdatePassword($answer["userid"], $password, $answer["email"]);
+            } catch (Exception $e) {
+                // non-fatal
             }
         }
-        return null;
+
+        if (!$passwordMatches) {
+            return "Incorrect email or password.";
+        }
+
+        $displayName = $answer["email"];
+        $userType = strtolower($answer["Type"] ?? $answer["type"] ?? '');
+        if ($userType === 'lgu') {
+            $lguDetails = ModelUserRights::mdlGetUserCredentials('lgu_users', 'lgu_id', $answer['userid']);
+            if (empty($lguDetails)) {
+                $lguDetails = ModelUserRights::mdlGetUserCredentials('lgu_users', 'office_email_address', $answer['email']);
+            }
+            if (!empty($lguDetails)) {
+                $displayName = trim(($lguDetails['first_name'] ?? '') . ' ' . ($lguDetails['last_name'] ?? '')) ?: $displayName;
+                $_SESSION['firstname'] = $lguDetails['first_name'] ?? '';
+                $_SESSION['lastname'] = $lguDetails['last_name'] ?? '';
+            }
+        } elseif ($userType === 'public') {
+            $publicDetails = ModelUserRights::mdlGetUserCredentials('personal_users', 'user_id', $answer['userid']);
+            if (!empty($publicDetails)) {
+                $displayName = trim(($publicDetails['first_name'] ?? '') . ' ' . ($publicDetails['last_name'] ?? '')) ?: $displayName;
+                $_SESSION['firstname'] = $publicDetails['first_name'] ?? '';
+                $_SESSION['lastname'] = $publicDetails['last_name'] ?? '';
+            }
+        }
+
+        // Successful login: set session values
+        $_SESSION["loggedIn"] = "ok";
+        $_SESSION["userid"]   = $answer["userid"];
+        $_SESSION["email"] = $answer["email"];
+        $_SESSION["username"] = $displayName;
+
+        // Record current login timestamp (UTC) in DB and session
+        $now = (new DateTime('now', new DateTimeZone('UTC')))->format('Y-m-d H:i:s');
+        try {
+            ModelUserRights::mdlUpdateLastLogin($answer["userid"], $now);
+            $_SESSION['last_login'] = $now;
+        } catch (Exception $e) {
+            // non-fatal: continue without blocking login if update fails
+        }
+
+        // Redirect to home page after successful login
+        header("Location: ?route=home");
+        exit();
     }
 
     static public function ctrUserRegister() {
@@ -86,10 +123,12 @@ class ControllerUserRights {
             }
 
             $userid = ModelUserRights::mdlGenerateUserId();
+            // Hash password before storing
+            $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
             $data = [
                 'userid' => $userid,
                 'email' => $email,
-                'password' => $password,
+                'password' => $hashedPassword,
                 'type' => $typeValue
             ];
 
@@ -107,7 +146,7 @@ class ControllerUserRights {
                         'phone_number' => $phoneNumber,
                         'region' => $region,
                         'account_type' => 'Public User',
-                        'password' => $password,
+                        'password' => $hashedPassword,
                         'status' => 'Active'
                     ];
                     $result = ModelUserRights::mdlCreatePublicRegistration($data, $personalData);
@@ -160,12 +199,16 @@ class ControllerUserRights {
                 return "Please enter a valid email address.";
             }
 
-            if ($officeEmail && !filter_var($officeEmail, FILTER_VALIDATE_EMAIL)) {
+            if (empty($officeEmail)) {
+                return "Please enter an office email address.";
+            }
+
+            if (!filter_var($officeEmail, FILTER_VALIDATE_EMAIL)) {
                 return "Please enter a valid office email address.";
             }
 
-            if (empty($officeEmail)) {
-                $officeEmail = $email;
+            if (strtolower($officeEmail) === strtolower($email)) {
+                return "Your office email must be different from your account email.";
             }
 
             $existingUser = ModelUserRights::mdlGetUserCredentials('userrights', 'email', $email);
@@ -179,14 +222,16 @@ class ControllerUserRights {
             }
 
             $userid = ModelUserRights::mdlGenerateUserId();
-            $lguId = ModelUserRights::mdlGenerateLguId();
+
+            // Hash password before storing
+            $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
             $data = [
                 'userid' => $userid,
                 'email' => $email,
-                'password' => $password,
+                'password' => $hashedPassword,
                 'type' => 'lgu',
-                'lgu_id' => $lguId,
+                'lgu_id' => $userid,
                 'lgu_office_name' => $lguOfficeName,
                 'office_email_address' => $officeEmail,
                 'office_type' => $lguOfficeType,
@@ -195,7 +240,8 @@ class ControllerUserRights {
                 'position_role' => $lguPosition,
                 'first_name' => $firstName,
                 'last_name' => $lastName,
-                'phone_number' => $lguPhone,
+                'office_number' => $lguPhone,
+                'contact_number' => $lguPhone,
             ];
 
             try {

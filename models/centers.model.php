@@ -262,7 +262,7 @@ class ModelCenters{
             SELECT c.*, 
                    u.email as assigned_lgu_email,
                    CONCAT(l.first_name, ' ', l.last_name) as assigned_lgu_name,
-                   l.phone_number as assigned_lgu_phone
+                   l.office_number as assigned_lgu_phone
             FROM centers c
             LEFT JOIN userrights u ON c.assigned_lgu_user_id = u.userid
             LEFT JOIN lgu_users l ON u.email = l.office_email_address
@@ -278,7 +278,7 @@ class ModelCenters{
         $pdo = $db->connect();
 
         $stmt = $pdo->prepare("
-            SELECT u.userid, u.email, l.first_name, l.last_name, l.phone_number, l.position_role
+            SELECT u.userid, u.email, l.first_name, l.last_name, l.office_number, l.position_role
             FROM userrights u
             INNER JOIN lgu_users l ON u.email = l.office_email_address
             WHERE u.Type = 'lgu' 

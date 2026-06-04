@@ -1,34 +1,85 @@
 <?php
 session_start();
-require_once '../models/centers.model.php';
+require_once '../models/connection.php';
 
 if (!isset($_GET['center_id'])) {
     die('Center ID required');
 }
 
 $center_id = $_GET['center_id'];
-$report = ModelCenters::mdlGetCenterReport($center_id);
-$center = $report['center'];
-$evacuees = $report['evacuees'];
-$departedEvacuees = $report['departed_evacuees'];
-$stats = $report['statistics'];
+
+$db = new Connection();
+$pdo = $db->connect();
+
+// Get center info
+$stmt = $pdo->prepare("
+    SELECT c.*, 
+           CONCAT(l.first_name, ' ', l.last_name) as assigned_lgu_name
+    FROM centers c
+    LEFT JOIN userrights u ON c.assigned_lgu_user_id = u.userid
+    LEFT JOIN lgu_users l ON u.email = l.office_email_address
+    WHERE c.center_id = :center_id
+");
+$stmt->bindParam(":center_id", $center_id);
+$stmt->execute();
+$center = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$center) {
     die('Center not found');
 }
 
-$occupancy = $stats['total_evacuees'];
+// Get ACTIVE evacuees
+$stmt2 = $pdo->prepare("
+    SELECT * FROM evacuees 
+    WHERE evacuation_center_id = :center_id 
+    AND evacuee_status = 'Active'
+    ORDER BY arrival_date DESC
+");
+$stmt2->bindParam(":center_id", $center_id);
+$stmt2->execute();
+$activeEvacuees = $stmt2->fetchAll(PDO::FETCH_ASSOC);
+
+// Get DEPARTED evacuees
+$stmt3 = $pdo->prepare("
+    SELECT * FROM evacuees 
+    WHERE evacuation_center_id = :center_id 
+    AND evacuee_status != 'Active'
+    ORDER BY departure_date DESC
+    LIMIT 50
+");
+$stmt3->bindParam(":center_id", $center_id);
+$stmt3->execute();
+$departedEvacuees = $stmt3->fetchAll(PDO::FETCH_ASSOC);
+
+// Calculate statistics
+$stats = [
+    'active' => count($activeEvacuees),
+    'departed' => count($departedEvacuees),
+    'male' => 0,
+    'female' => 0,
+    'children' => 0,
+    'elderly' => 0,
+    'pwd' => 0,
+    'pregnant' => 0,
+    'lactating' => 0
+];
+
+foreach ($activeEvacuees as $e) {
+    if ($e['sex'] == 'Male') $stats['male']++;
+    if ($e['sex'] == 'Female') $stats['female']++;
+    if ($e['age'] && $e['age'] < 18) $stats['children']++;
+    if ($e['condition_elderly']) $stats['elderly']++;
+    if ($e['condition_pwd']) $stats['pwd']++;
+    if ($e['condition_pregnant']) $stats['pregnant']++;
+    if ($e['condition_lactating']) $stats['lactating']++;
+}
+
+$occupancy = $stats['active'];
 $capacity = $center['capacity'];
 $percentage = ($capacity > 0) ? round(($occupancy / $capacity) * 100) : 0;
-
-// Get center active date - only use date_established if exists
 $activeDate = !empty($center['date_established']) && $center['date_established'] != '0000-00-00' 
-    ? $center['date_established'] 
+    ? date('F d, Y', strtotime($center['date_established'])) 
     : 'Not specified';
-
-if ($activeDate != 'Not specified') {
-    $activeDate = date('F d, Y', strtotime($activeDate));
-}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -74,10 +125,6 @@ if ($activeDate != 'Not specified') {
             margin: 8px 0 0;
             font-size: 11px;
             color: #555;
-        }
-        
-        .content {
-            padding: 0;
         }
         
         .info-card {
@@ -294,8 +341,8 @@ if ($activeDate != 'Not specified') {
                         <?php endif; ?>
                     </tr>
                     <tr>
-                        <td><strong>Capacity:</strong> <?php echo number_format($center['capacity']); ?> persons</span></td>
-                        <td><strong>Current Occupancy:</strong> <?php echo number_format($occupancy); ?> / <?php echo number_format($capacity); ?> persons (<?php echo $percentage; ?>%)</span></td>
+                        <td><strong>Capacity:</strong> <?php echo number_format($center['capacity']); ?> persons</td>
+                        <td><strong>Current Occupancy:</strong> <?php echo number_format($occupancy); ?> / <?php echo number_format($capacity); ?> persons (<?php echo $percentage; ?>%)</td>
                     </tr>
                 </table>
             </div>
@@ -315,8 +362,8 @@ if ($activeDate != 'Not specified') {
             <div class="section-title">Demographic Summary</div>
             <table class="stats-grid">
                 <tr>
-                    <td><h3><?php echo $stats['total_evacuees']; ?></h3><p>Active Evacuees</p></td>
-                    <td><h3><?php echo $stats['total_departed']; ?></h3><p>Departed Evacuees</p></td>
+                    <td><h3><?php echo $stats['active']; ?></h3><p>Active Evacuees</p></td>
+                    <td><h3><?php echo $stats['departed']; ?></h3><p>Departed Evacuees</p></td>
                     <td><h3><?php echo $stats['male']; ?></h3><p>Male</p></td>
                     <td><h3><?php echo $stats['female']; ?></h3><p>Female</p></td>
                 </tr>
@@ -328,15 +375,15 @@ if ($activeDate != 'Not specified') {
                 </tr>
                 <tr>
                     <td><h3><?php echo $stats['lactating']; ?></h3><p>Lactating</p></td>
-                    <td colspan="3"><h3><?php echo $stats['total_evacuees'] + $stats['total_departed']; ?></h3><p>Total All Time</p></td>
+                    <td colspan="3"><h3><?php echo $stats['active'] + $stats['departed']; ?></h3><p>Total All Time</p></td>
                 </tr>
             </table>
             
             <!-- Active Evacuees List -->
             <div class="section-title">Active Evacuees</div>
             
-            <?php if (count($evacuees) > 0): ?>
-            <div class="evacuee-count">Total Active: <?php echo count($evacuees); ?> evacuees</div>
+            <?php if (count($activeEvacuees) > 0): ?>
+            <div class="evacuee-count">Total Active: <?php echo count($activeEvacuees); ?> evacuees</div>
             
             <table class="evacuee-table">
                 <thead>
@@ -350,7 +397,7 @@ if ($activeDate != 'Not specified') {
                     </tr>
                 </thead>
                 <tbody>
-                    <?php foreach ($evacuees as $index => $evacuee): ?>
+                    <?php foreach ($activeEvacuees as $index => $evacuee): ?>
                     <tr>
                         <td style="text-align: center;"><?php echo $index + 1; ?></td>
                         <td><?php echo htmlspecialchars($evacuee['last_name'] . ', ' . $evacuee['first_name']); ?></td>
@@ -379,7 +426,7 @@ if ($activeDate != 'Not specified') {
                                     <span style="color: #999;">None</span>
                                 <?php endif; ?>
                             </div>
-                        </span>
+                        </td>
                         <td style="text-align: center;"><?php echo date('M d, Y', strtotime($evacuee['arrival_date'])); ?></td>
                     </tr>
                     <?php endforeach; ?>
@@ -439,7 +486,7 @@ if ($activeDate != 'Not specified') {
                                     <span style="color: #999;">None</span>
                                 <?php endif; ?>
                             </div>
-                        </span>
+                        </td>
                         <td style="text-align: center;"><?php echo date('M d, Y', strtotime($evacuee['arrival_date'])); ?></td>
                         <td style="text-align: center;"><?php echo $evacuee['departure_date'] ? date('M d, Y', strtotime($evacuee['departure_date'])) : 'N/A'; ?></td>
                     </tr>
