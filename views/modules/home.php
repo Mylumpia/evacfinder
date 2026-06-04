@@ -13,7 +13,13 @@
               <div class="col-md-6 col-lg-4 mb-4">
                 <div class="card dashboard-card dashboard-card-primary text-white">
                   <div class="card-body">
-                    <h5 class="card-title">Welcome, <?php echo htmlspecialchars($_SESSION['username'] ?? 'User'); ?>!</h5>
+                    <?php
+                      $welcomeName = $_SESSION['username'] ?? '';
+                      if ($welcomeName === '' && isset($_SESSION['firstname'])) {
+                          $welcomeName = trim(($_SESSION['firstname'] ?? '') . ' ' . ($_SESSION['lastname'] ?? ''));
+                      }
+                    ?>
+                    <h5 class="card-title">Welcome, <?php echo htmlspecialchars($welcomeName ?: 'User'); ?>!</h5>
                     <p class="card-text">Welcome to your personal EvacFinder dashboard.</p>
                   </div>
                 </div>

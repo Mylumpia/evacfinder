@@ -40,11 +40,32 @@ class ControllerUserRights {
             return "Incorrect email or password.";
         }
 
+        $displayName = $answer["email"];
+        $userType = strtolower($answer["Type"] ?? $answer["type"] ?? '');
+        if ($userType === 'lgu') {
+            $lguDetails = ModelUserRights::mdlGetUserCredentials('lgu_users', 'lgu_id', $answer['userid']);
+            if (empty($lguDetails)) {
+                $lguDetails = ModelUserRights::mdlGetUserCredentials('lgu_users', 'office_email_address', $answer['email']);
+            }
+            if (!empty($lguDetails)) {
+                $displayName = trim(($lguDetails['first_name'] ?? '') . ' ' . ($lguDetails['last_name'] ?? '')) ?: $displayName;
+                $_SESSION['firstname'] = $lguDetails['first_name'] ?? '';
+                $_SESSION['lastname'] = $lguDetails['last_name'] ?? '';
+            }
+        } elseif ($userType === 'public') {
+            $publicDetails = ModelUserRights::mdlGetUserCredentials('personal_users', 'user_id', $answer['userid']);
+            if (!empty($publicDetails)) {
+                $displayName = trim(($publicDetails['first_name'] ?? '') . ' ' . ($publicDetails['last_name'] ?? '')) ?: $displayName;
+                $_SESSION['firstname'] = $publicDetails['first_name'] ?? '';
+                $_SESSION['lastname'] = $publicDetails['last_name'] ?? '';
+            }
+        }
+
         // Successful login: set session values
         $_SESSION["loggedIn"] = "ok";
         $_SESSION["userid"]   = $answer["userid"];
         $_SESSION["email"] = $answer["email"];
-        $_SESSION["username"] = $answer["email"];
+        $_SESSION["username"] = $displayName;
 
         // Record current login timestamp (UTC) in DB and session
         $now = (new DateTime('now', new DateTimeZone('UTC')))->format('Y-m-d H:i:s');
@@ -178,12 +199,16 @@ class ControllerUserRights {
                 return "Please enter a valid email address.";
             }
 
-            if ($officeEmail && !filter_var($officeEmail, FILTER_VALIDATE_EMAIL)) {
+            if (empty($officeEmail)) {
+                return "Please enter an office email address.";
+            }
+
+            if (!filter_var($officeEmail, FILTER_VALIDATE_EMAIL)) {
                 return "Please enter a valid office email address.";
             }
 
-            if (empty($officeEmail)) {
-                $officeEmail = $email;
+            if (strtolower($officeEmail) === strtolower($email)) {
+                return "Your office email must be different from your account email.";
             }
 
             $existingUser = ModelUserRights::mdlGetUserCredentials('userrights', 'email', $email);
@@ -197,7 +222,6 @@ class ControllerUserRights {
             }
 
             $userid = ModelUserRights::mdlGenerateUserId();
-            $lguId = ModelUserRights::mdlGenerateLguId();
 
             // Hash password before storing
             $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
@@ -207,7 +231,7 @@ class ControllerUserRights {
                 'email' => $email,
                 'password' => $hashedPassword,
                 'type' => 'lgu',
-                'lgu_id' => $lguId,
+                'lgu_id' => $userid,
                 'lgu_office_name' => $lguOfficeName,
                 'office_email_address' => $officeEmail,
                 'office_type' => $lguOfficeType,
@@ -216,7 +240,8 @@ class ControllerUserRights {
                 'position_role' => $lguPosition,
                 'first_name' => $firstName,
                 'last_name' => $lastName,
-                'phone_number' => $lguPhone,
+                'office_number' => $lguPhone,
+                'contact_number' => $lguPhone,
             ];
 
             try {

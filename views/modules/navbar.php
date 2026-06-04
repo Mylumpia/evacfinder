@@ -33,9 +33,16 @@ if (isset($_SESSION["loggedIn"]) && $_SESSION["loggedIn"] == "ok") {
         if (!empty($profileInfo)) {
             $profileRole = strtoupper($profileInfo['Type'] ?? 'user');
         }
-        if (!empty($profileInfo) && isset($profileInfo['Type']) && $profileInfo['Type'] === 'lgu') {
-            $lguInfo = ModelUserRights::mdlGetUserCredentials('lgu_users', 'office_email_address', $userEmail);
-        } elseif (!empty($profileInfo) && isset($profileInfo['Type']) && $profileInfo['Type'] === 'public') {
+        $profileType = strtolower($profileInfo['Type'] ?? $profileInfo['type'] ?? '');
+        if (!empty($profileInfo) && $profileType === 'lgu') {
+            $currentUserId = $_SESSION['userid'] ?? null;
+            if ($currentUserId) {
+                $lguInfo = ModelUserRights::mdlGetUserCredentials('lgu_users', 'lgu_id', $currentUserId);
+            }
+            if (empty($lguInfo)) {
+                $lguInfo = ModelUserRights::mdlGetUserCredentials('lgu_users', 'office_email_address', $userEmail);
+            }
+        } elseif (!empty($profileInfo) && $profileType === 'public') {
             $publicInfo = ModelUserRights::mdlGetUserCredentials('personal_users', 'email_address', $userEmail);
         }
         if (!empty($lguInfo)) {
@@ -53,6 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['profileEditSubmit']) 
   $firstName = trim($_POST['firstName'] ?? '');
   $lastName = trim($_POST['lastName'] ?? '');
   $email = trim($_POST['email'] ?? '');
+  $officeEmail = trim($_POST['officeEmail'] ?? '');
   $contact = trim($_POST['contact'] ?? '');
   $newPassword = trim($_POST['newPassword'] ?? '');
   $confirmPassword = trim($_POST['confirmPassword'] ?? '');
@@ -60,7 +68,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['profileEditSubmit']) 
   if ($firstName === '' || $lastName === '' || $email === '') {
     $profileEditMessage = 'Please enter your full name and email.';
   } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-    $profileEditMessage = 'Please enter a valid email address.';
+    $profileEditMessage = 'Please enter a valid account email address.';
+  } elseif (!empty($officeEmail) && !filter_var($officeEmail, FILTER_VALIDATE_EMAIL)) {
+    $profileEditMessage = 'Please enter a valid office email address.';
+  } elseif (!empty($officeEmail) && strtolower($officeEmail) === strtolower($email)) {
+    $profileEditMessage = 'Office email must be different from account email.';
+  } elseif (isset($profileInfo['Type']) && $profileInfo['Type'] === 'lgu' && empty($officeEmail)) {
+    $profileEditMessage = 'Please provide an office email address.';
   } elseif (($newPassword !== '' || $confirmPassword !== '') && ($newPassword === '' || $confirmPassword === '')) {
     $profileEditMessage = 'Please fill both password fields to change your password.';
   } elseif ($newPassword !== '' && $newPassword !== $confirmPassword) {
@@ -82,7 +96,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['profileEditSubmit']) 
           $profileEditMessage = 'That email address is already in use by another account.';
         } else {
           $passwordToSave = ($newPassword !== '') ? $newPassword : null;
-          $updated = ModelUserRights::mdlUpdateUserProfile($currentUserId, $email, $firstName, $lastName, $contact, $passwordToSave);
+          $officeEmailToSave = (!empty($officeEmail) && isset($profileInfo['Type']) && $profileInfo['Type'] === 'lgu') ? $officeEmail : null;
+          $updated = ModelUserRights::mdlUpdateUserProfile($currentUserId, $email, $firstName, $lastName, $contact, $officeEmailToSave, $passwordToSave);
           if ($updated) {
             $profileEditMessage = 'Profile updated successfully.';
             $_SESSION['email'] = $email;
@@ -106,9 +121,8 @@ function profileDisplayValue($value, $default = 'N/A') {
 }
 ?>
 <style>
-/* Compact profile edit modal to fit without scrolling */
 #profileEditModal .modal-body {
-  padding: 1.5rem 1.5rem 1rem 1.5rem !important;
+  padding: 1.25rem 1.25rem 0.9rem 1.25rem !important;
 }
 #profileEditModal .text-center {
   margin-bottom: 1rem !important;
@@ -148,6 +162,22 @@ function profileDisplayValue($value, $default = 'N/A') {
 #profileEditModal .modal-footer {
   padding: 0.75rem 1.5rem !important;
   gap: 0.5rem;
+}
+
+/* Constrain dialog size and enable internal scrolling to shorten overall modal */
+#profileEditModal .modal-dialog {
+  max-width: 540px; /* narrower dialog */
+  margin: 1.5rem auto;
+}
+#profileEditModal .modal-content {
+  max-height: 80vh; /* limit total modal height */
+  overflow: hidden;
+}
+#profileEditModal .modal-body {
+  /* leave room for header/footer height (approx 120px) */
+  max-height: calc(80vh - 120px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 body.theme-dark {
@@ -426,8 +456,8 @@ body.theme-dark .dark-mode-btn:hover {
           <span class="badge bg-light text-primary py-2 px-3" style="font-size:.85rem; letter-spacing:.04em; position:absolute; right:24px; top:20px;"><?php echo htmlspecialchars($profileRole, ENT_QUOTES, 'UTF-8'); ?></span>
         </div>
       </div>
-      <div class="modal-body p-4">
-        <div class="row gy-4">
+        <div class="modal-body p-3">
+        <div class="row gy-3">
           <div class="col-lg-6">
             <div class="card border-0 shadow-sm">
               <div class="card-body">
@@ -442,10 +472,12 @@ body.theme-dark .dark-mode-btn:hover {
                 </div>
                 <?php
                   $contactNum = '';
-                  if (is_array($lguInfo)) {
-                    $contactNum = $lguInfo['num'] ?? $lguInfo['phone_number'] ?? '';
-                  } elseif (is_array($publicInfo)) {
+                  $officeNum = '';
+                  if (is_array($publicInfo)) {
                     $contactNum = $publicInfo['phone_number'] ?? '';
+                  } elseif (is_array($lguInfo)) {
+                    $contactNum = $lguInfo['contact_number'] ?? '';
+                    $officeNum = $lguInfo['office_number'] ?? '';
                   }
 
                   $areaAssigned = '';
@@ -460,11 +492,19 @@ body.theme-dark .dark-mode-btn:hover {
                   }
                 ?>
                 <div class="mb-3 d-flex justify-content-between">
-                  <span class="text-muted">Contact number</span>
-                  <strong id="profileDisplayContact"><?php echo profileDisplayValue($contactNum, 'N/A'); ?></strong>
+                  <span class="text-muted">Number</span>
+                  <strong id="profileDisplayContact"><?php echo profileDisplayValue($contactNum ?: ($officeNum ?: 'N/A')); ?></strong>
                 </div>
                 <?php if (!empty($lguInfo) && is_array($lguInfo)): ?>
                 <div id="lguDetailsSection" class="d-none">
+                  <div class="mb-3 d-flex justify-content-between">
+                    <span class="text-muted">LGU email address</span>
+                    <strong id="profileDisplayOfficeEmail"><?php echo profileDisplayValue($lguInfo['office_email_address'] ?? '', 'N/A'); ?></strong>
+                  </div>
+                  <div class="mb-3 d-flex justify-content-between">
+                    <span class="text-muted">Office number</span>
+                    <strong id="profileDisplayLguOfficeNumber"><?php echo profileDisplayValue($officeNum, 'N/A'); ?></strong>
+                  </div>
                   <div class="mb-3 d-flex justify-content-between">
                     <span class="text-muted">Office / agency</span>
                     <strong><?php echo profileDisplayValue($lguInfo['lgu_office_name'] ?? '', 'N/A'); ?></strong>
@@ -548,12 +588,11 @@ body.theme-dark .dark-mode-btn:hover {
   <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content bg-white border-0 rounded-4 shadow-lg">
       <div class="modal-body p-3">
-        <div class="text-center mb-2">
-          <div class="rounded-circle bg-primary d-inline-flex align-items-center justify-content-center" style="width:50px; height:50px;">
-            <i class="fa fa-user-edit text-white" style="font-size:1.1rem;"></i>
+        <div class="text-center" style="padding: 0.25rem 0; margin-bottom: 0.5rem;">
+          <div class="rounded-circle bg-primary d-inline-flex align-items-center justify-content-center" style="width:35px; height:35px;">
+            <i class="fa fa-user-edit text-white" style="font-size:0.8rem;"></i>
           </div>
-          <h5 class="mt-2 mb-1 text-dark">Edit Profile</h5>
-          <p class="text-muted mb-0" style="font-size: 0.85rem;">Update name, email, contact number, or change password.</p>
+          <h6 class="mt-0 mb-0 text-dark" style="font-size:0.95rem;">Edit Profile</h6>
         </div>
         <form id="profileEditForm" method="post" action="">
           <input type="hidden" name="profileEditSubmit" value="1">
@@ -562,37 +601,48 @@ body.theme-dark .dark-mode-btn:hover {
               <?php echo htmlspecialchars($profileEditMessage, ENT_QUOTES, 'UTF-8'); ?>
             </div>
           <?php endif; ?>
-          <div class="row">
-            <div class="col-6 mb-2">
-              <label class="form-label text-dark" for="firstName">First name</label>
-              <input type="text" id="firstName" name="firstName" class="form-control rounded-pill border bg-light text-dark py-2" placeholder="First name" value="<?php echo htmlspecialchars($lguInfo['first_name'] ?? $publicInfo['first_name'] ?? ($_SESSION['firstname'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>" required>
+          <div class="row" style="margin-bottom:0.4rem;">
+            <div class="col-6" style="margin-bottom:0.35rem;">
+              <label class="form-label text-dark" for="firstName" style="font-size:0.8rem; margin-bottom:0.15rem;">First name</label>
+              <input type="text" id="firstName" name="firstName" class="form-control rounded-pill border bg-light text-dark" style="font-size:0.85rem; padding:0.35rem 0.75rem;" placeholder="First name" value="<?php echo htmlspecialchars($lguInfo['first_name'] ?? $publicInfo['first_name'] ?? ($_SESSION['firstname'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>" required>
             </div>
-            <div class="col-6 mb-2">
-              <label class="form-label text-dark" for="lastName">Last name</label>
-              <input type="text" id="lastName" name="lastName" class="form-control rounded-pill border bg-light text-dark py-2" placeholder="Last name" value="<?php echo htmlspecialchars($lguInfo['last_name'] ?? $publicInfo['last_name'] ?? ($_SESSION['lastname'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>" required>
+            <div class="col-6" style="margin-bottom:0.35rem;">
+              <label class="form-label text-dark" for="lastName" style="font-size:0.8rem; margin-bottom:0.15rem;">Last name</label>
+              <input type="text" id="lastName" name="lastName" class="form-control rounded-pill border bg-light text-dark" style="font-size:0.85rem; padding:0.35rem 0.75rem;" placeholder="Last name" value="<?php echo htmlspecialchars($lguInfo['last_name'] ?? $publicInfo['last_name'] ?? ($_SESSION['lastname'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>" required>
             </div>
           </div>
-          <div class="mb-2">
-            <label class="form-label text-dark" for="email">Email</label>
-            <input type="email" id="email" name="email" class="form-control rounded-pill border bg-light text-dark py-2" placeholder="Email" value="<?php echo htmlspecialchars($profileEmail, ENT_QUOTES, 'UTF-8'); ?>" required>
+          <div style="margin-bottom:0.35rem;">
+            <label class="form-label text-dark" for="email" style="font-size:0.8rem; margin-bottom:0.15rem;">Account email</label>
+            <input type="email" id="email" name="email" class="form-control rounded-pill border bg-light text-dark" style="font-size:0.85rem; padding:0.35rem 0.75rem;" placeholder="Account email" value="<?php echo htmlspecialchars($profileEmail, ENT_QUOTES, 'UTF-8'); ?>" required>
           </div>
-          <div class="mb-2">
-            <label class="form-label text-dark" for="contact">Contact number</label>
-            <input type="text" id="contact" name="contact" class="form-control rounded-pill border bg-light text-dark py-2" placeholder="Contact number" value="<?php echo htmlspecialchars($lguInfo['phone_number'] ?? $publicInfo['phone_number'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
+          <div style="margin-bottom:0.35rem;">
+            <label class="form-label text-dark" for="contact" style="font-size:0.8rem; margin-bottom:0.15rem;"><?php echo (!empty($lguInfo) && is_array($lguInfo)) ? 'Public contact #' : 'Contact #'; ?></label>
+            <input type="text" id="contact" name="contact" class="form-control rounded-pill border bg-light text-dark" style="font-size:0.85rem; padding:0.35rem 0.75rem;" placeholder="Contact number" value="<?php echo htmlspecialchars($lguInfo['contact_number'] ?? $publicInfo['phone_number'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
           </div>
-          <hr>
-          <div class="mb-2 position-relative">
-            <label class="form-label text-dark" for="newPassword">New password (leave blank to keep current)</label>
-            <input type="password" id="newPassword" name="newPassword" class="form-control rounded-pill border bg-light text-dark py-3 pe-5" placeholder="Enter new password">
-            <span class="position-absolute" style="right: 18px; top: 50%; transform: translateY(-50%); cursor: pointer;">
-              <i class="fa fa-eye text-secondary" id="toggleNewPwd"></i>
+          <?php if (!empty($lguInfo) && is_array($lguInfo)): ?>
+          <div style="margin-bottom:0.35rem;">
+            <label class="form-label text-dark" for="officeEmail" style="font-size:0.8rem; margin-bottom:0.15rem;">Office email</label>
+            <input type="email" id="officeEmail" name="officeEmail" class="form-control rounded-pill border bg-light text-dark" style="font-size:0.85rem; padding:0.35rem 0.75rem;" placeholder="Office email" value="<?php echo htmlspecialchars($lguInfo['office_email_address'] ?? '', ENT_QUOTES, 'UTF-8'); ?>" required>
+            <small class="form-text text-muted" style="font-size:0.65rem; display:block; margin-top:0.1rem;">Must differ from account email</small>
+          </div>
+          <div style="margin-bottom:0.35rem;">
+            <label class="form-label text-dark" for="officeNumber" style="font-size:0.8rem; margin-bottom:0.15rem;">Office #</label>
+            <input type="text" id="officeNumber" name="officeNumber" class="form-control rounded-pill border bg-light text-dark" style="font-size:0.85rem; padding:0.35rem 0.75rem;" placeholder="Office number" value="<?php echo htmlspecialchars($lguInfo['office_number'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
+          </div>
+          <?php endif; ?>
+          <hr style="margin: 0.3rem 0;">
+          <div style="margin-bottom:0.35rem; position:relative;">
+            <label class="form-label text-dark" for="newPassword" style="font-size:0.8rem; margin-bottom:0.15rem;">New password</label>
+            <input type="password" id="newPassword" name="newPassword" class="form-control rounded-pill border bg-light text-dark pe-5" style="font-size:0.85rem; padding:0.35rem 0.75rem;" placeholder="Leave blank to keep current">
+            <span class="position-absolute" style="right: 10px; top: 38%; transform: translateY(-50%); cursor: pointer;">
+              <i class="fa fa-eye text-secondary" id="toggleNewPwd" style="font-size:0.8rem;"></i>
             </span>
           </div>
-          <div class="mb-2 position-relative">
-            <label class="form-label text-dark" for="confirmPassword">Confirm password</label>
-            <input type="password" id="confirmPassword" name="confirmPassword" class="form-control rounded-pill border bg-light text-dark py-3 pe-5" placeholder="Re-enter new password">
-            <span class="position-absolute" style="right: 18px; top: 50%; transform: translateY(-50%); cursor: pointer;">
-              <i class="fa fa-eye text-secondary" id="toggleConfirmPwd"></i>
+          <div style="margin-bottom:0.2rem; position:relative;">
+            <label class="form-label text-dark" for="confirmPassword" style="font-size:0.8rem; margin-bottom:0.15rem;">Confirm password</label>
+            <input type="password" id="confirmPassword" name="confirmPassword" class="form-control rounded-pill border bg-light text-dark pe-5" style="font-size:0.85rem; padding:0.35rem 0.75rem;" placeholder="Re-enter password">
+            <span class="position-absolute" style="right: 10px; top: 38%; transform: translateY(-50%); cursor: pointer;">
+              <i class="fa fa-eye text-secondary" id="toggleConfirmPwd" style="font-size:0.8rem;"></i>
             </span>
           </div>
         </form>
@@ -672,6 +722,16 @@ document.addEventListener('DOMContentLoaded', function () {
   togglePasswordField('toggleConfirmPwd', 'confirmPassword');
 
   var resetForm = document.getElementById('profileEditForm');
+  var saveBtn = document.getElementById('profileEditSaveBtn');
+  if (saveBtn && resetForm) {
+    saveBtn.addEventListener('click', function () {
+      if (typeof resetForm.requestSubmit === 'function') {
+        resetForm.requestSubmit();
+      } else {
+        resetForm.submit();
+      }
+    });
+  }
   if (resetForm) {
     resetForm.addEventListener('submit', function (event) {
       event.preventDefault();
@@ -687,6 +747,7 @@ document.addEventListener('DOMContentLoaded', function () {
       msgDiv.textContent = '';
 
       var submitBtn = form.querySelector('button[type="submit"]');
+      var passwordChanged = form.querySelector('#newPassword') && form.querySelector('#newPassword').value.trim() !== '';
       if (submitBtn) {
         submitBtn.disabled = true;
         var origText = submitBtn.innerHTML;
@@ -702,7 +763,7 @@ document.addEventListener('DOMContentLoaded', function () {
       }).then(function (res) { return res.json(); }).then(function (json) {
         if (json && json.success) {
           msgDiv.classList.add('alert-success');
-          msgDiv.textContent = json.message || 'Saved';
+          msgDiv.textContent = (json.message || 'Saved') + (passwordChanged ? ' Your entered password was saved securely.' : '');
           // Auto-hide success message after 2.5 seconds
           setTimeout(function () {
             msgDiv.classList.remove('alert-success', 'alert-danger');
@@ -720,6 +781,14 @@ document.addEventListener('DOMContentLoaded', function () {
             if (json.data.email) {
               var emailEl = document.getElementById('profileDisplayEmail');
               if (emailEl) emailEl.textContent = json.data.email;
+            }
+            if (json.data.officeEmail) {
+              var officeEmailEl = document.getElementById('profileDisplayOfficeEmail');
+              if (officeEmailEl) officeEmailEl.textContent = json.data.officeEmail;
+            }
+            if (json.data.officeNumber) {
+              var officeNumberEl = document.getElementById('profileDisplayLguOfficeNumber');
+              if (officeNumberEl) officeNumberEl.textContent = json.data.officeNumber || 'N/A';
             }
             if (json.data.contact) {
               var contactEl = document.getElementById('profileDisplayContact');

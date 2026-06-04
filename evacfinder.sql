@@ -294,7 +294,8 @@ CREATE TABLE `lgu_users` (
   `position_role` varchar(100) NOT NULL,
   `first_name` varchar(50) DEFAULT NULL,
   `last_name` varchar(50) DEFAULT NULL,
-  `phone_number` varchar(20) DEFAULT NULL,
+  `office_number` varchar(20) DEFAULT NULL,
+  `contact_number` varchar(20) DEFAULT NULL,
   `password` varchar(255) NOT NULL,
   `registration_date` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `status` varchar(20) DEFAULT 'Pending'
@@ -304,9 +305,9 @@ CREATE TABLE `lgu_users` (
 -- Dumping data for table `lgu_users`
 --
 
-INSERT INTO `lgu_users` (`id`, `lgu_id`, `lgu_office_name`, `office_email_address`, `office_type`, `province`, `region`, `position_role`, `first_name`, `last_name`, `phone_number`, `password`, `registration_date`, `status`) VALUES
-(2, 'LGU00001', 'based', 'allen@gmail.com', 'municipal', 'negros-occidental', 'region-vi', 'pretty', 'allen', 'sarmiento', '09491744739', 'me', '2026-05-26 04:54:08', 'Pending'),
-(3, 'LGU00003', 'Bacolod', '123@gmail.com', 'city', 'negros-occidental', 'region-vi', 'Okay', 'john', 'Garcia', '12312321', '123', '2026-05-26 08:42:47', 'Pending');
+INSERT INTO `lgu_users` (`id`, `lgu_id`, `lgu_office_name`, `office_email_address`, `office_type`, `province`, `region`, `position_role`, `first_name`, `last_name`, `office_number`, `contact_number`, `password`, `registration_date`, `status`) VALUES
+(2, 'LGU00001', 'based', 'allen@gmail.com', 'municipal', 'negros-occidental', 'region-vi', 'pretty', 'allen', 'sarmiento', '09491744739', NULL, 'me', '2026-05-26 04:54:08', 'Pending'),
+(3, 'LGU00003', 'Bacolod', '123@gmail.com', 'city', 'negros-occidental', 'region-vi', 'Okay', 'john', 'Garcia', '12312321', NULL, '123', '2026-05-26 08:42:47', 'Pending');
 
 -- --------------------------------------------------------
 

@@ -66,6 +66,30 @@ $base_url = '/evacfinder/';
             <span class="nav-text">Announcement</span>
           </a>
         </li>
+
+        <!-- User Access (hidden if restricted) -->
+        <?php
+          $showUserAccess = true;
+          if (isset($_SESSION['userid'])) {
+            $perms = ModelUserRights::mdlGetPermissions($_SESSION['userid']);
+            if (isset($perms['useraccess']) && $perms['useraccess'] === 'restricted') {
+              $showUserAccess = false;
+            }
+          }
+        ?>
+        <?php if ($showUserAccess): ?>
+        <li>
+          <a class="ai-icon" href="<?php echo $base_url; ?>?route=useraccess" aria-expanded="false">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" class="feather feather-lock">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+            <span class="nav-text">User Access</span>
+          </a>
+        </li>
+        <?php endif; ?>
       <?php endif; ?>
 
     </ul>

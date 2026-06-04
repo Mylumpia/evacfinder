@@ -63,6 +63,7 @@ if (empty($lguData) && $_SERVER['REQUEST_METHOD'] !== 'POST') {
                     <input type="hidden" name="firstName" value="<?php echo htmlspecialchars($lguData['firstName'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
                     <input type="hidden" name="lastName" value="<?php echo htmlspecialchars($lguData['lastName'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
                     <input type="hidden" name="accountType" value="lgu">
+                    <input type="hidden" name="officeEmail" value="<?php echo htmlspecialchars($lguData['officeEmail'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
 
                     <div class="card-body">
                         <?php if ($lguRegistrationError): ?>
@@ -84,8 +85,9 @@ if (empty($lguData) && $_SERVER['REQUEST_METHOD'] !== 'POST') {
                         <!-- Row 2: Office Email, Office Number -->
                         <div class="row g-4 mb-4">                            
                             <div class="col-md-6">
-                                <label class="form-label" for="lguOfficeEmail">Office Email Address</label>
-                                <input type="email" id="lguOfficeEmail" name="lguOfficeEmail" class="form-control" placeholder="Enter office email address" value="<?php echo htmlspecialchars($lguData['email'] ?? '', ENT_QUOTES, 'UTF-8'); ?>" />
+                                <label class="form-label" for="lguOfficeEmail">Office Email Address <span class="text-danger">*</span></label>
+                                <input type="email" id="lguOfficeEmail" name="lguOfficeEmail" class="form-control" placeholder="Enter office email address" value="<?php echo htmlspecialchars($lguData['officeEmail'] ?? '', ENT_QUOTES, 'UTF-8'); ?>" required />
+                                <div class="form-text">Must be different from your account email.</div>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label" for="lguPhone">Office Number <span class="text-danger">*</span></label>
@@ -134,10 +136,20 @@ if (empty($lguData) && $_SERVER['REQUEST_METHOD'] !== 'POST') {
                         </div>
 
                         <!-- Row 5: Position / Role (full width) -->
-                        <div class="row g-4 mb-4">                            
+                        <div class="row g-4 mb-4">
                             <div class="col-12">
                                 <label class="form-label" for="lguPosition">Position / Role <span class="text-danger">*</span></label>
-                                <input type="text" id="lguPosition" name="lguPosition" class="form-control" placeholder="Enter position / role" required />
+                                <?php $selectedPositionRole = $lguData['lguPosition'] ?? ''; ?>
+                                <div class="mt-2">
+                                    <select id="lguPosition" name="lguPosition" class="form-select select2" required>
+                                        <option value="" <?php echo $selectedPositionRole === '' ? 'selected' : ''; ?>>- select position / role -</option>
+                                        <option value="Brgy. Captain" <?php echo $selectedPositionRole === 'Brgy. Captain' ? 'selected' : ''; ?>>Brgy. Captain</option>
+                                        <option value="Brgy. DRRMO Volunteer" <?php echo $selectedPositionRole === 'Brgy. DRRMO Volunteer' ? 'selected' : ''; ?>>Brgy. DRRMO Volunteer</option>
+                                        <option value="DRRM Officer" <?php echo $selectedPositionRole === 'DRRM Officer' ? 'selected' : ''; ?>>DRRM Officer</option>
+                                        <option value="Center Manager" <?php echo $selectedPositionRole === 'Center Manager' ? 'selected' : ''; ?>>Center Manager</option>
+                                        <option value="Social Welfare" <?php echo $selectedPositionRole === 'Social Welfare' ? 'selected' : ''; ?>>Social Welfare</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
 

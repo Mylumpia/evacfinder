@@ -124,7 +124,7 @@ $allCenters = ModelCenters::mdlGetAllCenters();
                                         $activeCount = $stmtCount->fetch(PDO::FETCH_ASSOC);
                                         $actualOccupancy = $activeCount['active_count'];
                                         
-                                        $stmtLGU = $pdo->prepare("SELECT u.first_name, u.last_name, u.position_role, u.phone_number FROM lgu_users u 
+                                        $stmtLGU = $pdo->prepare("SELECT u.first_name, u.last_name, u.position_role, u.office_number FROM lgu_users u 
                                                                    JOIN userrights ur ON u.office_email_address = ur.email
                                                                    WHERE ur.userid = :userid");
                                         if($fullCenter['assigned_lgu_user_id']) {
@@ -229,7 +229,7 @@ $allCenters = ModelCenters::mdlGetAllCenters();
                                                                     <?php if($assignedLGU): ?>
                                                                         <p class="mb-0"><?php echo htmlspecialchars($assignedLGU['first_name'] . ' ' . $assignedLGU['last_name']); ?></p>
                                                                         <small class="text-muted"><?php echo htmlspecialchars($assignedLGU['position_role']); ?></small><br>
-                                                                        <small><?php echo htmlspecialchars($assignedLGU['phone_number']); ?></small>
+                                                                        <small><?php echo htmlspecialchars($assignedLGU['office_number']); ?></small>
                                                                     <?php else: ?>
                                                                         <p class="text-muted mb-1">No LGU assigned yet</p>
                                                                         <button type="button" class="btn btn-sm btn-outline-info assign-lgu-quick mt-2" data-center-id="<?php echo $center['center_id']; ?>" data-center-name="<?php echo htmlspecialchars($center['center_name']); ?>">

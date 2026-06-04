@@ -52,6 +52,21 @@ class ModelUserRights {
         return $stmt->execute();
     }
 
+    static protected function mdlTableHasColumn($table, $column) {
+        static $columnCache = [];
+        $key = "$table.$column";
+        if (array_key_exists($key, $columnCache)) {
+            return $columnCache[$key];
+        }
+
+        $db = (new Connection)->connect();
+        $stmt = $db->prepare("SHOW COLUMNS FROM `$table` LIKE :column");
+        $stmt->bindParam(":column", $column, PDO::PARAM_STR);
+        $stmt->execute();
+        $columnCache[$key] = (bool) $stmt->fetch(PDO::FETCH_ASSOC);
+        return $columnCache[$key];
+    }
+
     static public function mdlCreateLguRegistration($data) {
         $db = (new Connection)->connect();
 
@@ -67,9 +82,17 @@ class ModelUserRights {
             $stmtUser->bindParam(":type", $data["type"], PDO::PARAM_STR);
             $stmtUser->execute();
 
-            $stmtLgu = $db->prepare(
-                "INSERT INTO lgu_users (lgu_id, lgu_office_name, office_email_address, office_type, province, region, position_role, first_name, last_name, phone_number, password) VALUES (:lgu_id, :lgu_office_name, :office_email_address, :office_type, :province, :region, :position_role, :first_name, :last_name, :phone_number, :password)"
-            );
+            $lguHasContactColumn = self::mdlTableHasColumn('lgu_users', 'contact_number');
+            if ($lguHasContactColumn) {
+                $stmtLgu = $db->prepare(
+                    "INSERT INTO lgu_users (lgu_id, lgu_office_name, office_email_address, office_type, province, region, position_role, first_name, last_name, office_number, contact_number, password) VALUES (:lgu_id, :lgu_office_name, :office_email_address, :office_type, :province, :region, :position_role, :first_name, :last_name, :office_number, :contact_number, :password)"
+                );
+            } else {
+                $stmtLgu = $db->prepare(
+                    "INSERT INTO lgu_users (lgu_id, lgu_office_name, office_email_address, office_type, province, region, position_role, first_name, last_name, office_number, password) VALUES (:lgu_id, :lgu_office_name, :office_email_address, :office_type, :province, :region, :position_role, :first_name, :last_name, :office_number, :password)"
+                );
+            }
+            $contactNumber = $data["contact_number"] ?? null;
             $stmtLgu->bindParam(":lgu_id", $data["lgu_id"], PDO::PARAM_STR);
             $stmtLgu->bindParam(":lgu_office_name", $data["lgu_office_name"], PDO::PARAM_STR);
             $stmtLgu->bindParam(":office_email_address", $data["office_email_address"], PDO::PARAM_STR);
@@ -79,7 +102,10 @@ class ModelUserRights {
             $stmtLgu->bindParam(":position_role", $data["position_role"], PDO::PARAM_STR);
             $stmtLgu->bindParam(":first_name", $data["first_name"], PDO::PARAM_STR);
             $stmtLgu->bindParam(":last_name", $data["last_name"], PDO::PARAM_STR);
-            $stmtLgu->bindParam(":phone_number", $data["phone_number"], PDO::PARAM_STR);
+            $stmtLgu->bindParam(":office_number", $data["office_number"], PDO::PARAM_STR);
+            if ($lguHasContactColumn) {
+                $stmtLgu->bindParam(":contact_number", $contactNumber, PDO::PARAM_STR);
+            }
             $stmtLgu->bindParam(":password", $data["password"], PDO::PARAM_STR);
             $stmtLgu->execute();
 
@@ -169,7 +195,7 @@ class ModelUserRights {
         }
     }
 
-    static public function mdlUpdateUserProfile($userid, $email, $firstName, $lastName, $phoneNumber, $password = null) {
+    static public function mdlUpdateUserProfile($userid, $email, $firstName, $lastName, $contactNumber, $officeEmail = null, $officeNumber = null, $password = null) {
         $db = (new Connection)->connect();
 
         try {
@@ -185,12 +211,44 @@ class ModelUserRights {
             $userData = self::mdlGetUserCredentials('userrights', 'userid', $userid);
             if (!empty($userData) && isset($userData['Type'])) {
                 if ($userData['Type'] === 'lgu') {
-                    // Update LGU user record
-                    $stmtLgu = $db->prepare("UPDATE lgu_users SET first_name = :first_name, last_name = :last_name, phone_number = :phone_number, office_email_address = :office_email WHERE lgu_id = :userid OR office_email_address = :email_check");
+                    $lguHasContactColumn = self::mdlTableHasColumn('lgu_users', 'contact_number');
+                    $updateSql = "UPDATE lgu_users SET first_name = :first_name, last_name = :last_name";
+
+                    if ($lguHasContactColumn) {
+                        $updateSql .= ", contact_number = :contact_number";
+                    }
+
+                    if ($lguHasContactColumn) {
+                        if ($officeNumber !== null) {
+                            $updateSql .= ", office_number = :office_number";
+                        }
+                    } else {
+                        // Legacy schema only has one phone field.
+                        $updateSql .= ", office_number = :office_number";
+                    }
+
+                    if (isset($officeEmail) && $officeEmail !== '') {
+                        $updateSql .= ", office_email_address = :office_email";
+                    }
+
+                    $updateSql .= " WHERE lgu_id = :userid OR office_email_address = :email_check";
+                    $stmtLgu = $db->prepare($updateSql);
                     $stmtLgu->bindParam(":first_name", $firstName, PDO::PARAM_STR);
                     $stmtLgu->bindParam(":last_name", $lastName, PDO::PARAM_STR);
-                    $stmtLgu->bindParam(":phone_number", $phoneNumber, PDO::PARAM_STR);
-                    $stmtLgu->bindParam(":office_email", $email, PDO::PARAM_STR);
+                    if ($lguHasContactColumn) {
+                        $stmtLgu->bindParam(":contact_number", $contactNumber, PDO::PARAM_STR);
+                    }
+                    if ($lguHasContactColumn) {
+                        if ($officeNumber !== null) {
+                            $stmtLgu->bindParam(":office_number", $officeNumber, PDO::PARAM_STR);
+                        }
+                    } else {
+                        $phoneToStore = $officeNumber !== null ? $officeNumber : $contactNumber;
+                        $stmtLgu->bindParam(":office_number", $phoneToStore, PDO::PARAM_STR);
+                    }
+                    if (isset($officeEmail) && $officeEmail !== '') {
+                        $stmtLgu->bindParam(":office_email", $officeEmail, PDO::PARAM_STR);
+                    }
                     $stmtLgu->bindParam(":userid", $userid, PDO::PARAM_STR);
                     $stmtLgu->bindParam(":email_check", $email, PDO::PARAM_STR);
                     $stmtLgu->execute();
@@ -208,7 +266,7 @@ class ModelUserRights {
                     $stmtPersonal = $db->prepare("UPDATE personal_users SET first_name = :first_name, last_name = :last_name, phone_number = :phone_number, email_address = :email WHERE user_id = :userid OR email_address = :email_check");
                     $stmtPersonal->bindParam(":first_name", $firstName, PDO::PARAM_STR);
                     $stmtPersonal->bindParam(":last_name", $lastName, PDO::PARAM_STR);
-                    $stmtPersonal->bindParam(":phone_number", $phoneNumber, PDO::PARAM_STR);
+                    $stmtPersonal->bindParam(":phone_number", $contactNumber, PDO::PARAM_STR);
                     $stmtPersonal->bindParam(":email", $email, PDO::PARAM_STR);
                     $stmtPersonal->bindParam(":userid", $userid, PDO::PARAM_STR);
                     $stmtPersonal->bindParam(":email_check", $email, PDO::PARAM_STR);
@@ -263,5 +321,79 @@ class ModelUserRights {
         $stmt->bindParam(":last_login", $timestamp, PDO::PARAM_STR);
         $stmt->bindParam(":userid", $userid, PDO::PARAM_STR);
         return $stmt->execute();
+    }
+
+    // Ensure permissions table exists and create if not
+    static protected function mdlEnsurePermissionsTable() {
+        $db = (new Connection)->connect();
+        try {
+            $db->exec("CREATE TABLE IF NOT EXISTS user_permissions (
+                userid VARCHAR(20) PRIMARY KEY,
+                permissions TEXT NULL,
+                updated_at DATETIME NULL
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
+        } catch (PDOException $e) {
+            // ignore - creation may fail if insufficient privileges
+        }
+    }
+
+    // Get permissions array for a user (route => level)
+    static public function mdlGetPermissions($userid) {
+        self::mdlEnsurePermissionsTable();
+        $db = (new Connection)->connect();
+        $stmt = $db->prepare("SELECT permissions FROM user_permissions WHERE userid = :userid");
+        $stmt->bindParam(":userid", $userid, PDO::PARAM_STR);
+        $stmt->execute();
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$row || empty($row['permissions'])) return [];
+        $data = json_decode($row['permissions'], true);
+        return is_array($data) ? $data : [];
+    }
+
+    // Set permissions for a user (permissions is an associative array)
+    static public function mdlSetPermissions($userid, $permissions) {
+        self::mdlEnsurePermissionsTable();
+        $db = (new Connection)->connect();
+        $json = json_encode($permissions);
+        try {
+            $stmt = $db->prepare("REPLACE INTO user_permissions (userid, permissions, updated_at) VALUES (:userid, :permissions, :updated_at)");
+            $now = (new DateTime('now', new DateTimeZone('UTC')))->format('Y-m-d H:i:s');
+            $stmt->bindParam(":userid", $userid, PDO::PARAM_STR);
+            $stmt->bindParam(":permissions", $json, PDO::PARAM_STR);
+            $stmt->bindParam(":updated_at", $now, PDO::PARAM_STR);
+            return $stmt->execute();
+        } catch (PDOException $e) {
+            self::$lastError = $e->getMessage();
+            return false;
+        }
+    }
+
+    // Return list of users with optional name fields
+    static public function mdlListUsers() {
+        $db = (new Connection)->connect();
+        $stmt = $db->prepare("SELECT userid, email, `Type` FROM userrights ORDER BY userid ASC");
+        $stmt->execute();
+        $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $out = [];
+        foreach ($users as $u) {
+            $entry = $u;
+            $entry['first_name'] = '';
+            $entry['last_name'] = '';
+            if (strtolower($u['Type'] ?? $u['type'] ?? '') === 'lgu') {
+                $extra = self::mdlGetUserCredentials('lgu_users', 'lgu_id', $u['userid']);
+                if (!empty($extra)) {
+                    $entry['first_name'] = $extra['first_name'] ?? '';
+                    $entry['last_name'] = $extra['last_name'] ?? '';
+                }
+            } else {
+                $extra = self::mdlGetUserCredentials('personal_users', 'user_id', $u['userid']);
+                if (!empty($extra)) {
+                    $entry['first_name'] = $extra['first_name'] ?? '';
+                    $entry['last_name'] = $extra['last_name'] ?? '';
+                }
+            }
+            $out[] = $entry;
+        }
+        return $out;
     }
 }
