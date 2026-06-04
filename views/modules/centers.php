@@ -29,9 +29,13 @@
                                         <label for="category" class="form-label">Evacuation Category</label>
                                         <select id="category" name="category" class="select2 form-select" data-allow-clear="true" required>
                                             <option value="">- select category -</option>
-                                            <option value="Primary">Primary</option>
-                                            <option value="Secondary">Secondary</option>
-                                            <option value="Tertiary">Tertiary</option>
+                                            <option value="School">School</option>
+                                            <option value="Gymnasium / Sports Complex">Gymnasium / Sports Complex</option>
+                                            <option value="Church">Church</option>
+                                            <option value="Community Center / Multipurpose Hall">Community Center / Multipurpose Hall</option>
+                                            <option value="Covered Court">Covered Court</option>
+                                            <option value="Private Facility / Commercial Building">Private Facility / Commercial Building</option>
+                                            <option value="Open Field / Evacuation Ground">Open Field / Evacuation Ground</option>
                                         </select>
                                     </div>
                                     <div class="col-md-6">

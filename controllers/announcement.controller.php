@@ -6,13 +6,15 @@ class ControllerAnnouncement {
         return $answer;
     }
 
-    static public function ctrGetAnnouncements() {
-        return (new ModelAnnouncement)->mdlGetAnnouncements();
+    static public function ctrGetAnnouncements($searchTerm = '') {
+        return (new ModelAnnouncement)->mdlGetAnnouncements($searchTerm);
     }
    
     static public function ctrUpdateAnnouncement($data) {
         return (new ModelAnnouncement)->mdlUpdateAnnouncement($data);
     }
+
+    
 
 }
 ?>

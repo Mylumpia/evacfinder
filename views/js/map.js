@@ -90,28 +90,7 @@ document.addEventListener('DOMContentLoaded', function () {
           `;
         }).join('');
 
-        // Click to show popup on map
-        document.querySelectorAll('.announcement-item').forEach(item => {
-          item.addEventListener('click', function () {
-            const title = this.dataset.title;
-            const desc  = this.dataset.desc;
-            const type  = this.dataset.type;
-            const color = getTypeColor(type);
-
-            const popupContent = `
-              <div style="min-width: 220px; max-width: 280px;">
-                <span style="display: inline-block; font-size: 11px; background: ${color}22; color: ${color}; border-radius: 4px; padding: 2px 8px; font-weight: 600; margin-bottom: 6px;">${escapeHtml(type)}</span>
-                <div style="font-weight: 600; font-size: 13px; margin-bottom: 6px; color: #1a3c5e;">${escapeHtml(title)}</div>
-                <div style="font-size: 12px; color: #555; line-height: 1.5;">${escapeHtml(desc)}</div>
-              </div>
-            `;
-
-            L.popup()
-              .setLatLng(map.getCenter())
-              .setContent(popupContent)
-              .openOn(map);
-          });
-        });
+        
       })
       .catch(err => {
         console.error('Failed to load announcements:', err);

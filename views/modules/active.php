@@ -630,10 +630,14 @@ $allCenters = ModelCenters::mdlGetAllCenters();
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label class="form-label">Category <span class="text-danger">*</span></label>
-                            <select class="form-control" id="edit_category" name="category" required>
-                                <option value="Primary">Primary</option>
-                                <option value="Secondary">Secondary</option>
-                                <option value="Tertiary">Tertiary</option>
+                            <select class="form-control" id="edit_category" name="category" required>                   
+                                <option value="School">School</option>
+                                <option value="Gymnasium / Sports Complex">Gymnasium / Sports Complex</option>
+                                <option value="Church">Church</option>
+                                <option value="Community Center / Multipurpose Hall">Community Center / Multipurpose Hall</option>
+                                <option value="Covered Court">Covered Court</option>
+                                <option value="Private Facility / Commercial Building">Private Facility / Commercial Building</option>
+                                <option value="Open Field / Evacuation Ground">Open Field / Evacuation Ground</option>
                             </select>
                         </div>
                         <div class="col-md-6">

@@ -59,19 +59,40 @@ class ModelAnnouncement {
         }
     }
 
-    static public function mdlGetAnnouncements() {
+    static public function mdlGetAnnouncements($searchTerm = '') {
         $db  = new Connection();
         $pdo = $db->connect();
 
         try {
-            $stmt = $pdo->prepare("
+            // Base query
+            $sql = "
                 SELECT announcement_id, ann_title, ann_type, ann_desc, encodedby, date_created 
                 FROM announcements 
-                ORDER BY date_created DESC 
-                LIMIT 10
-            ");
+            ";
+            
+            // Add search condition if search term is provided
+            if (!empty($searchTerm)) {
+                $sql .= " WHERE ann_title LIKE :search_term ";
+                $sql .= " ORDER BY date_created DESC ";
+            } else {
+                $sql .= " ORDER BY date_created DESC LIMIT 10 ";
+            }
+            
+            $stmt = $pdo->prepare($sql);
+            
+            // Bind search parameter if needed
+            if (!empty($searchTerm)) {
+                $searchWildcard = '%' . $searchTerm . '%';
+                $stmt->bindParam(":search_term", $searchWildcard, PDO::PARAM_STR);
+            }
+            
             $stmt->execute();
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            // For search results, return all matches (no limit)
+            // For no search, we already limited to 10
+            return $results;
+            
         } catch (PDOException $e) {
             error_log("PDO Exception in mdlGetAnnouncements: " . $e->getMessage());
             return [];

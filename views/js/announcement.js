@@ -13,9 +13,14 @@ $(function () {
         $("#ann_type").focus();
     }
 
-    function loadAnnouncementList() {
+    function loadAnnouncementList(searchTerm = '') {
+        let url = "ajax/get_announcements.ajax.php";
+        if (searchTerm && searchTerm.trim() !== '') {
+            url += "?search=" + encodeURIComponent(searchTerm.trim());
+        }
+        
         $.ajax({
-            url: "ajax/get_announcements.ajax.php",
+            url: url,
             method: "GET",
             dataType: "json",
             success: function(data) {
@@ -41,13 +46,14 @@ $(function () {
                                             data-desc="${escapeHtml(announcement.ann_desc)}">
                                         <i class="ti tabler-edit"></i> Edit
                                     </button>
-                                 </td>
-                             </tr>
+                                </td>
+                            </tr>
                         `;
                         tbody.append(row);
                     });
                 } else {
-                    tbody.append('<tr><td colspan="7" class="text-center">No announcements found</td></tr>');
+                    let message = searchTerm ? `No announcements found matching "${searchTerm}"` : "No announcements found";
+                    tbody.append('<tr><td colspan="7" class="text-center">' + message + '</td></tr>');
                 }
             },
             error: function(xhr, status, error) {
@@ -56,6 +62,69 @@ $(function () {
             }
         });
     }
+    
+    function loadAnnouncementList(searchTerm = '') {
+    let url = "ajax/get_announcements.ajax.php";
+    if (searchTerm && searchTerm.trim() !== '') {
+        url += "?search=" + encodeURIComponent(searchTerm.trim());
+    }
+    
+    $.ajax({
+        url: url,
+        method: "GET",
+        dataType: "json",
+        success: function(data) {
+            let tbody = $(".table tbody");
+            tbody.empty();
+            
+            if (data && data.length > 0) {
+                $.each(data, function(index, announcement) {
+                    // Highlight matching text if searching
+                    let title = escapeHtml(announcement.ann_title);
+                    if (searchTerm && searchTerm.trim() !== '') {
+                        let regex = new RegExp(`(${escapeRegex(searchTerm)})`, 'gi');
+                        title = title.replace(regex, '<mark style="background-color: #fff3cd; padding: 0 2px; border-radius: 3px;">$1</mark>');
+                    }
+                    
+                    let row = `
+                        <tr>
+                            <td>${escapeHtml(announcement.announcement_id)}</td>
+                            <td>${title}</td>
+                            <td><span class="badge bg-label-primary">${escapeHtml(announcement.ann_type)}</span></td>
+                            <td>${escapeHtml(announcement.ann_desc.substring(0, 100))}${announcement.ann_desc.length > 100 ? '...' : ''}</td>
+                            <td>${escapeHtml(announcement.encodedby)}</td>
+                            <td>${escapeHtml(announcement.date_created)}</td>
+                            <td>
+                                <button type="button" 
+                                        class="btn btn-sm btn-primary btn-edit" 
+                                        data-id="${escapeHtml(announcement.announcement_id)}"
+                                        data-title="${escapeHtml(announcement.ann_title)}"
+                                        data-type="${escapeHtml(announcement.ann_type)}"
+                                        data-desc="${escapeHtml(announcement.ann_desc)}">
+                                    <i class="ti tabler-edit"></i> Edit
+                                </button>
+                                </td>
+                            </td>
+                    `;
+                    tbody.append(row);
+                });
+            } else {
+                let message = searchTerm ? `No announcements found matching "${escapeHtml(searchTerm)}"` : "No announcements found";
+                tbody.append('<tr><td colspan="7" class="text-center">' + message + '</td></tr>');
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error("Error loading announcements:", error);
+            $(".table tbody").html('<tr><td colspan="7" class="text-center text-danger">Error loading announcements</td></tr>');
+        }
+    });
+}
+
+// Add this helper function
+function escapeRegex(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 
     function escapeHtml(str) {
         if (!str) return '';
@@ -233,6 +302,30 @@ $(function () {
             showConfirmButton: false,
             customClass: { popup: 'swal-small' }
         });
+    });
+
+    // Search functionality with debouncing
+    let searchTimeout;
+
+    $("#searchAnnouncement").on("keyup", function() {
+        clearTimeout(searchTimeout);
+        
+        let searchTerm = $(this).val();
+        
+        // Debounce: wait 300ms after user stops typing before searching
+        searchTimeout = setTimeout(function() {
+            loadAnnouncementList(searchTerm);
+        }, 300);
+    });
+
+    // Also trigger search when pressing Enter key
+    $("#searchAnnouncement").on("keypress", function(e) {
+        if (e.which === 13) { // Enter key
+            e.preventDefault();
+            clearTimeout(searchTimeout);
+            let searchTerm = $(this).val();
+            loadAnnouncementList(searchTerm);
+        }
     });
 
 });

@@ -27,7 +27,12 @@ $(document).on('click', '.view-history', function () {
 
                     rows += `<tr>
                         <td>${row.history_date}</td>
-                        <td><span class="badge bg-secondary">${row.action_made}</span></td>
+                        <td><span class="badge ${
+                            row.action_made === 'Created' ? 'bg-success' :
+                            row.action_made === 'Updated' ? 'bg-primary' :
+                            row.action_made === 'Occupancy Updated' ? 'bg-warning' :
+                            'bg-secondary'
+                        }">${row.action_made}</span></td>
                         <td>${changesList}</td>
                         <td>${row.remarks || '-'}</td>
                         <td>${row.changed_by_name}</td>

@@ -62,8 +62,18 @@
                             <div class="col-12">
                                 <div class="card">
                                     <div class="card-header d-flex justify-content-between align-items-center">
-                                        <h5 class="card-title mb-0">Announcement Lists</h5>
-                                        <div>
+                                        <div style="display: flex; align-items: left; gap: 30px;">
+                                            <h5 class="card-title mb-0">Announcement Lists</h5>  
+                                            <!-- Search Input -->
+                                            <div class="position-relative me-3" style="width: 300px;">
+                                                <input type="text" 
+                                                    id="searchAnnouncement" 
+                                                    class="form-control form-control-sm" 
+                                                    placeholder="🔍 Search by title..."
+                                                    autocomplete="off">
+                                            </div>
+                                        </div>                                             
+                                        <div>                                            
                                             <button type="button" class="btn btn-success btn-sm" id="btn-new">
                                                 <i class="ti tabler-plus me-1"></i>New Announcement
                                             </button>
