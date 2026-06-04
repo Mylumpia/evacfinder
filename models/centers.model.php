@@ -108,13 +108,13 @@ class ModelCenters{
         $db = new Connection();
         $pdo = $db->connect();
 
-        // Get total centers
+        // Get total centers (all centers)
         $stmt = $pdo->prepare("SELECT COUNT(*) AS total_centers FROM centers");
         $stmt->execute();
         $totalCenters = $stmt->fetch(PDO::FETCH_ASSOC);
         
-        // Get total capacity (sum of capacity column)
-        $stmt = $pdo->prepare("SELECT COALESCE(SUM(capacity), 0) AS total_capacity FROM centers");
+        // Get total capacity from ACTIVE centers only (not all centers)
+        $stmt = $pdo->prepare("SELECT COALESCE(SUM(capacity), 0) AS total_capacity FROM centers WHERE status = 'Active'");
         $stmt->execute();
         $totalCapacity = $stmt->fetch(PDO::FETCH_ASSOC);
         
