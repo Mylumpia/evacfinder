@@ -453,7 +453,7 @@ function displayCentersTable(centers) {
             let statusClass = '';
             let statusText = center.status;
             if (statusText === 'Active') statusClass = 'bg-success';
-            else if (statusText === 'Inactive') statusClass = 'bg-secondary';
+            else if (statusText === 'Inactive') statusClass = 'bg-warning';
             else if (statusText === 'Full') statusClass = 'bg-warning text-dark';
             else statusClass = 'bg-danger';
             
