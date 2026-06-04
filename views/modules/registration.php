@@ -2,6 +2,12 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+
+// Clear registration session when coming from login/back button
+if (!isset($_POST['btn_next']) && !isset($_POST['btn_register_submit'])) {
+    unset($_SESSION['lgu_registration']);
+}
+
 $registrationData = $_SESSION['lgu_registration'] ?? [];
 $registrationError = null;
 $registrationSuccess = false;
