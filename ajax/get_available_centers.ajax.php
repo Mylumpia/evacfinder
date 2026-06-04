@@ -13,7 +13,7 @@ $pdo = $db->connect();
 
 if($exclude_center_id) {
     $stmt = $pdo->prepare("
-        SELECT center_id, center_name, capacity, current_occupants 
+        SELECT center_id, center_name, capacity, current_occupants, latitude, longitude
         FROM centers 
         WHERE center_id != :exclude_center_id AND status = 'Active'
         ORDER BY center_name
@@ -21,7 +21,7 @@ if($exclude_center_id) {
     $stmt->bindParam(":exclude_center_id", $exclude_center_id);
 } else {
     $stmt = $pdo->prepare("
-        SELECT center_id, center_name, capacity, current_occupants 
+        SELECT center_id, center_name, capacity, current_occupants, latitude, longitude
         FROM centers 
         WHERE status = 'Active'
         ORDER BY center_name
