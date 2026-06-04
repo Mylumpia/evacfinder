@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Jun 04, 2026 at 10:35 AM
+-- Generation Time: Jun 04, 2026 at 04:50 PM
 -- Server version: 8.4.3
 -- PHP Version: 8.3.30
 
@@ -97,7 +97,7 @@ CREATE TABLE `centers` (
 
 INSERT INTO `centers` (`id`, `center_id`, `center_name`, `category`, `status`, `barangay`, `city`, `province`, `address`, `capacity`, `max_persons`, `current_occupants`, `contact_number`, `contact_person`, `alternate_contact`, `date_established`, `facilities`, `hazard_type`, `remarks`, `encodedby`, `latitude`, `longitude`, `estimated_capacity`, `accessibility`, `available_facilities`, `assigned_lgu_user_id`) VALUES
 (1, 'EvacC00001', 'Banago Elementary School I', 'School', 'Inactive', '', '', 'Negros Occidental', '', 300, 0, 0, '', '', '', NULL, '', '', '', 1, NULL, NULL, 300, '', '', NULL),
-(2, 'EvacC00002', 'Alijis Hall', 'School', 'Active', 'Alijis', 'Bacolod', 'Negros Occidental', 'Alijis bcd', 400, 400, 0, '', '', '', NULL, '', '', '', 6, 10.65656800, 122.96001400, 400, '', '', '00006');
+(2, 'EvacC00002', 'Alijis Hall', 'Community Center / Multipurpose Hall', 'Active', 'Alijis', 'Bacolod', 'Negros Occidental', 'Alijis bcd', 400, 400, 1, '123', '', '', NULL, '', '', '', 6, 10.65656800, 122.96001400, 400, '', '', '00006');
 
 --
 -- Triggers `centers`
@@ -152,7 +152,11 @@ INSERT INTO `center_history` (`history_id`, `center_id`, `action_type`, `descrip
 (25, 'EvacC00002', 'CENTER_UPDATED', 'Center status changed from Inactive to Active. Center reactivated for new operations.', '00006', '2026-06-04 18:00:03'),
 (26, 'EvacC00002', 'CENTER_UPDATED', 'Center status changed from Active to Inactive. No evacuees to clear.', '00006', '2026-06-04 18:00:12'),
 (27, 'EvacC00002', 'CENTER_UPDATED', 'Center status changed from Inactive to Active. Center reactivated for new operations.', '00006', '2026-06-04 18:01:39'),
-(28, 'EvacC00002', 'EVACUEE_ADDED', 'Evacuee Kit Garcia was registered to the center', '00006', '2026-06-04 18:12:05');
+(28, 'EvacC00002', 'EVACUEE_ADDED', 'Evacuee Kit Garcia was registered to the center', '00006', '2026-06-04 18:12:05'),
+(29, 'EvacC00002', 'EVACUEE_STATUS_CHANGE', 'Evacuee Kit Garcia status changed from Active to Departed', '00006', '2026-06-04 20:24:49'),
+(30, 'EvacC00002', 'EVACUEE_STATUS_CHANGE', 'Evacuee Kit Garcia status changed from Active to Departed', '00006', '2026-06-04 20:24:49'),
+(31, 'EvacC00002', 'EVACUEE_STATUS_CHANGE', 'Evacuee Kit Garcia status changed from Departed to Active', '00006', '2026-06-04 20:24:58'),
+(32, 'EvacC00002', 'EVACUEE_STATUS_CHANGE', 'Evacuee Kit Garcia status changed from Departed to Active', '00006', '2026-06-04 20:24:58');
 
 -- --------------------------------------------------------
 
@@ -269,7 +273,7 @@ INSERT INTO `evacuees` (`id`, `evacuee_id`, `registration_date`, `last_name`, `f
 (1, 'Evac00001', '2026-05-26', 'Garcia', 'Kit', '', '', '', 'Male', NULL, NULL, '', '', '', '', '', '', 0, 0, 0, 0, 0, '', '', '', '', '', NULL, '2026-05-26', '2026-06-04', 'Departed', '00006', '2026-05-26 14:52:14', NULL),
 (2, 'Evac00002', '2026-05-30', 'xc', 'vxc', '', '', '', 'Other', NULL, NULL, '', '', '', '', '', '', 0, 0, 0, 0, 0, '', '', '', '', '', NULL, '2026-05-30', '2026-06-04', 'Departed', '00006', '2026-05-30 14:10:44', '00006'),
 (3, 'Evac00003', '2026-05-31', 'Garcia', 'john', '', '', '', 'Male', NULL, NULL, '', '', '', '', '', '', 0, 0, 0, 0, 0, '', '', '', '', '', NULL, '2026-05-31', '2026-05-31', 'Departed', '00006', '2026-05-31 14:27:44', '00006'),
-(4, 'Evac00004', '2026-06-04', 'Garcia', 'Kit', '', '', '', 'Male', NULL, NULL, '', '', '', '', '', '', 0, 0, 1, 0, 0, 'Other', 'Good', 'None', '', '', 'EvacC00002', '2026-06-04', NULL, 'Active', '00006', '2026-06-04 10:12:05', '00006');
+(4, 'Evac00004', '2026-06-04', 'Garcia', 'Kit', '', '', '', 'Male', NULL, NULL, '', '', '', '', '', '', 0, 0, 1, 0, 0, 'Other', 'Good', 'None', '', '', 'EvacC00002', '2026-06-04', '2026-06-04', 'Active', '00006', '2026-06-04 10:12:05', '00006');
 
 --
 -- Triggers `evacuees`
@@ -366,7 +370,9 @@ INSERT INTO `history` (`id`, `center_id`, `center_name`, `category`, `status`, `
 (21, 'EvacC00002', 'talaga?', 'Primary', 'Active', 'Alijis', 'Bacolod', 'Negros Occidental', 'Alijis bcd', 400, 400, 2, '', '', NULL, '', '', 6, 10.65656800, 122.96001400, 400, '', '', '2026-06-03 14:44:07', 'Updated', '00006'),
 (22, 'EvacC00002', 'Alijis Hall', 'School', 'Active', 'Alijis', 'Bacolod', 'Negros Occidental', 'Alijis bcd', 400, 400, 2, '', '', NULL, '', '', 6, 10.65656800, 122.96001400, 400, '', '', '2026-06-04 17:27:45', 'Updated', '00006'),
 (23, 'EvacC00001', 'Banago Elementary School I', 'School', 'Inactive', '', '', 'Negros Occidental', '', 300, 0, 0, '', '', NULL, '', '', 6, NULL, NULL, 300, '', '', '2026-06-04 17:28:15', 'Updated', NULL),
-(24, 'EvacC00002', 'Alijis Hall', 'School', 'Active', 'Alijis', 'Bacolod', 'Negros Occidental', 'Alijis bcd', 400, 400, 0, '', '', NULL, '', '', 6, 10.65656800, 122.96001400, 400, '', '', '2026-06-04 17:28:56', 'Updated', '00006');
+(24, 'EvacC00002', 'Alijis Hall', 'School', 'Active', 'Alijis', 'Bacolod', 'Negros Occidental', 'Alijis bcd', 400, 400, 0, '', '', NULL, '', '', 6, 10.65656800, 122.96001400, 400, '', '', '2026-06-04 17:28:56', 'Updated', '00006'),
+(25, 'EvacC00002', 'Alijis Hall', 'Community Center / Multipurpose Hall', 'Active', 'Alijis', 'Bacolod', 'Negros Occidental', 'Alijis bcd', 400, 400, 1, '', '', NULL, '', '', 6, 10.65656800, 122.96001400, 400, '', '', '2026-06-04 20:13:04', 'Updated', '00006'),
+(26, 'EvacC00002', 'Alijis Hall', 'Community Center / Multipurpose Hall', 'Active', 'Alijis', 'Bacolod', 'Negros Occidental', 'Alijis bcd', 400, 400, 1, '123', '', NULL, '', '', 6, 10.65656800, 122.96001400, 400, '', '', '2026-06-04 20:25:14', 'Updated', '00006');
 
 -- --------------------------------------------------------
 
@@ -420,7 +426,8 @@ CREATE TABLE `lgu_users` (
 
 INSERT INTO `lgu_users` (`id`, `lgu_id`, `lgu_office_name`, `office_email_address`, `office_type`, `province`, `region`, `position_role`, `first_name`, `last_name`, `office_number`, `contact_number`, `password`, `registration_date`, `status`) VALUES
 (2, 'LGU00001', 'based', 'allen@gmail.com', 'municipal', 'negros-occidental', 'region-vi', 'pretty', 'allen', 'sarmiento', '09491744739', NULL, 'me', '2026-05-26 04:54:08', 'Pending'),
-(3, 'LGU00003', 'Bacolod', '123@gmail.com', 'city', 'negros-occidental', 'region-vi', 'Okay', 'john', 'Garcia', '12312321', NULL, '123', '2026-05-26 08:42:47', 'Pending');
+(3, 'LGU00003', 'Bacolod', '123@gmail.com', 'city', 'negros-occidental', 'region-vi', 'Okay', 'john', 'Garcia', '12312321', NULL, '123', '2026-05-26 08:42:47', 'Pending'),
+(4, '00007', 'asd', 'asdfgh@gmail.com', 'municipal', 'negros-occidental', 'region-vi', 'Center Manager', 'QWER', 'ASDF', '12', '12', '$2y$10$jpBgeZuW7e/qb0lbEyQZUu1fbRljsOAPSbiM/nJWPVwh69NMhLKny', '2026-06-04 16:46:18', 'Pending');
 
 -- --------------------------------------------------------
 
@@ -464,7 +471,7 @@ CREATE TABLE `userrights` (
   `id` int NOT NULL,
   `userid` varchar(5) NOT NULL,
   `email` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
-  `password` varchar(20) NOT NULL,
+  `password` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `Type` varchar(10) NOT NULL,
   `last_login` datetime DEFAULT NULL,
   `status` varchar(20) DEFAULT 'Active'
@@ -476,10 +483,11 @@ CREATE TABLE `userrights` (
 
 INSERT INTO `userrights` (`id`, `userid`, `email`, `password`, `Type`, `last_login`, `status`) VALUES
 (1, '00001', 'sample@gmail.com', 'user', '', '2026-05-26 08:41:12', 'Active'),
-(7, '00003', 'allen@gmail.com', 'me', 'lgu', '2026-06-03 06:08:11', 'Active'),
+(7, '00003', 'allen@gmail.com', 'me', 'lgu', '2026-06-04 11:29:59', 'Active'),
 (8, '00004', 'lancesarmiento40@gmail.com', '123', 'public', '2026-05-26 07:39:47', 'Active'),
-(9, '00005', 'capkeith43@gmail.com', '123', 'public', '2026-06-02 14:58:50', 'Active'),
-(10, '00006', '123@gmail.com', '123', 'lgu', '2026-06-03 06:42:09', 'Active');
+(9, '00005', 'capkeith43@gmail.com', '123', 'public', '2026-06-04 11:29:35', 'Active'),
+(10, '00006', '123@gmail.com', '123', 'lgu', '2026-06-04 13:15:27', 'Active'),
+(11, '00007', '1arveehayahay25@gmail.com', '$2y$10$jpBgeZuW7e/qb0lbEyQZUu1fbRljsOAPSbiM/nJWPVwh69NMhLKny', 'lgu', NULL, 'Active');
 
 -- --------------------------------------------------------
 
@@ -607,7 +615,7 @@ ALTER TABLE `centers`
 -- AUTO_INCREMENT for table `center_history`
 --
 ALTER TABLE `center_history`
-  MODIFY `history_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
+  MODIFY `history_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
 
 --
 -- AUTO_INCREMENT for table `center_status_history`
@@ -631,7 +639,7 @@ ALTER TABLE `evacuees`
 -- AUTO_INCREMENT for table `history`
 --
 ALTER TABLE `history`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
 
 --
 -- AUTO_INCREMENT for table `lgu_center_assignments`
@@ -643,7 +651,7 @@ ALTER TABLE `lgu_center_assignments`
 -- AUTO_INCREMENT for table `lgu_users`
 --
 ALTER TABLE `lgu_users`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `personal_users`
@@ -655,7 +663,7 @@ ALTER TABLE `personal_users`
 -- AUTO_INCREMENT for table `userrights`
 --
 ALTER TABLE `userrights`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- Constraints for dumped tables
