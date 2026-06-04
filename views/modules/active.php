@@ -5,7 +5,6 @@ $allCenters = ModelCenters::mdlGetAllCenters();
 
 <div class="home-dashboard">
 <div class="container-fluid flex-grow-1 container-p-y">
-    <!-- Statistics Cards -->
     <div class="row g-3 mb-4">
         <div class="col-sm-6 col-xl-3">
             <div class="card shadow-sm h-100 stats-card">
@@ -64,7 +63,6 @@ $allCenters = ModelCenters::mdlGetAllCenters();
         </div>
     </div>
 
-    <!-- Centers Table -->
     <div class="row">
         <div class="col-12">
             <div class="card">
@@ -77,6 +75,43 @@ $allCenters = ModelCenters::mdlGetAllCenters();
                         <a href="?route=active" class="btn btn-secondary btn-sm">
                             <i class="fa fa-refresh"></i> Refresh
                         </a>
+                    </div>
+                </div>
+                
+                <div class="card-body border-bottom bg-light pb-3 pt-3">
+                    <div class="row g-2">
+                        <div class="col-md-5">
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text bg-white"><i class="fa fa-search text-muted"></i></span>
+                                <input type="text" id="searchCenterFilter" class="form-control" placeholder="Search by Center Name or Location...">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <select id="statusFilter" class="form-select form-select-sm">
+                                <option value="">All Statuses</option>
+                                <option value="Active">Active</option>
+                                <option value="Inactive">Inactive</option>
+                                <option value="Full">Full</option>
+                                <option value="Under Maintenance">Under Maintenance</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select id="categoryFilter" class="form-select form-select-sm">
+                                <option value="">All Categories</option>
+                                <option value="School">School</option>
+                                <option value="Gymnasium / Sports Complex">Gymnasium / Sports Complex</option>
+                                <option value="Church">Church</option>
+                                <option value="Community Center / Multipurpose Hall">Community Center / Multipurpose Hall</option>
+                                <option value="Covered Court">Covered Court</option>
+                                <option value="Private Facility / Commercial Building">Private Facility / Commercial Building</option>
+                                <option value="Open Field / Evacuation Ground">Open Field / Evacuation Ground</option>
+                            </select>
+                        </div>
+                        <div class="col-md-1">
+                            <button type="button" id="resetCenterFilters" class="btn btn-sm btn-outline-secondary w-100" title="Reset Filters">
+                                <i class="fa fa-undo"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
                 <div class="card-body p-0">
@@ -163,11 +198,9 @@ $allCenters = ModelCenters::mdlGetAllCenters();
                                             </button>
                                         </span>
                                     </tr>
-                                    <!-- Expanded details row -->
                                     <tr class="details-row-<?php echo $center['center_id']; ?> details-row" style="display: none;">
                                         <td colspan="8" class="p-0">
                                             <div class="card-body bg-light p-3">
-                                                <!-- Action Buttons Row -->
                                                 <div class="row mb-3">
                                                     <div class="col-12">
                                                         <div class="btn-group" role="group">
@@ -209,7 +242,6 @@ $allCenters = ModelCenters::mdlGetAllCenters();
                                                 </div>
                                                 
                                                 <div class="row">
-                                                    <!-- Center Information Panel -->
                                                     <div class="col-md-4">
                                                         <div class="card mb-3">
                                                             <div class="card-header bg-primary text-white">
@@ -267,7 +299,6 @@ $allCenters = ModelCenters::mdlGetAllCenters();
                                                         </div>
                                                     </div>
                                                     
-                                                    <!-- Evacuee List Panel -->
                                                     <div class="col-md-4">
                                                         <div class="card mb-3">
                                                             <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
@@ -292,7 +323,6 @@ $allCenters = ModelCenters::mdlGetAllCenters();
                                                         </div>
                                                     </div>
                                                     
-                                                    <!-- Activity History Panel -->
                                                     <div class="col-md-4">
                                                         <div class="card mb-3">
                                                             <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
@@ -335,7 +365,6 @@ $allCenters = ModelCenters::mdlGetAllCenters();
 </div>
 </div>
 
-<!-- Change Status Modal -->
 <div class="modal fade" id="changeStatusModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -369,7 +398,6 @@ $allCenters = ModelCenters::mdlGetAllCenters();
                         </select>
                     </div>
                     
-                    <!-- Reactivation Message - Clean slate -->
                     <div class="mb-3" id="reactivate_message" style="display: none;">
                         <div class="alert alert-success">
                             <i class="fa fa-check-circle"></i> 
@@ -378,7 +406,6 @@ $allCenters = ModelCenters::mdlGetAllCenters();
                         </div>
                     </div>
                     
-                    <!-- Deactivation Warning -->
                     <div class="mb-3" id="deactivate_warning" style="display: none;">
                         <div class="alert alert-warning">
                             <i class="fa fa-exclamation-triangle"></i> 
@@ -386,7 +413,6 @@ $allCenters = ModelCenters::mdlGetAllCenters();
                         </div>
                     </div>
                     
-                    <!-- Full Status Info -->
                     <div class="mb-3" id="full_status_info" style="display: none;">
                         <div class="alert alert-info">
                             <i class="fa fa-info-circle"></i> 
@@ -403,7 +429,6 @@ $allCenters = ModelCenters::mdlGetAllCenters();
     </div>
 </div>
 
-<!-- Add Evacuee Modal -->
 <div class="modal fade" id="addEvacueeModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
@@ -622,7 +647,6 @@ $allCenters = ModelCenters::mdlGetAllCenters();
     </div>
 </div>
 
-<!-- Edit Evacuee Status Modal -->
 <div class="modal fade" id="editEvacueeModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -679,7 +703,6 @@ $allCenters = ModelCenters::mdlGetAllCenters();
     </div>
 </div>
 
-<!-- Edit Center Modal -->
 <div class="modal fade" id="editCenterModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
@@ -817,7 +840,6 @@ $allCenters = ModelCenters::mdlGetAllCenters();
     </div>
 </div>
 
-<!-- Assign LGU Modal -->
 <div class="modal fade" id="assignLGMModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -865,7 +887,6 @@ $allCenters = ModelCenters::mdlGetAllCenters();
     </div>
 </div>
 
-<!-- History Modal -->
 <div class="modal fade" id="historyModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content">
@@ -1081,6 +1102,74 @@ $allCenters = ModelCenters::mdlGetAllCenters();
 <script>
 $(document).ready(function() {
     var evacueeDataStore = {};
+    
+    // --- SEARCH AND FILTER LOGIC FOR CENTERS ---
+    function applyCenterFilters() {
+        var searchTerm = $('#searchCenterFilter').val().toLowerCase().trim();
+        var statusFilter = $('#statusFilter').val().toLowerCase();
+        var categoryFilter = $('#categoryFilter').val().toLowerCase();
+        var visibleCount = 0;
+
+        $('.center-row').each(function() {
+            var row = $(this);
+            var centerId = row.data('center-id');
+            var detailsRow = $('.details-row-' + centerId);
+            
+            // Extract column text data
+            var centerName = row.find('td:nth-child(2)').text().toLowerCase();
+            var category = row.find('td:nth-child(3)').text().toLowerCase();
+            var location = row.find('td:nth-child(4)').text().toLowerCase();
+            
+            // Get status by grabbing just the text (excluding the pencil icon)
+            var status = row.find('td:nth-child(7) .badge').clone().children().remove().end().text().trim().toLowerCase();
+
+            // Evaluate conditions
+            var matchesSearch = centerName.includes(searchTerm) || location.includes(searchTerm);
+            var matchesStatus = (statusFilter === "") || (status === statusFilter);
+            var matchesCategory = (categoryFilter === "") || (category === categoryFilter);
+
+            // Toggle visibility based on conditions
+            if (matchesSearch && matchesStatus && matchesCategory) {
+                row.show();
+                visibleCount++;
+            } else {
+                row.hide();
+                // If a row is hidden, force hide its details row and reset the arrow icon
+                if (detailsRow.is(':visible')) {
+                    detailsRow.hide();
+                    row.find('.expand-icon i').removeClass('fa-chevron-down').addClass('fa-chevron-right');
+                }
+            }
+        });
+
+        // Handle "No Results" message
+        // if (visibleCount === 0) {
+        //     if ($('#noCentersFound').length === 0) {
+        //         $('#centersTable tbody').append(
+        //             '<tr id="noCentersFound"><td colspan="8" class="text-center py-4 text-muted">' +
+        //             '<i class="fa fa-info-circle mb-2" style="font-size: 24px;"></i><br>' +
+        //             'No evacuation centers match your search criteria.</td></tr>'
+        //         );
+        //     } else {
+        //         $('#noCentersFound').show();
+        //     }
+        // } else {
+        //     $('#noCentersFound').hide();
+        // }
+    }
+
+    // Bind event listeners to the inputs
+    $('#searchCenterFilter').on('input', applyCenterFilters);
+    $('#statusFilter, #categoryFilter').on('change', applyCenterFilters);
+    
+    // Reset button functionality
+    $('#resetCenterFilters').on('click', function() {
+        $('#searchCenterFilter').val('');
+        $('#statusFilter').val('');
+        $('#categoryFilter').val('');
+        applyCenterFilters();
+    });
+    // -------------------------------------------
     
     function updateStatistics() {
         $.ajax({
