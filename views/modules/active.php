@@ -24,7 +24,7 @@ $allCenters = ModelCenters::mdlGetAllCenters();
             <div class="card shadow-sm h-100 stats-card">
                 <div class="card-body d-flex justify-content-between align-items-center">
                     <div>
-                        <p class="mb-1 text-uppercase text-success fw-bold">Total Capacity</p>
+                        <p class="mb-1 text-uppercase text-success fw-bold">Active Capacity</p>
                         <h3 class="mb-0"><?php echo number_format($summary['total_capacity']); ?></h3>
                     </div>
                     <div class="stats-card-icon stats-card-icon-success text-white rounded-3">
@@ -80,6 +80,11 @@ $allCenters = ModelCenters::mdlGetAllCenters();
                 
                 <div class="card-body border-bottom bg-light pb-3 pt-3">
                     <div class="row g-2">
+                    <div class="col-md-1">
+                        <button type="button" id="resetCenterFilters" class="btn btn-sm btn-outline-secondary w-100" title="Reset Filters">
+                            <i class="fa fa-undo"></i> Clear
+                        </button>
+                    </div>
                         <div class="col-md-5">
                             <div class="input-group input-group-sm">
                                 <span class="input-group-text bg-white"><i class="fa fa-search text-muted"></i></span>
@@ -106,12 +111,7 @@ $allCenters = ModelCenters::mdlGetAllCenters();
                                 <option value="Private Facility / Commercial Building">Private Facility / Commercial Building</option>
                                 <option value="Open Field / Evacuation Ground">Open Field / Evacuation Ground</option>
                             </select>
-                        </div>
-                        <div class="col-md-1">
-                            <button type="button" id="resetCenterFilters" class="btn btn-sm btn-outline-secondary w-100" title="Reset Filters">
-                                <i class="fa fa-undo"></i>
-                            </button>
-                        </div>
+                        </div>                        
                     </div>
                 </div>
                 <div class="card-body p-0">

@@ -23,9 +23,7 @@ $base_url = '/evacfinder/';
         </a>
       </li>
 
-      <?php if(isset($_SESSION["loggedIn"]) && $_SESSION["loggedIn"] == "ok"): ?>
-        <!-- Protected menu items - Only for logged in users -->
-        
+      
         <!-- Dashboard (Home) -->
         <li>
           <a class="ai-icon" href="<?php echo $base_url; ?>?route=home" aria-expanded="false">
@@ -39,7 +37,17 @@ $base_url = '/evacfinder/';
           </a>
         </li>
 
-        <!-- Active Centers (This shows the list of centers with Add buttons) -->
+      <?php if(isset($_SESSION["loggedIn"]) && $_SESSION["loggedIn"] == "ok"): ?>
+        
+        <?php
+        // Get account type from session (now set during login)
+        $accountType = isset($_SESSION['user_type']) ? $_SESSION['user_type'] : '';
+        
+        // Display full menu only for LGU accounts
+        if ($accountType === 'lgu'):
+        ?>
+
+        <!-- Active Centers -->
         <li>
           <a class="ai-icon" href="<?php echo $base_url; ?>?route=active" aria-expanded="false">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
@@ -90,7 +98,10 @@ $base_url = '/evacfinder/';
           </a>
         </li>
         <?php endif; ?>
-      <?php endif; ?>
+        
+        <?php endif; // End of LGU account check ?>
+        
+      <?php endif; // End of logged in check ?>
 
     </ul>
   </div>
