@@ -75,6 +75,20 @@ $base_url = '/evacfinder/';
           </a>
         </li>
 
+        <!-- Inactivation Reports Archive -->
+        <!-- <li>
+    <a class="ai-icon" href="<?php echo $base_url; ?>?route=inactivation_reports" aria-expanded="false">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+            viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" class="feather feather-archive">
+            <polyline points="21 8 21 21 3 21 3 8"></polyline>
+            <rect x="1" y="3" width="22" height="5" rx="2" ry="2"></rect>
+            <line x1="10" y1="12" x2="14" y2="12"></line>
+        </svg>
+        <span class="nav-text">Inactivation Reports</span>
+    </a>
+</li> -->
+
         <!-- User Access (hidden if restricted) -->
         <?php
           $showUserAccess = true;

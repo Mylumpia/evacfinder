@@ -178,6 +178,7 @@
         'announcement' => ['announcement.js'],
         'active' => ['active.js']
         
+        
       ];
       if(array_key_exists($route, $routeScripts)){
         foreach($routeScripts[$route] as $script){
