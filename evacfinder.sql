@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Jun 06, 2026 at 06:08 PM
+-- Generation Time: Jun 06, 2026 at 07:28 PM
 -- Server version: 8.4.3
 -- PHP Version: 8.3.30
 
@@ -104,7 +104,7 @@ CREATE TABLE `centers` (
 
 INSERT INTO `centers` (`id`, `center_id`, `center_name`, `category`, `status`, `barangay`, `city`, `province`, `address`, `capacity`, `max_persons`, `current_occupants`, `contact_number`, `contact_person`, `alternate_contact`, `date_established`, `facilities`, `hazard_type`, `remarks`, `encodedby`, `latitude`, `longitude`, `estimated_capacity`, `accessibility`, `available_facilities`, `assigned_lgu_user_id`, `water_supply`, `electricity`, `num_rooms`, `has_wifi`, `has_canteen`, `has_medical`, `restrooms_count`) VALUES
 (1, 'EvacC00001', 'Banago Elementary School I', 'School', 'Inactive', '', '', 'Negros Occidental', '', 300, 0, 0, '', '', '', NULL, '', '', '', 1, NULL, NULL, 300, '', '', NULL, NULL, NULL, NULL, 0, 0, 0, NULL),
-(2, 'EvacC00002', 'Alijis Hall', 'Community Center / Multipurpose Hall', 'Inactive', 'Alijis', 'Bacolod', 'Negros Occidental', 'Alijis bcd', 500, 400, 1, '123', '', '', NULL, '', '', '\n[Activated on 2026-06-06 20:37:10]: \n[Activated on 2026-06-06 20:37:10]: \n[Activated on 2026-06-06 20:37:10]: \n[Activated on 2026-06-07 01:27:11] Capacity set to: 500 | Notes: ', 6, 10.65656800, 122.96001400, 400, '', '', '00006', 'Available', 'Available', 1, 1, 1, 1, 1);
+(2, 'EvacC00002', 'Alijis Hall', 'Community Center / Multipurpose Hall', 'Active', 'Alijis', 'Bacolod', 'Negros Occidental', 'Alijis bcd', 500, 400, 1, '123', '', '', NULL, '', '', '\n[Activated on 2026-06-06 20:37:10]: \n[Activated on 2026-06-06 20:37:10]: \n[Activated on 2026-06-06 20:37:10]: \n[Activated on 2026-06-07 01:27:11] Capacity set to: 500 | Notes: \n[Activated on 2026-06-07 02:50:57] Capacity set to: 500 | Notes: ', 6, 10.65656800, 122.96001400, 400, '', '', '00006', 'Available', 'Available', 1, 1, 1, 1, 1);
 
 --
 -- Triggers `centers`
@@ -172,7 +172,17 @@ INSERT INTO `center_history` (`history_id`, `center_id`, `action_type`, `descrip
 (38, 'EvacC00002', 'CENTER_INACTIVATED', 'Center manually inactivated. 0 evacuee(s) were marked as departed. Active evacuees before inactivation: 0', '00006', '2026-06-07 01:48:13'),
 (39, 'EvacC00002', 'CENTER_INACTIVATED', 'Center manually inactivated. 0 evacuee(s) were marked as departed. Active evacuees before inactivation: 0', '00006', '2026-06-07 02:03:31'),
 (40, 'EvacC00002', 'CENTER_INACTIVATED', 'Center manually inactivated. 0 evacuee(s) were marked as departed. Active evacuees before inactivation: 0', '00006', '2026-06-07 02:05:13'),
-(41, 'EvacC00002', 'CENTER_INACTIVATED', 'Center manually inactivated. 0 evacuee(s) were marked as departed. Active evacuees before inactivation: 0', '00006', '2026-06-07 02:07:23');
+(41, 'EvacC00002', 'CENTER_INACTIVATED', 'Center manually inactivated. 0 evacuee(s) were marked as departed. Active evacuees before inactivation: 0', '00006', '2026-06-07 02:07:23'),
+(42, 'EvacC00002', 'CENTER_INACTIVATED', 'Center manually inactivated. No evacuees to clear. Active evacuees before inactivation: 0', '00006', '2026-06-07 02:51:07'),
+(43, 'EvacC00002', 'CENTER_INACTIVATED', 'Center manually inactivated. No evacuees to clear. Active evacuees before inactivation: 0', '00006', '2026-06-07 03:04:17'),
+(44, 'EvacC00002', 'EVACUEE_STATUS_CHANGE', 'Evacuee Kit Garcia status changed from Departed to Departed', '00006', '2026-06-07 03:07:50'),
+(45, 'EvacC00002', 'CENTER_INACTIVATED', 'Center manually inactivated. No evacuees to clear. Active evacuees before inactivation: 0', '00006', '2026-06-07 03:10:14'),
+(46, 'EvacC00002', 'CENTER_UPDATED', 'Center status changed from Inactive to Active. Center reactivated for new operations.', '00006', '2026-06-07 03:16:35'),
+(47, 'EvacC00002', 'CENTER_UPDATED', 'Center status changed from Active to Active. ', '00006', '2026-06-07 03:16:36'),
+(48, 'EvacC00002', 'CENTER_UPDATED', 'Center status changed from Active to Active. ', '00006', '2026-06-07 03:16:36'),
+(49, 'EvacC00002', 'CENTER_INACTIVATED', 'Center manually inactivated. No evacuees to clear. Active evacuees before inactivation: 0', '00006', '2026-06-07 03:16:41'),
+(50, 'EvacC00002', 'CENTER_UPDATED', 'Center status changed from Inactive to Active. Center reactivated for new operations.', '00006', '2026-06-07 03:19:19'),
+(51, 'EvacC00002', 'EVACUEE_ADDED', 'Evacuee 213 123 was registered to the center', '00006', '2026-06-07 03:19:34');
 
 -- --------------------------------------------------------
 
@@ -221,7 +231,10 @@ INSERT INTO `center_schedules` (`id`, `schedule_id`, `center_id`, `scheduled_dat
 (14, 'SCH00014', 'EvacC00002', '2026-06-07 03:01:00', 'Cancelled', '{\"capacity\":\"500\",\"water_supply\":\"Available\",\"electricity\":\"Available\",\"num_rooms\":\"1\",\"has_wifi\":1,\"has_canteen\":1,\"has_medical\":1,\"restrooms_count\":\"1\",\"notes\":\"\"}', 'Available', 'Available', 1, 1, 1, 1, 1, '', '00006', '2026-06-07 02:01:51', NULL),
 (15, 'SCH00015', 'EvacC00002', '2026-06-07 02:03:00', 'Executed', '{\"capacity\":\"500\",\"water_supply\":\"Limited\",\"electricity\":\"Available\",\"num_rooms\":\"1\",\"has_wifi\":1,\"has_canteen\":1,\"has_medical\":1,\"restrooms_count\":\"1\",\"notes\":\"\"}', 'Limited', 'Available', 1, 1, 1, 1, 1, '', '00006', '2026-06-07 02:02:13', '2026-06-07 02:03:25'),
 (16, 'SCH00016', 'EvacC00002', '2026-06-07 02:05:00', 'Executed', '{\"capacity\":\"500\",\"water_supply\":\"Available\",\"electricity\":\"Available\",\"num_rooms\":\"1\",\"has_wifi\":1,\"has_canteen\":1,\"has_medical\":1,\"restrooms_count\":\"1\",\"notes\":\"\"}', 'Available', 'Available', 1, 1, 1, 1, 1, '', '00006', '2026-06-07 02:04:09', '2026-06-07 02:05:04'),
-(17, 'SCH00017', 'EvacC00002', '2026-06-07 02:07:00', 'Executed', '{\"capacity\":\"500\",\"water_supply\":\"Available\",\"electricity\":\"Available\",\"num_rooms\":\"1\",\"has_wifi\":1,\"has_canteen\":1,\"has_medical\":1,\"restrooms_count\":\"1\",\"notes\":\"\"}', 'Available', 'Available', 1, 1, 1, 1, 1, '', '00006', '2026-06-07 02:06:19', '2026-06-07 02:07:19');
+(17, 'SCH00017', 'EvacC00002', '2026-06-07 02:07:00', 'Executed', '{\"capacity\":\"500\",\"water_supply\":\"Available\",\"electricity\":\"Available\",\"num_rooms\":\"1\",\"has_wifi\":1,\"has_canteen\":1,\"has_medical\":1,\"restrooms_count\":\"1\",\"notes\":\"\"}', 'Available', 'Available', 1, 1, 1, 1, 1, '', '00006', '2026-06-07 02:06:19', '2026-06-07 02:07:19'),
+(18, 'SCH00018', 'EvacC00002', '2026-06-07 02:50:00', 'Executed', '{\"capacity\":\"500\",\"water_supply\":\"Available\",\"electricity\":\"Available\",\"num_rooms\":\"1\",\"has_wifi\":1,\"has_canteen\":1,\"has_medical\":1,\"restrooms_count\":\"1\",\"notes\":\"\"}', 'Available', 'Available', 1, 1, 1, 1, 1, '', '00006', '2026-06-07 02:48:55', '2026-06-07 02:50:57'),
+(19, 'SCH00019', 'EvacC00002', '2026-06-07 03:04:00', 'Executed', '{\"capacity\":\"500\",\"water_supply\":\"Available\",\"electricity\":\"Available\",\"num_rooms\":\"1\",\"has_wifi\":1,\"has_canteen\":1,\"has_medical\":1,\"restrooms_count\":\"1\",\"notes\":\"\"}', 'Available', 'Available', 1, 1, 1, 1, 1, '', '00006', '2026-06-07 03:02:05', '2026-06-07 03:04:03'),
+(20, 'SCH00020', 'EvacC00002', '2026-06-07 03:10:00', 'Executed', '{\"capacity\":\"500\",\"water_supply\":\"Available\",\"electricity\":\"Available\",\"num_rooms\":\"1\",\"has_wifi\":1,\"has_canteen\":1,\"has_medical\":1,\"restrooms_count\":\"1\",\"notes\":\"\"}', 'Available', 'Available', 1, 1, 1, 1, 1, '', '00006', '2026-06-07 03:08:04', '2026-06-07 03:10:09');
 
 -- --------------------------------------------------------
 
@@ -285,7 +298,24 @@ INSERT INTO `center_status_history` (`history_id`, `center_id`, `old_status`, `n
 (40, 'EvacC00002', 'Active', 'Inactive', '00006', '2026-06-07 02:05:13'),
 (41, 'EvacC00002', 'Inactive', 'Active', NULL, '2026-06-07 02:07:19'),
 (42, 'EvacC00002', 'Active', 'Inactive', NULL, '2026-06-07 02:07:23'),
-(43, 'EvacC00002', 'Active', 'Inactive', '00006', '2026-06-07 02:07:23');
+(43, 'EvacC00002', 'Active', 'Inactive', '00006', '2026-06-07 02:07:23'),
+(44, 'EvacC00002', 'Inactive', 'Active', NULL, '2026-06-07 02:50:57'),
+(45, 'EvacC00002', 'Active', 'Inactive', NULL, '2026-06-07 02:51:07'),
+(46, 'EvacC00002', 'Active', 'Inactive', '00006', '2026-06-07 02:51:07'),
+(47, 'EvacC00002', 'Inactive', 'Active', NULL, '2026-06-07 03:04:03'),
+(48, 'EvacC00002', 'Active', 'Inactive', NULL, '2026-06-07 03:04:17'),
+(49, 'EvacC00002', 'Active', 'Inactive', '00006', '2026-06-07 03:04:17'),
+(50, 'EvacC00002', 'Inactive', 'Active', NULL, '2026-06-07 03:10:09'),
+(51, 'EvacC00002', 'Active', 'Inactive', NULL, '2026-06-07 03:10:14'),
+(52, 'EvacC00002', 'Active', 'Inactive', '00006', '2026-06-07 03:10:14'),
+(53, 'EvacC00002', 'Inactive', 'Active', NULL, '2026-06-07 03:16:35'),
+(54, 'EvacC00002', 'Inactive', 'Active', '00006', '2026-06-07 03:16:35'),
+(55, 'EvacC00002', 'Active', 'Active', '00006', '2026-06-07 03:16:36'),
+(56, 'EvacC00002', 'Active', 'Active', '00006', '2026-06-07 03:16:36'),
+(57, 'EvacC00002', 'Active', 'Inactive', NULL, '2026-06-07 03:16:40'),
+(58, 'EvacC00002', 'Active', 'Inactive', '00006', '2026-06-07 03:16:41'),
+(59, 'EvacC00002', 'Inactive', 'Active', NULL, '2026-06-07 03:19:19'),
+(60, 'EvacC00002', 'Inactive', 'Active', '00006', '2026-06-07 03:19:19');
 
 -- --------------------------------------------------------
 
@@ -365,7 +395,8 @@ INSERT INTO `evacuees` (`id`, `evacuee_id`, `registration_date`, `last_name`, `f
 (2, 'Evac00002', '2026-05-30', 'xc', 'vxc', '', '', '', 'Other', NULL, NULL, '', '', '', '', '', '', 0, 0, 0, 0, 0, '', '', '', '', '', NULL, '2026-05-30', '2026-06-04', 'Departed', '00006', '2026-05-30 14:10:44', '00006'),
 (3, 'Evac00003', '2026-05-31', 'Garcia', 'john', '', '', '', 'Male', NULL, NULL, '', '', '', '', '', '', 0, 0, 0, 0, 0, '', '', '', '', '', NULL, '2026-05-31', '2026-05-31', 'Departed', '00006', '2026-05-31 14:27:44', '00006'),
 (4, 'Evac00004', '2026-06-04', 'Garcia', 'Kit', '', '', '', 'Male', NULL, NULL, '', '', '', '', '', '', 0, 0, 1, 0, 0, 'Other', 'Good', 'None', '', '', NULL, '2026-06-04', '2026-06-04', 'Active', '00006', '2026-06-04 10:12:05', '00006'),
-(5, 'Evac00005', '2026-06-06', 'Garcia', 'Kit', '', '', '', 'Female', NULL, NULL, '', '', '', '', '', '', 1, 1, 1, 1, 1, '', '', '', '', '', 'EvacC00002', '2026-06-06', '2026-06-07', 'Departed', '00006', '2026-06-06 16:30:24', '00006');
+(5, 'Evac00005', '2026-06-06', 'Garcia', 'Kit', '', '', '', 'Female', NULL, NULL, '', '', '', '', '', '', 1, 1, 1, 1, 1, '', '', '', '', '', 'EvacC00002', '2026-06-06', '2026-06-07', 'Departed', '00006', '2026-06-06 16:30:24', '00006'),
+(6, 'Evac00006', '2026-06-06', '123', '213', '', '', '', 'Male', NULL, NULL, '', '', '', '', '', '', 1, 1, 1, 1, 1, '', '', '', '', '', 'EvacC00002', '2026-06-06', NULL, 'Active', '00006', '2026-06-06 19:19:34', '00006');
 
 --
 -- Triggers `evacuees`
@@ -579,7 +610,7 @@ CREATE TABLE `saved_reports` (
 --
 
 INSERT INTO `saved_reports` (`id`, `report_id`, `center_id`, `center_name`, `report_type`, `file_path`, `generated_by`, `generated_at`) VALUES
-(1, 'RPT_20260607_002835_6a244ab3b347c', 'EvacC00002', 'Alijis Hall', 'Inactivation', 'inactivation_report_EvacC00002_2026-06-07_00-28-35.html', '00006', '2026-06-07 00:28:35');
+(5, 'RPT-00001', 'EvacC00002', 'Alijis Hall', 'Inactivation', 'reports/inactivation_reports/RPT-00001.html', '00006', '2026-06-07 03:16:43');
 
 -- --------------------------------------------------------
 
@@ -606,7 +637,7 @@ INSERT INTO `userrights` (`id`, `userid`, `email`, `password`, `Type`, `last_log
 (7, '00003', 'allen@gmail.com', 'me', 'lgu', '2026-06-04 11:29:59', 'Active'),
 (8, '00004', 'lancesarmiento40@gmail.com', '123', 'public', '2026-05-26 07:39:47', 'Active'),
 (9, '00005', 'capkeith43@gmail.com', '123', 'public', '2026-06-04 11:29:35', 'Active'),
-(10, '00006', '123@gmail.com', '$2y$10$cquRr.F/ktHdBlYnw2vkA.0oCDbkkYzzpKm2tK/CgJabJwaQ4N5ue', 'lgu', '2026-06-06 17:51:28', 'Active'),
+(10, '00006', '123@gmail.com', '$2y$10$cquRr.F/ktHdBlYnw2vkA.0oCDbkkYzzpKm2tK/CgJabJwaQ4N5ue', 'lgu', '2026-06-06 19:07:38', 'Active'),
 (11, '00007', '1arveehayahay25@gmail.com', '$2y$10$jpBgeZuW7e/qb0lbEyQZUu1fbRljsOAPSbiM/nJWPVwh69NMhLKny', 'lgu', NULL, 'Active');
 
 -- --------------------------------------------------------
@@ -751,19 +782,19 @@ ALTER TABLE `centers`
 -- AUTO_INCREMENT for table `center_history`
 --
 ALTER TABLE `center_history`
-  MODIFY `history_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=42;
+  MODIFY `history_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=52;
 
 --
 -- AUTO_INCREMENT for table `center_schedules`
 --
 ALTER TABLE `center_schedules`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- AUTO_INCREMENT for table `center_status_history`
 --
 ALTER TABLE `center_status_history`
-  MODIFY `history_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=44;
+  MODIFY `history_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=61;
 
 --
 -- AUTO_INCREMENT for table `daily_center_reports`
@@ -775,7 +806,7 @@ ALTER TABLE `daily_center_reports`
 -- AUTO_INCREMENT for table `evacuees`
 --
 ALTER TABLE `evacuees`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `history`
@@ -805,7 +836,7 @@ ALTER TABLE `personal_users`
 -- AUTO_INCREMENT for table `saved_reports`
 --
 ALTER TABLE `saved_reports`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `userrights`

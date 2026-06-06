@@ -1482,6 +1482,7 @@ $(document).ready(function() {
                             if (result.isConfirmed && response.report_url) {
                                 window.open(response.report_url, '_blank');
                             }
+                            // Reload the page to refresh all data
                             location.reload();
                         });
                     } else {
