@@ -321,6 +321,27 @@ $default_datetime = date('Y-m-d\TH:i', strtotime('+1 hour'));
                                                 <div class="row mb-3">
                                                     <div class="col-12">
                                                         <div class="btn-group" role="group">
+                                                            <button id="editcenter" type="button" class="btn btn-sm btn-primary edit-center-dropdown" 
+                                                                    data-center-id="<?php echo htmlspecialchars($center['center_id']); ?>"
+                                                                    data-center-name="<?php echo htmlspecialchars($center['center_name']); ?>"
+                                                                    data-category="<?php echo htmlspecialchars($center['category']); ?>"
+                                                                    data-status="<?php echo htmlspecialchars($statusText); ?>"
+                                                                    data-barangay="<?php echo htmlspecialchars($center['barangay']); ?>"
+                                                                    data-city="<?php echo htmlspecialchars($center['city']); ?>"
+                                                                    data-province="<?php echo htmlspecialchars($center['province']); ?>"
+                                                                    data-address="<?php echo htmlspecialchars($fullCenter['address']); ?>"
+                                                                    data-capacity="<?php echo $center['capacity']; ?>"
+                                                                    data-current-occupants="<?php echo $actualOccupancy; ?>"
+                                                                    data-contact-number="<?php echo htmlspecialchars($fullCenter['contact_number']); ?>"
+                                                                    data-contact-person="<?php echo htmlspecialchars($fullCenter['contact_person']); ?>"
+                                                                    data-latitude="<?php echo $fullCenter['latitude']; ?>"
+                                                                    data-longitude="<?php echo $fullCenter['longitude']; ?>"
+                                                                    data-estimated-capacity="<?php echo $fullCenter['estimated_capacity']; ?>"
+                                                                    data-accessibility="<?php echo htmlspecialchars($fullCenter['accessibility']); ?>"
+                                                                    data-available-facilities="<?php echo htmlspecialchars($fullCenter['available_facilities']); ?>"
+                                                                    data-remarks="<?php echo htmlspecialchars($fullCenter['remarks']); ?>">
+                                                                <i class="fa fa-edit"></i> Edit Center
+                                                            </button>
                                                             <button type="button" class="btn btn-sm btn-success add-evacuee-dropdown" 
                                                                     data-center-id="<?php echo htmlspecialchars($center['center_id']); ?>"
                                                                     data-center-name="<?php echo htmlspecialchars($center['center_name']); ?>"
@@ -521,6 +542,237 @@ $default_datetime = date('Y-m-d\TH:i', strtotime('+1 hour'));
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 <button type="button" class="btn btn-primary" id="confirmChangeStatus">Change Status</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Center Modal -->
+<div class="modal fade" id="editCenterModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="fa fa-edit me-2"></i> Edit Evacuation Center
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editCenterForm">
+                    <input type="hidden" id="edit_center_id" name="center_id">
+                    
+                    <!-- Basic Information -->
+                    <div class="card mb-3">
+                        <div class="card-header bg-secondary text-white">
+                            <h6 class="mb-0"><i class="fa fa-info-circle me-2"></i> Basic Information</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Center Name <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="edit_center_name" name="center_name" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Category <span class="text-danger">*</span></label>
+                                    <select class="form-control" id="edit_category" name="category" required>
+                                        <option value="School">School</option>
+                                        <option value="Gymnasium / Sports Complex">Gymnasium / Sports Complex</option>
+                                        <option value="Church">Church</option>
+                                        <option value="Community Center / Multipurpose Hall">Community Center / Multipurpose Hall</option>
+                                        <option value="Covered Court">Covered Court</option>
+                                        <option value="Private Facility / Commercial Building">Private Facility / Commercial Building</option>
+                                        <option value="Open Field / Evacuation Ground">Open Field / Evacuation Ground</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <label class="form-label">Barangay</label>
+                                    <input type="text" class="form-control" id="edit_barangay" name="barangay">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">City/Municipality</label>
+                                    <input type="text" class="form-control" id="edit_city" name="city">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Province</label>
+                                    <input type="text" class="form-control" id="edit_province" name="province">
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Complete Address</label>
+                                <textarea class="form-control" id="edit_address" name="address" rows="2"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Capacity & Status -->
+                    <div class="card mb-3">
+                        <div class="card-header bg-secondary text-white">
+                            <h6 class="mb-0"><i class="fa fa-users me-2"></i> Capacity & Status</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <label class="form-label">Capacity <span class="text-danger">*</span></label>
+                                    <input type="number" class="form-control" id="edit_capacity" name="capacity" required>
+                                    <small class="text-muted">Maximum number of evacuees</small>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Estimated Capacity</label>
+                                    <input type="number" class="form-control" id="edit_estimated_capacity" name="estimated_capacity">
+                                    <small class="text-muted">Optional overflow estimate</small>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Current Occupants</label>
+                                    <input type="number" class="form-control" id="edit_current_occupants" name="current_occupants" readonly>
+                                    <small class="text-muted">Auto-calculated from evacuees</small>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Status</label>
+                                    <select class="form-control" id="edit_status" name="status">
+                                        <option value="Active">Active</option>
+                                        <option value="Inactive">Inactive</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Facility Information -->
+                    <div class="card mb-3">
+                        <div class="card-header bg-secondary text-white">
+                            <h6 class="mb-0"><i class="fa fa-building me-2"></i> Facility Information</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Water Supply</label>
+                                    <select class="form-control" id="edit_water_supply" name="water_supply">
+                                        <option value="">Select</option>
+                                        <option value="Available">Available</option>
+                                        <option value="Limited">Limited</option>
+                                        <option value="Not Available">Not Available</option>
+                                        <option value="Tanker Provided">Tanker Provided</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Electricity</label>
+                                    <select class="form-control" id="edit_electricity" name="electricity">
+                                        <option value="">Select</option>
+                                        <option value="Available">Available</option>
+                                        <option value="Generator">Generator</option>
+                                        <option value="Limited">Limited</option>
+                                        <option value="Not Available">Not Available</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <label class="form-label">Number of Rooms</label>
+                                    <input type="number" class="form-control" id="edit_num_rooms" name="num_rooms" min="0">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Number of Restrooms</label>
+                                    <input type="number" class="form-control" id="edit_restrooms_count" name="restrooms_count" min="0">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Accessibility</label>
+                                    <input type="text" class="form-control" id="edit_accessibility" name="accessibility" placeholder="e.g., Wheelchair accessible">
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="edit_has_wifi" name="has_wifi" value="1">
+                                        <label class="form-check-label" for="edit_has_wifi">
+                                            WiFi / Internet
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="edit_has_canteen" name="has_canteen" value="1">
+                                        <label class="form-check-label" for="edit_has_canteen">
+                                            Canteen / Food
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="edit_has_medical" name="has_medical" value="1">
+                                        <label class="form-check-label" for="edit_has_medical">
+                                            Medical Station
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Available Facilities</label>
+                                <textarea class="form-control" id="edit_available_facilities" name="available_facilities" rows="2" placeholder="List other available facilities..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Contact & Location -->
+                    <div class="card mb-3">
+                        <div class="card-header bg-secondary text-white">
+                            <h6 class="mb-0"><i class="fa fa-phone me-2"></i> Contact Information & Location</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Contact Person</label>
+                                    <input type="text" class="form-control" id="edit_contact_person" name="contact_person">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Contact Number</label>
+                                    <input type="text" class="form-control" id="edit_contact_number" name="contact_number">
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Latitude</label>
+                                    <input type="text" class="form-control" id="edit_latitude" name="latitude" placeholder="e.g., 14.5995">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Longitude</label>
+                                    <input type="text" class="form-control" id="edit_longitude" name="longitude" placeholder="e.g., 120.9842">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Remarks -->
+                    <div class="card mb-3">
+                        <div class="card-header bg-secondary text-white">
+                            <h6 class="mb-0"><i class="fa fa-comment me-2"></i> Additional Information</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">Remarks</label>
+                                <textarea class="form-control" id="edit_remarks" name="remarks" rows="3" placeholder="Any additional notes or remarks..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button id="cancelEditCenter" type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    Cancel
+                </button>
+                <button type="button" class="btn btn-primary" id="confirmEditCenter">
+                    Save Changes
+                </button>
             </div>
         </div>
     </div>
@@ -947,7 +1199,6 @@ $default_datetime = date('Y-m-d\TH:i', strtotime('+1 hour'));
                 <h5 class="modal-title">
                     <i class="fa fa-calendar-alt me-2"></i> Scheduled Activations
                 </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <div class="alert alert-info mb-3">
@@ -1693,5 +1944,7 @@ $(document).ready(function() {
             }
         });
     });
+
+    
 });
 </script>
